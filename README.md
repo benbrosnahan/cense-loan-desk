@@ -1,6 +1,6 @@
 # Cense Loan Desk
 
-Created with Claude Code.
+**Live: [cense-loan-desk.vercel.app](https://cense-loan-desk.vercel.app)**
 
 Every federal student loan a person has, on one screen: balances, rates, which repayment
 plans they actually qualify for, payoff order, and a dated record of what changed.
@@ -163,3 +163,7 @@ Two apparent failures were test artifacts, not defects, and are documented here
 so nobody "fixes" them later: the goal `<select>` contributes its own option
 text to `innerText` (so a naive badge count reads one too many), and the skip
 link measures 1px because it is `sr-only` until focused.
+
+---
+
+Built with Claude Code. Part of [Cense](https://cense.beehiiv.com).

@@ -166,4 +166,4 @@ link measures 1px because it is `sr-only` until focused.
 
 ---
 
-Built with Claude Code. Part of [Cense](https://cense.beehiiv.com).
+Part of [Cense](https://cense.beehiiv.com).

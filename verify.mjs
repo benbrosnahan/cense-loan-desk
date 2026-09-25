@@ -579,6 +579,50 @@ console.log("\n[16] Cross-cutting invariants over random portfolios");
      bad.slice(0, 6).join(" | "));
 }
 
+// ============================================================ Parent PLUS
+console.log("\n[17] Parent PLUS eligibility — 685.209(d)(2), (d)(4), 685.210(a)(3)(iii)(B)");
+{
+  const L = (kind, bal, date) => ({ id: kind + date, nickname: kind, servicer: "X", kind,
+    subsidy: kind === "direct_sub" ? "subsidized" : "unsubsidized",
+    principal: bal, balance: bal, rate: 8.05, disbursementDate: date, minPayment: 0 });
+  const prof = { income: 60000, householdSize: 1, employment: "government",
+    goal: "forgiveness", extraPerMonth: 0, selectedPlan: null };
+  const open = (loans) => calc.estimatePlans(calc.buildContext(loans, prof))
+    .filter((e) => e.eligible).map((e) => e.id).sort().join(",");
+
+  // Pre-cutoff Parent PLUS: the 685.208(b) fixed plans only. $40k clears the
+  // Extended floor.
+  const pre = open([L("parent_plus", 40000, "2023-08-15")]);
+  ok("pre-cutoff Parent PLUS: Standard, Graduated, Extended only",
+     pre === "extended,graduated,standard", pre);
+  // Post-cutoff Parent PLUS: Tiered Standard only.
+  const post = open([L("parent_plus", 20000, "2026-08-15")]);
+  ok("post-cutoff Parent PLUS: Tiered Standard only", post === "tiered_standard", post);
+  // An older Parent PLUS loan plus any new Direct Loan: Tiered Standard only.
+  const mixedVintage = open([L("parent_plus", 20000, "2022-08-15"),
+                             L("direct_unsub", 5000, "2026-08-15")]);
+  ok("pre-cutoff Parent PLUS + post-cutoff loan: Tiered Standard only",
+     mixedVintage === "tiered_standard", mixedVintage);
+  // Mixed with the borrower's own loans: IBR and RAP stay closed on the
+  // combined portfolio, and the UI points to repaying them separately.
+  const mixedKind = open([L("parent_plus", 20000, "2022-08-15"),
+                          L("direct_sub", 5000, "2019-08-15")]);
+  ok("Parent PLUS + own Direct loans: IBR and RAP closed", !/ibr|rap/.test(mixedKind), mixedKind);
+  const ibr = calc.estimatePlans(calc.buildContext([L("parent_plus", 20000, "2022-08-15")], prof))
+    .find((e) => e.id === "ibr");
+  ok("IBR ineligible reason cites 685.209(d)", /685\.209\(d\)/.test(ibr.ineligibleReason || ""));
+  // A public servant going for forgiveness with Parent PLUS gets Standard,
+  // the only plan open here that counts for PSLF (685.219(b)(28)(ii)).
+  const ctx = calc.buildContext([L("parent_plus", 40000, "2023-08-15")], prof);
+  const { ranked } = calc.rankPlans(calc.estimatePlans(ctx), ctx);
+  ok("Parent PLUS forgiveness pick is Standard",
+     ranked.find((r) => r.isTopPick).estimate.id === "standard");
+  // Ordinary Direct loans are unchanged.
+  const direct = open([L("direct_sub", 20000, "2022-08-15"), L("direct_unsub", 15000, "2023-08-15")]);
+  ok("Direct Sub/Unsub pre-cutoff: all five legacy plans open",
+     direct === "extended,graduated,ibr,rap,standard", direct);
+}
+
 // ============================================================ report
 console.log("\n" + "=".repeat(78));
 console.log(`PASS ${pass}   FAIL ${fail}`);

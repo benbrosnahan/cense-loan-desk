@@ -20,6 +20,7 @@ import {
 import { SEED_LOANS } from "@/data/seed";
 import { NO_LATE_FEES_NOTE, NOT_ADVICE, PRIVACY_NOTE } from "@/data/plans";
 import {
+  anyParentPlus,
   anyPostCutoff,
   buildContext,
   estimatePlans,
@@ -105,6 +106,7 @@ export default function Page() {
   const balance = useMemo(() => totalBalance(loans), [loans]);
   const principal = useMemo(() => totalPrincipal(loans), [loans]);
   const postCutoff = useMemo(() => anyPostCutoff(loans), [loans]);
+  const parentPlus = useMemo(() => anyParentPlus(loans), [loans]);
   const servicerCount = useMemo(
     () => new Set(loans.map((l) => l.servicer)).size,
     [loans]
@@ -340,8 +342,18 @@ export default function Page() {
                 {postCutoff && (
                   <Notice tone="warn" title="Check this before anything else">
                     At least one loan was disbursed on or after July 1, 2026.
-                    That limits your entire portfolio to RAP and Tiered
-                    Standard. Open Repayment plans to see what is left.
+                    {parentPlus
+                      ? " That limits your entire portfolio to RAP and Tiered Standard, and Parent PLUS loans cannot use RAP, so they are limited to Tiered Standard."
+                      : " That limits your entire portfolio to RAP and Tiered Standard."}{" "}
+                    Open Repayment plans to see what is left.
+                  </Notice>
+                )}
+                {parentPlus && (
+                  <Notice tone="warn" title="Parent PLUS loans have fewer options">
+                    Parent PLUS loans cannot be repaid under IBR or RAP. If you
+                    consolidated them, your options depend on when and which
+                    plan you have paid under. Open Repayment plans for details,
+                    and confirm with your servicer or studentaid.gov.
                   </Notice>
                 )}
 

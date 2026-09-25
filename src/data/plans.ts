@@ -217,6 +217,46 @@ export const LEGACY_PLANS: PlanId[] = [
 /** Plans open once any loan was disbursed on or after July 1, 2026. */
 export const POST_CUTOFF_PLANS: PlanId[] = ["tiered_standard", "rap"];
 
+/**
+ * Plans a Parent PLUS loan can never be repaid under, whenever it was made.
+ *
+ * IBR: 34 CFR 685.209(d)(2) limits IBR to Direct Subsidized, Direct
+ * Unsubsidized, Direct PLUS "made to graduate or professional students", and
+ * Direct Consolidation Loans that are not excepted consolidation loans. A
+ * Parent PLUS loan is none of these.
+ *
+ * RAP: 685.209(d)(4) uses the same list. The final rule preamble is explicit
+ * that "borrowers with an excepted PLUS loan or excepted consolidation loan are
+ * not eligible for the Repayment Assistance Plan, irrespective of whenever
+ * they obtained" it (91 FR 23768, May 1, 2026, "Excepted Loans" discussion).
+ *
+ * The fixed plans stay open to a pre-July-2026 Parent PLUS loan: 685.208(b)(1)
+ * Standard and (b)(6) Graduated name "Direct PLUS Loan borrowers", and (b)(4)
+ * Extended covers "all Direct Loan borrowers". A Parent PLUS loan made on or
+ * after July 1, 2026, or an older one held by a borrower who receives any
+ * Direct Loan on or after that date, can only be repaid under Tiered Standard
+ * (685.210(a)(3)(iii)(B), and the "Parent PLUS Borrowers" discussion in the
+ * same preamble). POST_CUTOFF_PLANS minus RAP yields exactly that.
+ *
+ * Consolidation is deliberately not modeled. A Direct Consolidation Loan that
+ * repaid a Parent PLUS loan may use ICR through June 30, 2028
+ * (685.209(c)(5)(ii)), and stops being an excepted consolidation loan, which
+ * opens IBR, once a payment is made under ICR, PAYE or IBR between July 4, 2025
+ * and June 30, 2028 (685.209(b)(6)(ii)). That turns on the consolidation date
+ * and payment history, which this tool does not collect, so the UI tells the
+ * borrower to confirm it instead. See PARENT_PLUS_NOTE.
+ */
+export const PARENT_PLUS_EXCLUDED_PLANS: PlanId[] = ["ibr", "rap"];
+
+export const PARENT_PLUS_INELIGIBLE_REASON =
+  "Not open to Parent PLUS loans (34 CFR 685.209(d))";
+
+export const PARENT_PLUS_NOTE =
+  "Parent PLUS loans cannot be repaid under IBR or RAP, so both are left out here. If you also have loans from your own education, those may still qualify, repaid separately from the Parent PLUS loans. Remove the Parent PLUS loans to see those figures. If you consolidated your Parent PLUS loans, different rules apply: depending on when you consolidated and which plan you have paid under, the consolidation loan may qualify for ICR or IBR. This tool does not model that, so confirm your options with your loan servicer or on studentaid.gov.";
+
+export const POST_CUTOFF_WARNING_PARENT_PLUS =
+  "At least one of your loans was disbursed on or after July 1, 2026. That closes Standard, Graduated, Extended and IBR across your whole portfolio, including the loans you took out earlier. Parent PLUS loans cannot use RAP either, so Tiered Standard is the only plan left for them.";
+
 export const PLAN_ORDER: PlanId[] = [
   "standard",
   "graduated",
@@ -242,4 +282,4 @@ export const NOT_ADVICE =
   "These are estimates, not financial advice. The right plan depends on things this tool does not know, like whether your income is about to change or what else you owe. Your servicer sets your actual payment, and studentaid.gov is the authority on your account.";
 
 export const PRIVACY_NOTE =
-  "Everything you type stays in this browser. There is no account, no server, and no analytics. Nothing you enter is transmitted anywhere, and closing the tab does not send it either. The maths here is ordinary arithmetic run on your device, not an AI model.";
+  "Everything you type stays in this browser. There is no account, no server, and no analytics. Nothing you enter is transmitted anywhere, and closing the tab does not send it either. The math here is ordinary arithmetic run on your device, not an AI model.";

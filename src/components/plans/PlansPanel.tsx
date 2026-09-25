@@ -7,8 +7,10 @@ import { Loan, PlanId, Profile, RankedPlan } from "@/types";
 import {
   ASSUMPTIONS,
   NOT_ADVICE,
+  PARENT_PLUS_NOTE,
   PLAN_META,
   POST_CUTOFF_WARNING,
+  POST_CUTOFF_WARNING_PARENT_PLUS,
   SAME_PLAN_RULE,
 } from "@/data/plans";
 import { buildContext, estimatePlans, isPostCutoff, rankPlans } from "@/lib/calc";
@@ -226,11 +228,17 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
 
           {ctx.postCutoff && (
             <Notice tone="warn" title="One date decided this" className="mt-4">
-              {POST_CUTOFF_WARNING}
+              {ctx.parentPlus ? POST_CUTOFF_WARNING_PARENT_PLUS : POST_CUTOFF_WARNING}
               <div className="mt-1.5 font-semibold">
                 The loan{postLoans.length > 1 ? "s" : ""} that did it:{" "}
                 {postLoans.map((l) => l.nickname).join(", ")}.
               </div>
+            </Notice>
+          )}
+
+          {ctx.parentPlus && (
+            <Notice tone="warn" title="Parent PLUS loans have fewer options" className="mt-4">
+              {PARENT_PLUS_NOTE}
             </Notice>
           )}
         </Card>
@@ -280,7 +288,8 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
             {!ctx.postCutoff && (
               <Notice tone="good" title="All your loans predate the cutoff">
                 Every loan you entered was disbursed before July 1, 2026, so the
-                older plan menu is still open to you. Borrowing again on or after
+                older {ctx.parentPlus ? "fixed plans are" : "plan menu is"} still
+                open to you. Borrowing again on or after
                 that date, or consolidating, would change this for your whole
                 portfolio.
               </Notice>

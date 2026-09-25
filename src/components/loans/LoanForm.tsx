@@ -61,7 +61,7 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
   const balance = num(f.balance);
   const rate = num(f.rate);
   const errors: string[] = [];
-  if (!f.nickname.trim()) errors.push("Give the loan a name you will recognise.");
+  if (!f.nickname.trim()) errors.push("Give the loan a name you will recognize.");
   if (balance <= 0) errors.push("Enter the current balance.");
   if (rate <= 0 || rate > 25) errors.push("Enter an interest rate between 0 and 25.");
   if (!f.disbursementDate) errors.push("Enter the disbursement date.");
@@ -242,6 +242,16 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
           Disbursed on or after July 1, 2026. Under 34 CFR 685.210, a single loan
           on this side of the date limits your whole portfolio to RAP and Tiered
           Standard, including loans you took out earlier.
+        </Notice>
+      )}
+
+      {f.kind === "parent_plus" && (
+        <Notice tone="warn" title="Parent PLUS loans have fewer options" className="mt-4">
+          Parent PLUS loans cannot be repaid under IBR or RAP (34 CFR
+          685.209(d)). If you consolidated them, this tool shows only the
+          plans it can confirm. A consolidation loan may also qualify for ICR
+          or IBR, depending on when you consolidated and which plan you have
+          paid under, so confirm with your servicer or studentaid.gov.
         </Notice>
       )}
 

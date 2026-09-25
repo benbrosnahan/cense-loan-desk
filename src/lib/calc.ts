@@ -12,6 +12,8 @@ import {
 import {
   EXTENDED_MIN_BALANCE,
   LEGACY_PLANS,
+  PARENT_PLUS_EXCLUDED_PLANS,
+  PARENT_PLUS_INELIGIBLE_REASON,
   PLAN_META,
   PLAN_ORDER,
   POST_CUTOFF_PLANS,
@@ -45,6 +47,14 @@ export function isPostCutoff(loan: Loan): boolean {
 
 export function anyPostCutoff(loans: Loan[]): boolean {
   return loans.some(isPostCutoff);
+}
+
+/**
+ * True when any loan is a Parent PLUS loan, which closes IBR and RAP to it
+ * under 34 CFR 685.209(d)(2) and (d)(4). See PARENT_PLUS_EXCLUDED_PLANS.
+ */
+export function anyParentPlus(loans: Loan[]): boolean {
+  return loans.some((l) => l.kind === "parent_plus");
 }
 
 /** Standard amortised monthly payment. Handles the 0% edge case. */
@@ -200,6 +210,8 @@ export interface PlanContext {
   profile: Profile;
   hasIncome: boolean;
   postCutoff: boolean;
+  /** Any Parent PLUS loan in the portfolio. Closes IBR and RAP. */
+  parentPlus: boolean;
   balance: number;
   rate: number;
   /** The 10-year Standard payment. The statutory yardstick for PSLF credit. */
@@ -215,6 +227,7 @@ export function buildContext(loans: Loan[], profile: Profile): PlanContext {
     profile,
     hasIncome: profile.income > 0,
     postCutoff: anyPostCutoff(loans),
+    parentPlus: anyParentPlus(loans),
     balance,
     rate,
     pslfBenchmark: amortizedPayment(balance, rate, 10),
@@ -281,6 +294,26 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
         ineligibleReason: postCutoff
           ? "Closed because one of your loans was disbursed on or after July 1, 2026"
           : "Only available once a loan is disbursed on or after July 1, 2026",
+      };
+    }
+
+    // Parent PLUS loans are outside the IBR and RAP loan lists in 34 CFR
+    // 685.209(d)(2) and (d)(4), whenever they were made. The whole entered
+    // portfolio is modeled on one plan, so a single Parent PLUS loan closes
+    // both here. Any student loans alongside it can still use them, repaid
+    // separately under 685.210(a)(3)(i) and (iii)(A); the UI says so.
+    if (ctx.parentPlus && PARENT_PLUS_EXCLUDED_PLANS.includes(id)) {
+      return {
+        ...base,
+        eligible: false,
+        monthlyPayment: null,
+        totalPaid: null,
+        totalInterest: null,
+        years: 0,
+        forgivenAmount: 0,
+        pslf: "does_not_count",
+        pslfNote: "",
+        ineligibleReason: PARENT_PLUS_INELIGIBLE_REASON,
       };
     }
 

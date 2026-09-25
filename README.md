@@ -23,6 +23,7 @@ Every number is traced in-code. Load-bearing citations:
 - 34 CFR 685.210 — choice of repayment plan, the same-plan rule, the July 2026 cutoff
 - 34 CFR 685.209 — RAP base payment brackets, $10 floor, $50/dependent, matching principal, 360 payments
 - 34 CFR 685.208 — Tiered Standard balance tiers
+- 34 CFR 685.209(d)(2), (d)(4) and 685.210(a)(3)(iii)(B), with the May 1, 2026 final rule (91 FR 23768): Parent PLUS loans are outside IBR and RAP, and a Parent PLUS borrower with any loan made on or after July 1, 2026 is limited to Tiered Standard. Consolidated Parent PLUS loans are not modeled; the UI says to confirm with the servicer
 - ASPE 2026 poverty guidelines
 - fsapartners.ed.gov annual Direct Loan interest rate announcements
 - GAO-26-108534 — servicer accuracy findings that justify snapshot history
@@ -86,7 +87,7 @@ Two independent harnesses. Neither re-runs the app's own logic and agrees with
 itself; every figure is derived a second way and compared.
 
 ```bash
-node verify.mjs        # 173 assertions over the shipped calc/ranking modules
+node verify.mjs        # 180 assertions over the shipped calc/ranking modules
 ```
 
 Covers: amortisation against the closed form `B*r / (1 - (1+r)^-n)`; the 2026

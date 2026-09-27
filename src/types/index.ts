@@ -124,7 +124,8 @@ export const DEFAULT_PROFILE: Profile = {
   householdSize: 1,
   employment: "unsure",
   goal: "unsure",
-  extraPerMonth: 100,
+  // Starts at zero on purpose. A pre-filled amount anchors what people pay.
+  extraPerMonth: 0,
   selectedPlan: null,
 };
 
@@ -172,6 +173,9 @@ export const GOAL_HINTS: Record<Goal, string> = {
   unsure: "We will recommend on total cost, which is the safe default.",
 };
 
+/** Shown when the borrower has not looked up who services a loan yet. */
+export const SERVICER_UNKNOWN = "Not sure yet";
+
 export const SERVICERS = [
   "Nelnet",
   "MOHELA",
@@ -180,4 +184,22 @@ export const SERVICERS = [
   "ECSI",
   "Default Resolution Group",
   "Other",
+  SERVICER_UNKNOWN,
 ] as const;
+
+/** What each loan type means, in one sentence a first-time borrower can use. */
+export const LOAN_KIND_HINTS: Record<LoanKind, string> = {
+  direct_sub:
+    "The government covers the interest while you are in school at least half-time and during your grace period.",
+  direct_unsub:
+    "Interest starts building the day the money is paid out, including while you are in school.",
+  grad_plus: "Borrowed by a graduate or professional student.",
+  parent_plus: "Borrowed by a parent to pay for their child's education.",
+};
+
+export const LOAN_KIND_SHORT: Record<LoanKind, string> = {
+  direct_sub: "Subsidized",
+  direct_unsub: "Unsubsidized",
+  grad_plus: "Grad PLUS",
+  parent_plus: "Parent PLUS",
+};

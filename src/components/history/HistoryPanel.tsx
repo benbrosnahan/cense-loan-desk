@@ -11,8 +11,15 @@ import { useState } from "react";
 import { Loan, Snapshot } from "@/types";
 import { diffSnapshots } from "@/lib/storage";
 import { exportHistory } from "@/lib/export";
-import { money, niceDateTime, pct } from "@/lib/utils";
-import { Badge, Button, Card, FadeIn, Notice } from "@/components/shared/ui";
+import { niceDateTime, pct } from "@/lib/utils";
+import {
+  Badge,
+  Button,
+  Card,
+  Eyebrow,
+  FadeIn,
+  Money,
+} from "@/components/shared/ui";
 
 interface Props {
   loans: Loan[];
@@ -42,65 +49,51 @@ export default function HistoryPanel({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <FadeIn>
-        <Card className="p-4 sm:p-5">
-          <p className="text-sm font-bold text-slate-900">
+        <Card className="p-5 sm:p-7">
+          <h2 className="font-display text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
             Your own record, dated
-          </p>
-          <p className="mt-1.5 text-xs leading-relaxed text-slate-700">
+          </h2>
+          <p className="mt-2 text-base leading-relaxed text-slate-700">
             In March 2026 the Government Accountability Office found that four of
             the five federal loan servicers missed accuracy standards, and that
-            accuracy evaluations had been paused since February 2025. It is
-            important that you keep an accurate record of your loans.
+            accuracy evaluations had been paused since February 2025. A dated
+            record of your own is how you show a balance moved when it should
+            not have.
           </p>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-line bg-slate-50 p-3">
-              <p className="text-xs font-bold text-slate-900">
-                Save a snapshot
-              </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-slate-700">
-                Stores a dated copy of every loan exactly as it stands right now,
-                on this device. Do it whenever you check your balances. Two
-                snapshots is what lets Loan Desk show you what moved.
-              </p>
-              <div className="mt-2.5">
-                <Button size="sm" onClick={onSaveSnapshot} disabled={!loans.length}>
-                  Save snapshot
-                </Button>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-line bg-slate-50 p-3">
-              <p className="text-xs font-bold text-slate-900">
-                Download history
-              </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-slate-700">
-                An Excel file with three tabs: what changed between each
-                snapshot, a one-row-per-snapshot timeline, and the full detail.
-                This is the copy you keep outside the browser.
-              </p>
-              <div className="mt-2.5">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={download}
-                  disabled={!sorted.length || busy}
-                >
-                  {busy ? "Preparing…" : "Download .xlsx"}
-                </Button>
-              </div>
-            </div>
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+            <Button onClick={onSaveSnapshot} disabled={!loans.length}>
+              Save today&apos;s snapshot
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={download}
+              disabled={!sorted.length || busy}
+            >
+              {busy ? "Preparing…" : "Download as a spreadsheet"}
+            </Button>
           </div>
+          <p className="mt-3 text-sm leading-relaxed text-slate-600">
+            A snapshot stores every loan exactly as it stands right now, on this
+            device. The spreadsheet is the copy you keep outside the browser.
+            {!sorted.length &&
+              " It becomes available once you have saved a snapshot."}
+          </p>
         </Card>
       </FadeIn>
 
       {!sorted.length && (
-        <Notice tone="info" title="No snapshots yet">
-          Save one now to start the record. Check back after your servicer
-          updates, save another, and this page will show you the difference.
-        </Notice>
+        <div className="rounded-3xl border border-dashed border-slate-300 px-5 py-8 text-center">
+          <p className="font-display text-xl font-bold text-slate-900">
+            No snapshots yet
+          </p>
+          <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-slate-700">
+            Save one now to start the record. After your servicer next updates
+            your balances, save another, and this page will show what changed.
+          </p>
+        </div>
       )}
 
       {sorted.map((snap, i) => {
@@ -108,40 +101,39 @@ export default function HistoryPanel({
         const diff = older ? diffSnapshots(older, snap) : [];
         const number = sorted.length - i;
         return (
-          <FadeIn key={snap.takenAt} delay={0.04 * i}>
-            <Card className="p-4 sm:p-5">
+          <FadeIn key={snap.takenAt} delay={0.03 * i}>
+            <Card className="p-5 sm:p-6">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Badge tone="neutral">#{number}</Badge>
-                  <p className="text-sm font-bold text-slate-900">
+                  <p className="tnum text-base font-bold text-slate-900">
                     {niceDateTime(snap.takenAt)}
                   </p>
                 </div>
-                <p className="tnum text-lg font-bold text-slate-900">
-                  {money(snap.totalBalance)}
-                </p>
+                <Money
+                  value={snap.totalBalance}
+                  className="text-xl font-bold text-slate-900"
+                />
               </div>
-              <p className="mt-0.5 text-[11px] text-slate-600">
+              <p className="mt-0.5 text-sm text-slate-600">
                 {snap.loans.length} loan{snap.loans.length === 1 ? "" : "s"} on
                 record
               </p>
 
               {older && (
-                <div className="mt-3 border-t border-line pt-3">
+                <div className="mt-4 border-t border-line pt-4">
                   {diff.length === 0 ? (
-                    <p className="text-xs text-slate-600">
+                    <p className="text-sm text-slate-700">
                       Nothing changed since {niceDateTime(older.takenAt)}.
                     </p>
                   ) : (
                     <>
-                      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">
-                        Changed since {niceDateTime(older.takenAt)}
-                      </p>
-                      <ul className="mt-2 space-y-1.5">
+                      <Eyebrow>Changed since {niceDateTime(older.takenAt)}</Eyebrow>
+                      <ul className="mt-2 space-y-2">
                         {diff.map((d, j) => (
                           <li
                             key={`${d.nickname}-${d.field}-${j}`}
-                            className="flex flex-wrap items-baseline gap-x-2 text-xs"
+                            className="flex flex-wrap items-baseline gap-x-2 text-sm"
                           >
                             <span className="font-semibold text-slate-900">
                               {d.nickname}
@@ -158,13 +150,18 @@ export default function HistoryPanel({
                             )}
                             {d.kind === "changed" && (
                               <>
-                                <span className="text-slate-600">
+                                <span className="text-slate-700">
                                   {d.field === "rate" ? "rate" : "balance"}
                                 </span>
                                 <span className="tnum font-semibold text-slate-900">
-                                  {d.field === "rate"
-                                    ? `${pct(d.before)} → ${pct(d.after)}`
-                                    : `${money(d.before)} → ${money(d.after)}`}
+                                  {d.field === "rate" ? (
+                                    `${pct(d.before)} → ${pct(d.after)}`
+                                  ) : (
+                                    <>
+                                      <Money value={d.before} /> →{" "}
+                                      <Money value={d.after} />
+                                    </>
+                                  )}
                                 </span>
                               </>
                             )}

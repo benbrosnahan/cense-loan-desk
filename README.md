@@ -35,7 +35,7 @@ npm install
 npm run dev
 ```
 
-Next 14 App Router + TypeScript + Tailwind + framer-motion. All client-side, localStorage only,
+Next 14 App Router + TypeScript + Tailwind. All client-side, localStorage only,
 no backend, no accounts, no analytics.
 
 ## v2 changes (2026-08-18)
@@ -164,6 +164,47 @@ Two apparent failures were test artifacts, not defects, and are documented here
 so nobody "fixes" them later: the goal `<select>` contributes its own option
 text to `innerText` (so a naive badge count reads one too many), and the skip
 link measures 1px because it is `sr-only` until focused.
+
+## v3 design overhaul (2026-09-27)
+
+Branch `ux-overhaul`. No change to any repayment rule or calculation. `node verify.mjs`
+still passes 180 of 180.
+
+**What the page is now.** A sequence, not a menu: your loans, then a plan, then what extra
+money does, then a record. Every section ends with a card pointing at the next one. This
+came from the student interviews, where the consistent ask was one next step rather than
+a dashboard.
+
+**Signature element: the payoff runway.** `src/components/charts/PayoffRunway.tsx` draws
+the balance falling to zero with and without the extra payment, and the headline above it
+states the takeaway in words ("$100 extra a month gets you out 3 years 1 month sooner").
+It reads from `projectPayoff` in `src/lib/ranking.ts`, which is the same simulation
+`compareStrategies` uses, extended to also record the month-by-month balance and the month
+each loan clears.
+
+**Entering a loan takes less.** School-year shortcuts fill the date, the published
+undergraduate rate for that year is filled in and labelled as such, the name is generated,
+and "Save and add another" lines up the other half of the same year. Pasted values like
+`$2,256.40` are cleaned rather than rejected. Validation runs when you leave a field.
+
+**Decisions that reverse earlier ones, and why**
+- The extra payment now starts at $0, not $100. A pre-filled amount anchors what people
+  choose to pay (Stewart 2009; Keys and Wang 2019).
+- The slider is paired with a typed field and presets. A slider alone is poor for exact
+  values.
+- The desktop table is gone. The loan list is one expandable row per loan at every width.
+- Inter is replaced by Bricolage Grotesque (headlines) and Instrument Sans (everything
+  read or compared). Decode uses the same pair.
+- Entrance animations are CSS, not framer-motion. A script-driven fade starts content at
+  opacity 0, so a tab opened in the background could look blank. `framer-motion` is no
+  longer imported anywhere and can be removed from `package.json`.
+
+**Also new:** hide-amounts toggle, undo on remove and on clear, a banner while the example
+loans are loaded (the first real loan replaces them), a table view under the chart.
+
+**Floors:** 13px minimum type, 16px inputs (iOS zooms the page on anything smaller), 40px
+minimum targets, 48px primary. Chart green `#26602D` was chosen by running the palette
+validator against the brand orange; lighter greens collide with it under protanopia.
 
 ---
 

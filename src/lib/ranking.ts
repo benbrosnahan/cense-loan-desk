@@ -60,6 +60,13 @@ interface SimOutcome {
   months: number;
   totalInterest: number;
   paidOff: boolean;
+  /**
+   * Total balance at the end of each month. Index 0 is today's balance, so
+   * the array is `months + 1` long. Drives the payoff chart.
+   */
+  balanceByMonth: number[];
+  /** The month each loan reaches zero, keyed by loan id. Absent if it never does. */
+  payoffMonthById: Record<string, number>;
 }
 
 /**
@@ -81,6 +88,10 @@ function simulate(
 
   let totalInterest = 0;
   let months = 0;
+  const balanceByMonth: number[] = [
+    loans.reduce((sum, l) => sum + l.balance, 0),
+  ];
+  const payoffMonthById: Record<string, number> = {};
 
   for (let m = 0; m < maxMonths; m++) {
     const remaining = Array.from(balances.values()).reduce((a, b) => a + b, 0);
@@ -126,10 +137,38 @@ function simulate(
     }
 
     months++;
+
+    // Recorded after the fact, so the loop above is untouched.
+    let total = 0;
+    for (const id of order) {
+      const bal = balances.get(id)!;
+      total += Math.max(0, bal);
+      if (bal <= 0.005 && payoffMonthById[id] === undefined) {
+        payoffMonthById[id] = months;
+      }
+    }
+    balanceByMonth.push(total);
   }
 
   const paidOff = Array.from(balances.values()).every((b) => b <= 0.005);
-  return { months, totalInterest, paidOff };
+  return { months, totalInterest, paidOff, balanceByMonth, payoffMonthById };
+}
+
+export type PayoffProjection = SimOutcome;
+
+/**
+ * One strategy at one budget, with the month-by-month detail the chart needs.
+ * Same engine as compareStrategies, so the chart and the headline figures can
+ * never disagree.
+ */
+export function projectPayoff(
+  loans: Loan[],
+  strategy: Strategy,
+  requiredPayment: number,
+  extraPerMonth: number
+): PayoffProjection | null {
+  if (!loans.length || requiredPayment <= 0) return null;
+  return simulate(loans, strategy, requiredPayment, Math.max(0, extraPerMonth));
 }
 
 export interface StrategyComparison {

@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 5rem;
+}
+
 body {
   color: #275b2d;
   background: #fffcec;
@@ -13,14 +18,138 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .text-pretty {
+    text-wrap: pretty;
+  }
   /* Money must not jitter between rows. Highest-impact detail in a financial UI. */
   .tnum {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
+  }
+  /* Headline figures. Proportional digits, so a number like $11,110 does not
+     look gappy at display size. */
+  .figure {
+    font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+    font-variant-numeric: proportional-nums;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Entrances are CSS, not JavaScript. A script-driven fade starts content at
+   opacity 0 and relies on animation frames to bring it back, so a tab opened
+   in the background, or a slow phone, can leave the page looking blank. A CSS
+   animation always ends in its final state. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.24s ease-out both;
+}
+@keyframes unfold {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.unfold {
+  animation: unfold 0.2s ease-out both;
+}
+
+/* "Hide amounts" blurs every dollar figure, for checking your loans somewhere
+   public or when the total is not what you want to look at today. The text is
+   still there for screen readers. */
+.amounts-hidden .amt {
+  filter: blur(0.42em);
+  user-select: none;
+}
+.amounts-hidden .amt-chart {
+  display: none;
+}
+
+/* The extra-payment slider. One control, styled the same in every browser. */
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.range:focus {
+  outline: none;
+}
+.range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #26602d 0 var(--fill, 0%),
+    #dce7d8 var(--fill, 0%) 100%
+  );
+}
+.range::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #dce7d8;
+}
+.range::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: #26602d;
+}
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid #26602d;
+  box-shadow: 0 2px 6px rgba(39, 91, 45, 0.3);
+}
+.range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid #26602d;
+  box-shadow: 0 2px 6px rgba(39, 91, 45, 0.3);
+}
+.range:focus-visible::-webkit-slider-thumb {
+  outline: 3px solid #275b2d;
+  outline-offset: 3px;
+}
+.range:focus-visible::-moz-range-thumb {
+  outline: 3px solid #275b2d;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 @media print {
   .no-print { display: none !important; }
   body { background: #fff; }
+  .amounts-hidden .amt { filter: none; }
 }

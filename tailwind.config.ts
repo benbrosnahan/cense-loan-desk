@@ -36,12 +36,37 @@ const config: Config = {
           hover: "#A8531F",
           light: "#F7E4D6",
         },
+        // Chart marks only. `green` is the brand green nudged until it clears
+        // every check in the palette validator against `orange`, including
+        // protanopia separation (9.4). Lighter greens collide with the orange
+        // for red-green colorblind readers, so do not brighten it.
+        chart: {
+          green: "#26602D",
+          orange: "#C1652E",
+          mute: "#A9C3AA",
+          track: "#EAF3E7",
+          grid: "#E4ECE0",
+        },
         page: "#FFFCEC",
         line: "#DCE7D8",
         selected: "#EAF3E7",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: [
+          "var(--font-display)",
+          "var(--font-sans)",
+          "system-ui",
+          "sans-serif",
+        ],
+      },
+      fontSize: {
+        // The floor. Nothing in the interface is set smaller than this.
+        xs: ["0.8125rem", { lineHeight: "1.2rem" }],
+      },
+      boxShadow: {
+        card: "0 1px 0 rgba(39, 91, 45, 0.04), 0 8px 24px -12px rgba(39, 91, 45, 0.18)",
+        lift: "0 1px 0 rgba(39, 91, 45, 0.05), 0 16px 32px -16px rgba(39, 91, 45, 0.28)",
       },
     },
   },

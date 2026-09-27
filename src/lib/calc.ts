@@ -293,7 +293,10 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
         pslfNote: "",
         ineligibleReason: postCutoff
           ? "Closed because one of your loans was disbursed on or after July 1, 2026"
-          : "Only available once a loan is disbursed on or after July 1, 2026",
+          : // 685.208(b)(8) and (c)(1) both require a loan made on or after
+            // July 1, 2026. The old wording ("only available once...") read
+            // like a plan to wait for, and hid that the cutoff is one-way.
+            "Only for borrowers with a loan paid out on or after July 1, 2026. Every loan you entered is older, so you keep the original Standard plan instead.",
       };
     }
 

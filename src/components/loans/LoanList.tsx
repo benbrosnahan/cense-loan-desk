@@ -2,15 +2,16 @@
 
 // Cense Loan Desk — the loan list. Created with Claude Code.
 //
-// A six-column financial table needs real width. It renders as a table at
-// `lg` and up and as cards below, so phones AND iPad portrait (768px) get the
-// card layout. At 768px the table technically fits but dates wrap onto two
-// lines and type labels break, which reads as broken rather than dense.
+// Each loan is one row that opens in place, at every screen width. Eight loans
+// as eight full cards was about 1,500px of scrolling on a phone before you
+// reached anything else, and a six-column table does not fit the reading
+// column the rest of the page uses.
 
-import { LOAN_KIND_LABELS, Loan } from "@/types";
+import { useState } from "react";
+import { LOAN_KIND_SHORT, Loan } from "@/types";
 import { isPostCutoff } from "@/lib/calc";
-import { money, niceDate, pct } from "@/lib/utils";
-import { Badge, Button } from "@/components/shared/ui";
+import { cn, niceDate, pct } from "@/lib/utils";
+import { Button, Chevron, Money } from "@/components/shared/ui";
 
 interface Props {
   loans: Loan[];
@@ -18,16 +19,11 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-function SubsidyBadge({ loan }: { loan: Loan }) {
-  const sub = loan.subsidy === "subsidized";
-  return (
-    <Badge tone={sub ? "brand" : "neutral"}>
-      {sub ? "Subsidized" : "Unsubsidized"}
-    </Badge>
-  );
-}
+const interestSoFar = (l: Loan) =>
+  l.principal > 0 && l.balance > l.principal ? l.balance - l.principal : 0;
 
 export default function LoanList({ loans, onEdit, onDelete }: Props) {
+  const [openId, setOpenId] = useState<string | null>(null);
   if (!loans.length) return null;
 
   const sorted = [...loans].sort((a, b) =>
@@ -36,125 +32,101 @@ export default function LoanList({ loans, onEdit, onDelete }: Props) {
 
   return (
     <>
-      {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-2xl border border-line bg-white shadow-sm lg:block">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-line bg-slate-50">
-            {/* slate-700 not slate-500: #5C7F5F on the slate-50 header band is
-                only 4.04:1, under the 4.5:1 AA floor at this size. */}
-            <tr className="text-[10px] uppercase tracking-wide text-slate-700">
-              <th scope="col" className="px-4 py-2.5 font-semibold">Loan</th>
-              <th scope="col" className="px-4 py-2.5 font-semibold">Servicer</th>
-              <th scope="col" className="px-4 py-2.5 text-right font-semibold">Rate</th>
-              <th scope="col" className="px-4 py-2.5 text-right font-semibold">Balance</th>
-              <th scope="col" className="px-4 py-2.5 font-semibold">Disbursed</th>
-              <th scope="col" className="px-4 py-2.5 text-right font-semibold">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {sorted.map((l) => (
-              <tr key={l.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3">
-                  <div className="font-semibold text-slate-900">{l.nickname}</div>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <SubsidyBadge loan={l} />
-                    <span className="text-[11px] text-slate-500">
-                      {LOAN_KIND_LABELS[l.kind]}
+      <ul className="overflow-hidden rounded-3xl border border-line bg-white shadow-card">
+        {sorted.map((l, i) => {
+          const open = openId === l.id;
+          const panelId = `loan-${l.id}`;
+          return (
+            <li key={l.id} className={cn(i > 0 && "border-t border-line")}>
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={panelId}
+                onClick={() => setOpenId(open ? null : l.id)}
+                className={cn(
+                  "flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors",
+                  "focus:outline-none focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-navy",
+                  open ? "bg-slate-50/70" : "hover:bg-slate-50/70"
+                )}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-base font-semibold text-slate-900">
+                    {l.nickname}
+                  </span>
+                  <span className="tnum mt-0.5 block truncate text-sm text-slate-600">
+                    {LOAN_KIND_SHORT[l.kind]} · {pct(l.rate)}
+                    <span className="hidden sm:inline print:inline">
+                      {" · "}
+                      {l.servicer} · paid out {niceDate(l.disbursementDate)}
                     </span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-slate-600">{l.servicer}</td>
-                <td className="tnum px-4 py-3 text-right font-semibold text-slate-900">
-                  {pct(l.rate)}
-                </td>
-                <td className="tnum px-4 py-3 text-right font-semibold text-slate-900">
-                  {money(l.balance)}
-                  {l.principal > 0 && l.balance > l.principal && (
-                    <div className="tnum text-[11px] font-normal text-accent">
-                      +{money(l.balance - l.principal)} interest
+                    {isPostCutoff(l) && " · after Jul 1, 2026"}
+                  </span>
+                </span>
+                <span className="text-right">
+                  <Money
+                    value={l.balance}
+                    className="block text-base font-bold text-slate-900"
+                  />
+                </span>
+                <Chevron open={open} className="no-print text-slate-500" />
+              </button>
+
+              {open && (
+                <div id={panelId} className="bg-slate-50/70 px-4 pb-4">
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-3.5 text-sm">
+                    <div>
+                      <dt className="text-slate-600">You pay</dt>
+                      <dd className="font-semibold text-slate-900">
+                        {l.servicer}
+                      </dd>
                     </div>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="tnum text-slate-600">
-                    {niceDate(l.disbursementDate)}
-                  </div>
+                    <div>
+                      <dt className="text-slate-600">Paid out</dt>
+                      <dd className="tnum font-semibold text-slate-900">
+                        {niceDate(l.disbursementDate)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-600">First borrowed</dt>
+                      <dd className="font-semibold text-slate-900">
+                        <Money value={l.principal} />
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-600">Interest added so far</dt>
+                      <dd className="font-semibold text-slate-900">
+                        <Money value={interestSoFar(l)} />
+                      </dd>
+                    </div>
+                  </dl>
                   {isPostCutoff(l) && (
-                    <div className="mt-1">
-                      <Badge tone="warn">After Jul 1, 2026</Badge>
-                    </div>
+                    <p className="mt-3 text-sm leading-snug text-amber-900">
+                      Paid out on or after July 1, 2026, which limits the
+                      repayment plans open to every loan you have.
+                    </p>
                   )}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button size="sm" variant="ghost" onClick={() => onEdit(l)}>
+                  <div className="no-print mt-4 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => onEdit(l)}
+                    >
                       Edit
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-red-700 hover:bg-red-50"
+                      className="text-red-800 hover:bg-red-50 hover:text-red-900"
                       onClick={() => onDelete(l.id)}
                     >
-                      Delete
+                      Remove
                     </Button>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile cards */}
-      <ul className="space-y-2.5 lg:hidden">
-        {sorted.map((l) => (
-          <li
-            key={l.id}
-            className="rounded-2xl border border-line bg-white p-4 shadow-sm"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-slate-900">
-                  {l.nickname}
-                </p>
-                <p className="mt-0.5 text-[11px] text-slate-500">{l.servicer}</p>
-              </div>
-              <div className="text-right">
-                <p className="tnum text-lg font-bold text-slate-900">
-                  {money(l.balance)}
-                </p>
-                <p className="tnum text-[11px] font-semibold text-slate-600">
-                  {pct(l.rate)}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-              <SubsidyBadge loan={l} />
-              {isPostCutoff(l) && <Badge tone="warn">After Jul 1, 2026</Badge>}
-              <span className="tnum text-[11px] text-slate-500">
-                {niceDate(l.disbursementDate)}
-              </span>
-            </div>
-
-            <div className="mt-3 flex gap-2 border-t border-line pt-3">
-              <Button size="sm" variant="secondary" onClick={() => onEdit(l)}>
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-red-700 hover:bg-red-50"
-                onClick={() => onDelete(l.id)}
-              >
-                Delete
-              </Button>
-            </div>
-          </li>
-        ))}
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </>
   );

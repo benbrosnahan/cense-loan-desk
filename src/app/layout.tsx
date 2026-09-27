@@ -1,8 +1,20 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+// Two faces, shared with Decode so the Cense tools read as one family.
+// Bricolage carries headlines and headline figures. Instrument Sans carries
+// everything that gets read or compared, and has true tabular figures.
+const display = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+const sans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Loan Desk by Cense — every student loan you have, in one place",
@@ -21,12 +33,18 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#FFFCEC",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans`}>
+      <body className={`${display.variable} ${sans.variable} font-sans`}>
         <noscript>
           <div style={{ padding: "2rem", textAlign: "center" }}>
             Loan Desk needs JavaScript to run. Please enable it in your browser

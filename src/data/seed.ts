@@ -136,3 +136,15 @@ export function suggestRate(disbursementDate: string): number | null {
     .find((r) => disbursementDate >= r.from);
   return match ? match.rate : null;
 }
+
+/**
+ * School-year shortcuts for the loan form. Picking one fills the payout date
+ * with September 1 of that year, which the borrower can then correct. The
+ * exact date matters for one reason only: a loan paid out on or after
+ * July 1, 2026 changes which repayment plans are open.
+ */
+export const SCHOOL_YEARS: { label: string; date: string }[] =
+  RATE_BY_AWARD_YEAR.map((r) => ({
+    label: r.label,
+    date: `${r.from.slice(0, 4)}-09-01`,
+  }));

@@ -1,0 +1,6 @@
+/node_modules
+/test-results
+/playwright-report
+/results/latest
+/results/*/responsive/
+/results/*/ux/*.jpg

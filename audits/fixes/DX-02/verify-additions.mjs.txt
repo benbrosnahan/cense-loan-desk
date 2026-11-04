@@ -1,0 +1,194 @@
+// ---------------------------------------------------------------------------
+// Proposed additions to verify.mjs. Paste above the "report" section.
+// Every expected value is computed here, independently of src/. Nothing below
+// imports a helper from the app other than the function under test.
+// The three blocks marked KNOWN BUG fail today; they pass once the bug is fixed.
+// DX_KNOWN_BUGS=skip exists only so the audit could measure the mutation score.
+// ---------------------------------------------------------------------------
+const SKIP_KNOWN = process.env.DX_KNOWN_BUGS === "skip";
+
+const loan = (id, bal, rate, date = "2022-09-01", extra = {}) => ({
+  id, nickname: id, servicer: "X", kind: "direct_unsub", subsidy: "unsubsidized",
+  principal: bal, balance: bal, rate, disbursementDate: date, minPayment: 0, ...extra,
+});
+const person = (over = {}) => ({ income: 50000, householdSize: 1, employment: "private",
+  goal: "least_total", extraPerMonth: 0, selectedPlan: null, ...over });
+const planOf = (loans, p, id) => {
+  const ctx = calc.buildContext(loans, p);
+  return calc.estimatePlans(ctx).find((e) => e.id === id);
+};
+
+// ============================================================ 18. IDR totals
+console.log("\n[18] IBR and RAP totals — independent month-by-month schedule");
+{
+  // RAP: 685.209(h)(4) waiver plus (o)(2) match. IBR: unpaid interest is charged.
+  const schedule = (bal0, rate, payment, maxMonths, rap) => {
+    const r = rate / 1200;
+    let bal = bal0, paid = 0, months = 0;
+    while (months < maxMonths && bal > 0.005) {
+      const interest = bal * r;
+      let pay = Math.min(payment, bal + interest);
+      const charged = rap ? Math.min(interest, pay) : interest;
+      bal += charged - pay;
+      const toPrincipal = Math.max(0, pay - charged);
+      if (rap && toPrincipal < 50) bal -= Math.min(50, pay) - toPrincipal;
+      if (bal < 0) { pay += bal; bal = 0; }
+      paid += pay;
+      months++;
+    }
+    return { paid, left: Math.max(0, bal), months, cleared: bal <= 0.005 };
+  };
+  const cases = [[40000, 7, 12000, 1], [40000, 7, 45000, 1], [30000, 6.52, 80000, 2],
+                 [10000, 5, 60000, 1], [90000, 8.05, 45000, 3], [15000, 4.99, 30000, 1]];
+  for (const [bal, rate, income, hh] of cases) {
+    const p = person({ income, householdSize: hh });
+    for (const [id, cap, rap] of [["rap", 360, true], ["ibr", 240, false]]) {
+      const e = planOf([loan("l", bal, rate)], p, id);
+      const s = schedule(bal, rate, e.monthlyPayment, cap, rap);
+      const tag = `${id} $${bal} @${rate}% income ${income} hh ${hh}`;
+      near(`${tag}: total paid`, e.totalPaid, s.paid, 0.01);
+      near(`${tag}: forgiven`, e.forgivenAmount, s.left, 0.01);
+      near(`${tag}: interest`, e.totalInterest, Math.max(0, s.paid - (bal - s.left)), 0.01);
+      near(`${tag}: term`, e.years, s.cleared ? s.months / 12 : cap / 12, 1e-9);
+    }
+  }
+  // Without income the plan stays open and carries its statutory term.
+  const noIncome = person({ income: 0 });
+  ok("RAP without income: no figure, 30 yr", planOf([loan("l", 20000, 6)], noIncome, "rap").monthlyPayment === null
+     && planOf([loan("l", 20000, 6)], noIncome, "rap").years === 30);
+  ok("IBR without income: no figure, 20 yr", planOf([loan("l", 20000, 6)], noIncome, "ibr").years === 20);
+}
+
+// ============================================================ 19. PSLF context
+console.log("\n[19] Context flags that decide the recommendation");
+{
+  for (const [emp, want] of [["government", true], ["nonprofit", true], ["private", false], ["unsure", false]]) {
+    ok(`publicService for ${emp}`, calc.buildContext([loan("l", 1000, 5)], person({ employment: emp })).publicService === want);
+  }
+  ok("hasIncome true at $1", calc.buildContext([loan("l", 1000, 5)], person({ income: 1 })).hasIncome === true);
+  ok("hasIncome false at $0", calc.buildContext([loan("l", 1000, 5)], person({ income: 0 })).hasIncome === false);
+  near("pslfBenchmark is the 10-year payment at the weighted rate",
+       calc.buildContext([loan("a", 10000, 4), loan("b", 30000, 8)], person()).pslfBenchmark,
+       (40000 * (7 / 1200)) / (1 - Math.pow(1 + 7 / 1200, -120)), 0.01);
+  // Graduated crosses the benchmark, so it must be exactly "partial", not merely "not counts".
+  ok("Graduated at ordinary rates is partial",
+     planOf([loan("l", 60000, 6.52)], person(), "graduated").pslf === "partial");
+  // A public servant is warned off a plan that earns nothing, in words and in dollars.
+  const ctx = calc.buildContext([loan("l", 60000, 6.52)], person({ employment: "government", goal: "forgiveness" }));
+  const { ranked } = calc.rankPlans(calc.estimatePlans(ctx), ctx);
+  const top = ranked.find((r) => r.isTopPick).estimate;
+  const ext = ranked.find((r) => r.estimate.id === "extended");
+  ok("whyNot names lost PSLF credit", /earns no forgiveness credit/.test(ext.whyNot), ext.whyNot);
+  const usd = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+  ok("whyNot quotes the real monthly difference",
+     ext.whyNot.includes(usd(ext.estimate.monthlyPayment - top.monthlyPayment)), ext.whyNot);
+  ok("whyNot quotes the real total difference",
+     ext.whyNot.includes(usd(ext.estimate.totalInterest - top.totalInterest)), ext.whyNot);
+}
+
+// ============================================================ 20. payoff engine
+console.log("\n[20] projectPayoff / compareStrategies — the chart and the headline");
+{
+  // Second implementation of the same rules: pro rata required, the rest to the target.
+  const replay = (loans, order, required, extra) => {
+    const bal = Object.fromEntries(loans.map((l) => [l.id, l.balance]));
+    const rate = Object.fromEntries(loans.map((l) => [l.id, l.rate / 1200]));
+    const series = [loans.reduce((s, l) => s + l.balance, 0)];
+    const gone = {};
+    let interest = 0, months = 0;
+    while (months < 600 && Object.values(bal).reduce((a, b) => a + b, 0) > 0.005) {
+      for (const id of order) if (bal[id] > 0) { const i = bal[id] * rate[id]; bal[id] += i; interest += i; }
+      let left = required + extra;
+      const live = order.filter((id) => bal[id] > 0);
+      const liveTotal = live.reduce((s, id) => s + bal[id], 0);
+      const req = Math.min(required, left);
+      const shares = live.map((id) => [id, (bal[id] / liveTotal) * req]);
+      for (const [id, share] of shares) { const p = Math.min(share, bal[id], left); bal[id] -= p; left -= p; }
+      for (const id of order) { if (left <= 0) break; if (bal[id] <= 0) continue; const p = Math.min(bal[id], left); bal[id] -= p; left -= p; }
+      months++;
+      for (const id of order) if (bal[id] <= 0.005 && gone[id] === undefined) gone[id] = months;
+      series.push(order.reduce((s, id) => s + Math.max(0, bal[id]), 0));
+    }
+    return { months, interest, series, gone, cleared: Object.values(bal).every((b) => b <= 0.005) };
+  };
+  const port = [loan("a", 3500, 4.99), loan("b", 2256, 6.53), loan("c", 5500, 6.39), loan("d", 900, 6.39)];
+  const avOrder = ["b", "d", "c", "a"], snOrder = ["d", "b", "a", "c"];
+  ok("avalanche order fixture", ranking.orderLoans(port, "avalanche").map((l) => l.id).join() === avOrder.join());
+  ok("snowball order fixture", ranking.orderLoans(port, "snowball").map((l) => l.id).join() === snOrder.join());
+  for (const [strategy, order] of [["avalanche", avOrder], ["snowball", snOrder]]) {
+    for (const [required, extra] of [[125, 0], [125, 100], [250, 40], [60, 0]]) {
+      const got = ranking.projectPayoff(port, strategy, required, extra);
+      const want = replay(port, order, required, extra);
+      const tag = `${strategy} $${required}+$${extra}`;
+      ok(`${tag}: months`, got.months === want.months, `${got.months} vs ${want.months}`);
+      near(`${tag}: interest`, got.totalInterest, want.interest, 0.01);
+      ok(`${tag}: paid off flag`, got.paidOff === want.cleared);
+      ok(`${tag}: chart has months+1 points`, got.balanceByMonth.length === got.months + 1);
+      near(`${tag}: chart starts at today's balance`, got.balanceByMonth[0], 12156, 0.001);
+      ok(`${tag}: every chart point matches`, got.balanceByMonth.every((v, i) => Math.abs(v - want.series[i]) < 0.01));
+      ok(`${tag}: payoff month per loan`, order.every((id) => got.payoffMonthById[id] === want.gone[id]));
+    }
+  }
+  const cmp = ranking.compareStrategies(port, 125, 100);
+  near("snowballCost is exactly the interest difference", cmp.snowballCost,
+       replay(port, snOrder, 125, 100).interest - replay(port, avOrder, 125, 100).interest, 0.01);
+  ok("monthsDifference is snowball minus avalanche",
+     cmp.monthsDifference === replay(port, snOrder, 125, 100).months - replay(port, avOrder, 125, 100).months);
+  ok("budgetTooLow is false when the debt clears", cmp.budgetTooLow === false);
+  ok("budgetTooLow is true when interest outruns the payment",
+     ranking.compareStrategies([loan("x", 50000, 8)], 100, 0).budgetTooLow === true);
+  ok("negative extra is treated as zero", ranking.projectPayoff(port, "avalanche", 125, -50).months ===
+     ranking.projectPayoff(port, "avalanche", 125, 0).months);
+  // rankLoans: the numbered list the person actually reads.
+  const rl = ranking.rankLoans(port, "avalanche");
+  ok("rankLoans numbers from 1", rl.map((r) => r.rank).join() === "1,2,3,4");
+  ok("rankLoans follows orderLoans", rl.map((r) => r.loan.id).join() === avOrder.join());
+  ok("rankLoans explains the top rate", rl[0].reason.includes("6.53%"));
+  ok("rankLoans flags a same-rate follower", rl[2].reason.startsWith("Also 6.39%"), rl[2].reason);
+}
+
+// ============================================================ 21. plan facts
+console.log("\n[21] Plan constants the UI prints");
+{
+  ok("RAP forgiveness 30 yr", plans.PLAN_META.rap.forgivenessYears === 30);
+  ok("IBR forgiveness 20 yr", plans.PLAN_META.ibr.forgivenessYears === 20);
+  ok("Only IBR and RAP are income-driven",
+     Object.entries(plans.PLAN_META).filter(([, m]) => m.incomeDriven).map(([k]) => k).sort().join() === "ibr,rap");
+  ok("Household 6 is the last table row", plans.getPovertyLine(6) === 44360);
+  ok("Fractional household floors", plans.getPovertyLine(2.9) === 21640);
+  near("RAP dependents use the household count", planOf([loan("l", 30000, 6)], person({ income: 60000, householdSize: 3 }), "rap").monthlyPayment,
+       (60000 * 0.05) / 12 - 100, 0.01);
+  near("IBR uses a floored poverty line for income near the edge",
+       planOf([loan("l", 90000, 6)], person({ income: 30000 }), "ibr").monthlyPayment, ((30000 - 23940) * 0.1) / 12, 0.01);
+  near("Totals ignore a zero-rate loan's interest", calc.amortizedPayment(1200, 0, 10), 10, 1e-9);
+  ok("negative balance is not amortised", calc.amortizedPayment(-5, 6, 10) === 0);
+  near("totalBalance adds from zero", calc.totalBalance([loan("a", 5, 1)]), 5, 1e-9);
+  near("totalPrincipal adds from zero", calc.totalPrincipal([loan("a", 5, 1)]), 5, 1e-9);
+  near("weightedRate of one loan is its rate", calc.weightedRate([loan("a", 500, 6)]), 6, 1e-9);
+}
+
+// ============================================================ 22. known bugs
+console.log("\n[22] Regressions that fail today (see audit findings)");
+if (!SKIP_KNOWN) {
+  // KNOWN BUG dx-tiered-floor-totals: calc.ts:390,410 applies the $50 floor to the
+  // payment but not to the totals.
+  for (const bal of [1000, 2000, 3500, 4000]) {
+    const e = planOf([loan("l", bal, 6.52, "2026-09-01")], person(), "tiered_standard");
+    let b = bal, paid = 0, m = 0;
+    while (b > 0.005) { const i = (b * 6.52) / 1200; const p = Math.min(50, b + i); b += i - p; paid += p; m++; }
+    near(`Tiered $${bal}: total reconciles with $50 a month`, e.totalPaid, paid, 0.5);
+    near(`Tiered $${bal}: term reconciles with $50 a month`, e.years, m / 12, 0.01);
+  }
+  // KNOWN BUG dx-graduated-exceeds-3x-cap: 34 CFR 685.208(b)(6)(iii). Needs finalPayment on the estimate.
+  for (const [bal, rate] of [[11256, 5.98], [27000, 5.5], [27000, 6], [60000, 6.52]]) {
+    const g = planOf([loan("l", bal, rate)], person(), "graduated");
+    ok(`Graduated $${bal} @${rate}%: largest payment within 3x the smallest`,
+       g.finalPayment !== undefined && g.finalPayment <= g.monthlyPayment * 3 + 0.01,
+       `start ${g.monthlyPayment.toFixed(2)}, final ${g.finalPayment}`);
+  }
+  // KNOWN BUG dx-extended-30k-boundary: "more than $30,000", 34 CFR 685.208(b)(4)(i).
+  ok("Extended closed at exactly $30,000", !planOf([loan("l", 30000, 6)], person(), "extended").eligible);
+  // KNOWN BUG dx-zero-payment-dead-end: $0 on IBR is a plan, not the absence of one.
+  ok("a $0 required payment still projects", ranking.projectPayoff(port0(), "avalanche", 0, 100) !== null);
+  function port0() { return [loan("x", 5000, 6)]; }
+}

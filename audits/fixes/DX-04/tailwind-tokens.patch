@@ -1,0 +1,1486 @@
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 6d7641f..7b74e3e 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -8,8 +8,8 @@ html {
+ }
+ 
+ body {
+-  color: #275b2d;
+-  background: #fffcec;
++  color: theme("colors.brand.DEFAULT");
++  background: theme("colors.page");
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+ }
+@@ -95,19 +95,19 @@ body {
+   border-radius: 999px;
+   background: linear-gradient(
+     to right,
+-    #26602d 0 var(--fill, 0%),
+-    #dce7d8 var(--fill, 0%) 100%
++    theme("colors.chart.green") 0 var(--fill, 0%),
++    theme("colors.line") var(--fill, 0%) 100%
+   );
+ }
+ .range::-moz-range-track {
+   height: 8px;
+   border-radius: 999px;
+-  background: #dce7d8;
++  background: theme("colors.line");
+ }
+ .range::-moz-range-progress {
+   height: 8px;
+   border-radius: 999px;
+-  background: #26602d;
++  background: theme("colors.chart.green");
+ }
+ .range::-webkit-slider-thumb {
+   -webkit-appearance: none;
+@@ -117,7 +117,7 @@ body {
+   margin-top: -10px;
+   border-radius: 999px;
+   background: #fff;
+-  border: 3px solid #26602d;
++  border: 3px solid theme("colors.chart.green");
+   box-shadow: 0 2px 6px rgba(39, 91, 45, 0.3);
+ }
+ .range::-moz-range-thumb {
+@@ -125,15 +125,15 @@ body {
+   height: 22px;
+   border-radius: 999px;
+   background: #fff;
+-  border: 3px solid #26602d;
++  border: 3px solid theme("colors.chart.green");
+   box-shadow: 0 2px 6px rgba(39, 91, 45, 0.3);
+ }
+ .range:focus-visible::-webkit-slider-thumb {
+-  outline: 3px solid #275b2d;
++  outline: 3px solid theme("colors.brand.DEFAULT");
+   outline-offset: 3px;
+ }
+ .range:focus-visible::-moz-range-thumb {
+-  outline: 3px solid #275b2d;
++  outline: 3px solid theme("colors.brand.DEFAULT");
+   outline-offset: 3px;
+ }
+ 
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..9ec3fbd 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -295,8 +295,8 @@ export default function Page() {
+     return (
+       <main className="min-h-screen bg-page">
+         <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+-          <div className="h-7 w-32 animate-pulse rounded-full bg-slate-200" />
+-          <div className="mt-8 h-44 animate-pulse rounded-3xl bg-slate-200/70" />
++          <div className="h-7 w-32 animate-pulse rounded-full bg-forest-200" />
++          <div className="mt-8 h-44 animate-pulse rounded-3xl bg-forest-200/70" />
+         </div>
+       </main>
+     );
+@@ -315,7 +315,7 @@ export default function Page() {
+     >
+       <a
+         href="#main"
+-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-navy focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
++        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+       >
+         Skip to content
+       </a>
+@@ -327,12 +327,12 @@ export default function Page() {
+           <span className="font-display text-lg font-bold text-accent-hover sm:text-xl">
+             Cense
+           </span>
+-          <h1 className="font-display text-lg font-bold text-slate-900 sm:text-xl">
++          <h1 className="font-display text-lg font-bold text-forest-900 sm:text-xl">
+             Loan Desk
+           </h1>
+         </div>
+         <div className="flex flex-shrink-0 items-center gap-1">
+-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-light px-3 py-1.5 text-xs font-semibold text-slate-800">
++          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-light px-3 py-1.5 text-xs font-semibold text-forest-800">
+             <LockIcon />
+             <span className="sm:hidden">On your device</span>
+             <span className="hidden sm:inline">Stays on this device</span>
+@@ -342,7 +342,7 @@ export default function Page() {
+               type="button"
+               aria-pressed={hideAmounts}
+               onClick={() => setHideAmounts((v) => !v)}
+-              className="no-print flex h-11 w-11 items-center justify-center rounded-full text-slate-800 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
++              className="no-print flex h-11 w-11 items-center justify-center rounded-full text-forest-800 transition-colors hover:bg-forest-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+             >
+               <EyeIcon off={hideAmounts} />
+               <span className="sr-only">Hide dollar amounts</span>
+@@ -355,10 +355,10 @@ export default function Page() {
+         {/* ---------- First run ---------- */}
+         {empty && (
+           <div className="rise pt-10 sm:pt-16">
+-            <h2 className="text-balance font-display text-[2.3rem] font-bold leading-[1.04] tracking-tight text-slate-900 sm:text-6xl">
++            <h2 className="text-balance font-display text-[2.3rem] font-bold leading-[1.04] tracking-tight text-forest-900 sm:text-6xl">
+               Every loan you have, on one screen.
+             </h2>
+-            <p className="mt-4 max-w-xl text-pretty text-lg leading-relaxed text-slate-700">
++            <p className="mt-4 max-w-xl text-pretty text-lg leading-relaxed text-forest-700">
+               Four years of school usually means eight separate federal loans,
+               and nowhere that shows them together. Add yours once to see what
+               you owe, which repayment plans you can actually use, and what
+@@ -395,31 +395,31 @@ export default function Page() {
+               <div className="mt-10 grid gap-3 sm:grid-cols-2">
+                 <Card className="p-5">
+                   <Eyebrow>What you will need</Eyebrow>
+-                  <p className="mt-2 text-base leading-relaxed text-slate-800">
++                  <p className="mt-2 text-base leading-relaxed text-forest-800">
+                     For each loan: what you owe, the interest rate, and the date
+                     it was paid out. All three are at{" "}
+                     <a
+                       href="https://studentaid.gov"
+                       target="_blank"
+                       rel="noopener noreferrer"
+-                      className="font-semibold text-navy underline underline-offset-2 hover:text-navy-hover"
++                      className="font-semibold text-brand underline underline-offset-2 hover:text-brand-hover"
+                     >
+                       studentaid.gov
+                     </a>{" "}
+                     under <strong>My Aid</strong>.
+                   </p>
+-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
++                  <p className="mt-2 text-sm leading-relaxed text-forest-600">
+                     Not near your login? Start with the example loans and swap
+                     in your own numbers later.
+                   </p>
+                 </Card>
+                 <Card className="p-5">
+                   <Eyebrow>What stays private</Eyebrow>
+-                  <p className="mt-2 text-base leading-relaxed text-slate-800">
++                  <p className="mt-2 text-base leading-relaxed text-forest-800">
+                     All of it. There is no account and no server. What you type
+                     is saved in this browser and goes nowhere else.
+                   </p>
+-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
++                  <p className="mt-2 text-sm leading-relaxed text-forest-600">
+                     Nothing here is for sale, and nothing is trying to
+                     refinance you.
+                   </p>
+@@ -452,10 +452,10 @@ export default function Page() {
+ 
+             <section aria-label="Summary" className="pt-7 sm:pt-10">
+               <Eyebrow>You owe</Eyebrow>
+-              <p className="figure mt-1 text-[3.5rem] font-bold leading-none text-slate-900 sm:text-7xl">
++              <p className="figure mt-1 text-[3.5rem] font-bold leading-none text-forest-900 sm:text-7xl">
+                 <Money value={balance} tabular={false} />
+               </p>
+-              <p className="mt-2 text-base text-slate-700">
++              <p className="mt-2 text-base text-forest-700">
+                 across {loans.length} loan{loans.length === 1 ? "" : "s"}
+                 {servicerCount > 0 &&
+                   ` with ${servicerCount} servicer${
+@@ -464,7 +464,7 @@ export default function Page() {
+                 {selectedEstimate && (
+                   <>
+                     {" · "}
+-                    <strong className="font-semibold text-slate-900">
++                    <strong className="font-semibold text-forest-900">
+                       <Money value={selectedEstimate.monthlyPayment} /> a month
+                     </strong>{" "}
+                     on {PLAN_META[selectedEstimate.id].name}
+@@ -483,18 +483,18 @@ export default function Page() {
+                     />
+                     <div className="flex-1 bg-chart-orange" />
+                   </div>
+-                  <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-700">
++                  <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-forest-700">
+                     <div className="flex items-center gap-1.5">
+                       <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-chart-green" />
+                       <dt>Borrowed</dt>
+-                      <dd className="font-semibold text-slate-900">
++                      <dd className="font-semibold text-forest-900">
+                         <Money value={principal} />
+                       </dd>
+                     </div>
+                     <div className="flex items-center gap-1.5">
+                       <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-chart-orange" />
+                       <dt>Interest added so far</dt>
+-                      <dd className="font-semibold text-slate-900">
++                      <dd className="font-semibold text-forest-900">
+                         <Money value={interest} />
+                       </dd>
+                     </div>
+@@ -522,10 +522,10 @@ export default function Page() {
+                   aria-current={tab === t.id ? "page" : undefined}
+                   className={cn(
+                     "min-h-[44px] rounded-full px-1 text-sm font-semibold transition-colors sm:text-base",
+-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-1",
++                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1",
+                     tab === t.id
+-                      ? "bg-navy text-white"
+-                      : "text-slate-800 hover:bg-slate-100 hover:text-slate-900"
++                      ? "bg-brand text-white"
++                      : "text-forest-800 hover:bg-forest-100 hover:text-forest-900"
+                   )}
+                 >
+                   <span className="sm:hidden">{t.label}</span>
+@@ -580,7 +580,7 @@ export default function Page() {
+ 
+                   <div>
+                     <div className="flex items-center justify-between gap-2 px-1">
+-                      <h2 className="font-display text-2xl font-bold text-slate-900">
++                      <h2 className="font-display text-2xl font-bold text-forest-900">
+                         {loans.length === 1
+                           ? "Your loan"
+                           : `Your ${loans.length} loans`}
+@@ -594,7 +594,7 @@ export default function Page() {
+                     {/* Works at any count. The old copy said "four years
+                         usually means eight", which invited "so why do I have
+                         seven?" from anyone whose number was different. */}
+-                    <p className="mt-1 px-1 text-sm leading-relaxed text-slate-700">
++                    <p className="mt-1 px-1 text-sm leading-relaxed text-forest-700">
+                       {loans.length === 1
+                         ? "If you were in school more than a year, there are probably more at studentaid.gov. Most people get a separate loan each year."
+                         : "They all move together on one repayment plan, but they do not all cost the same."}
+@@ -655,7 +655,7 @@ export default function Page() {
+                           Clear saved records
+                         </Button>
+                       </div>
+-                      <p className="mt-2 text-sm text-slate-600">
++                      <p className="mt-2 text-sm text-forest-600">
+                         This removes the data from this browser. It was never
+                         anywhere else.
+                       </p>
+@@ -668,16 +668,16 @@ export default function Page() {
+               {tab === "plans" && (
+                 <div className="space-y-5">
+                   <Card className="p-5 sm:p-7">
+-                    <h2 className="font-display text-2xl font-bold leading-tight text-slate-900">
++                    <h2 className="font-display text-2xl font-bold leading-tight text-forest-900">
+                       Four questions, so the plans fit you
+                     </h2>
+-                    <p className="mt-1.5 text-base leading-relaxed text-slate-700">
++                    <p className="mt-1.5 text-base leading-relaxed text-forest-700">
+                       Rough answers are fine. Skip any you are not sure about.
+                     </p>
+ 
+                     <div className="mt-6 space-y-6">
+                       <div>
+-                        <p className="text-sm font-bold text-slate-900">
++                        <p className="text-sm font-bold text-forest-900">
+                           What matters most to you?
+                         </p>
+                         <ChoiceGroup
+@@ -691,13 +691,13 @@ export default function Page() {
+                             (k) => ({ value: k, label: GOAL_LABELS[k] })
+                           )}
+                         />
+-                        <p className="mt-2 text-sm text-slate-600" aria-live="polite">
++                        <p className="mt-2 text-sm text-forest-600" aria-live="polite">
+                           {GOAL_HINTS[profile.goal]}
+                         </p>
+                       </div>
+ 
+                       <div>
+-                        <p className="text-sm font-bold text-slate-900">
++                        <p className="text-sm font-bold text-forest-900">
+                           Who do you work for, or expect to?
+                         </p>
+                         <ChoiceGroup
+@@ -714,7 +714,7 @@ export default function Page() {
+                             label: EMPLOYMENT_LABELS[k],
+                           }))}
+                         />
+-                        <p className="mt-2 text-sm text-slate-600" aria-live="polite">
++                        <p className="mt-2 text-sm text-forest-600" aria-live="polite">
+                           {EMPLOYMENT_HINTS[profile.employment]}
+                         </p>
+                       </div>
+@@ -794,7 +794,7 @@ export default function Page() {
+                       onClick={() => goTo("order")}
+                     />
+                   ) : (
+-                    <p className="rounded-3xl border border-dashed border-slate-300 px-5 py-4 text-center text-sm text-slate-700">
++                    <p className="rounded-3xl border border-dashed border-forest-300 px-5 py-4 text-center text-sm text-forest-700">
+                       Choose a plan above and your debt-free date comes next.
+                     </p>
+                   )}
+@@ -837,19 +837,19 @@ export default function Page() {
+         )}
+ 
+         <footer className="mt-14 border-t border-line pt-6">
+-          <p className="text-sm font-semibold leading-relaxed text-slate-800">
++          <p className="text-sm font-semibold leading-relaxed text-forest-800">
+             {PRIVACY_NOTE}
+           </p>
+-          <p className="mt-2 text-sm leading-relaxed text-slate-600">
++          <p className="mt-2 text-sm leading-relaxed text-forest-600">
+             {NOT_ADVICE}
+           </p>
+-          <p className="mt-2 text-sm text-slate-600">
++          <p className="mt-2 text-sm text-forest-600">
+             Built by{" "}
+             <a
+               href="https://cense.beehiiv.com"
+               target="_blank"
+               rel="noopener noreferrer"
+-              className="font-semibold text-navy underline underline-offset-2 hover:text-navy-hover"
++              className="font-semibold text-brand underline underline-offset-2 hover:text-brand-hover"
+             >
+               Cense
+             </a>
+diff --git a/src/components/charts/PayoffRunway.tsx b/src/components/charts/PayoffRunway.tsx
+index 9c3dc5c..f4faa7b 100644
+--- a/src/components/charts/PayoffRunway.tsx
++++ b/src/components/charts/PayoffRunway.tsx
+@@ -26,11 +26,6 @@ interface Props {
+   className?: string;
+ }
+ 
+-const GREEN = "#26602D";
+-const BASELINE = "#5C7F5F";
+-const GRID = "#E4ECE0";
+-const AXIS_TEXT = "#4A6E4D";
+-
+ const H = 232;
+ const PAD = { top: 14, right: 14, bottom: 30, left: 4 };
+ 
+@@ -140,10 +135,10 @@ export default function PayoffRunway({
+   return (
+     <figure className={cn("m-0", className)}>
+       {/* Legend. Carries the dates, so the chart needs no labels that collide. */}
+-      <ul className="flex flex-col gap-1.5 text-sm text-slate-800">
++      <ul className="flex flex-col gap-1.5 text-sm text-forest-800">
+         <li className="flex items-center gap-2.5">
+           <svg aria-hidden width="28" height="10" className="flex-shrink-0">
+-            <line x1="1" y1="5" x2="27" y2="5" stroke={GREEN} strokeWidth="3" strokeLinecap="round" />
++            <line x1="1" y1="5" x2="27" y2="5" className="stroke-chart-green" strokeWidth="3" strokeLinecap="round" />
+           </svg>
+           <span>
+             {extra > 0 ? (
+@@ -153,7 +148,7 @@ export default function PayoffRunway({
+             ) : (
+               "Required payment only:"
+             )}{" "}
+-            <strong className="tnum font-semibold text-slate-900">
++            <strong className="tnum font-semibold text-forest-900">
+               done {shortMonthYearFromNow(monthsMain, now)}
+             </strong>
+           </span>
+@@ -161,11 +156,11 @@ export default function PayoffRunway({
+         {showBase && (
+           <li className="flex items-center gap-2.5">
+             <svg aria-hidden width="28" height="10" className="flex-shrink-0">
+-              <line x1="1" y1="5" x2="27" y2="5" stroke={BASELINE} strokeWidth="2" strokeDasharray="5 4" />
++              <line x1="1" y1="5" x2="27" y2="5" className="stroke-forest-500" strokeWidth="2" strokeDasharray="5 4" />
+             </svg>
+             <span>
+               Required payment only:{" "}
+-              <strong className="tnum font-semibold text-slate-900">
++              <strong className="tnum font-semibold text-forest-900">
+                 done {shortMonthYearFromNow(monthsBase, now)}
+               </strong>
+             </span>
+@@ -202,30 +197,28 @@ export default function PayoffRunway({
+             {/* Gridlines: hairline, solid, recessive */}
+             {yTicks.map((t) => (
+               <g key={t}>
+-                <line x1={PAD.left} x2={width - PAD.right} y1={y(t)} y2={y(t)} stroke={GRID} strokeWidth="1" />
++                <line x1={PAD.left} x2={width - PAD.right} y1={y(t)} y2={y(t)} className="stroke-chart-grid" strokeWidth="1" />
+                 <text
+                   x={PAD.left}
+                   y={y(t) - 6}
+                   fontSize="13"
+-                  fill={AXIS_TEXT}
+-                  className="amt tnum"
++                  className="amt tnum fill-forest-600"
+                 >
+                   {compactMoney(t)}
+                 </text>
+               </g>
+             ))}
+-            <line x1={PAD.left} x2={width - PAD.right} y1={y(0)} y2={y(0)} stroke="#BFDCB8" strokeWidth="1" />
++            <line x1={PAD.left} x2={width - PAD.right} y1={y(0)} y2={y(0)} className="stroke-brand-border" strokeWidth="1" />
+ 
+             {yearTicks.map((t) => (
+               <g key={t.m}>
+-                <line x1={x(t.m)} x2={x(t.m)} y1={y(0)} y2={y(0) + 5} stroke="#BFDCB8" strokeWidth="1" />
++                <line x1={x(t.m)} x2={x(t.m)} y1={y(0)} y2={y(0) + 5} className="stroke-brand-border" strokeWidth="1" />
+                 <text
+                   x={x(t.m)}
+                   y={H - 8}
+                   fontSize="13"
+-                  fill={AXIS_TEXT}
+                   textAnchor="middle"
+-                  className="tnum"
++                  className="tnum fill-forest-600"
+                 >
+                   {t.label}
+                 </text>
+@@ -238,12 +231,12 @@ export default function PayoffRunway({
+                 <path
+                   d={path(requiredOnly)}
+                   fill="none"
+-                  stroke={BASELINE}
++                  className="stroke-forest-500"
+                   strokeWidth="2"
+                   strokeDasharray="5 4"
+                   strokeLinejoin="round"
+                 />
+-                <circle cx={x(monthsBase)} cy={y(0)} r="5" fill={BASELINE} stroke="#fff" strokeWidth="2" />
++                <circle cx={x(monthsBase)} cy={y(0)} r="5" className="fill-forest-500" stroke="white" strokeWidth="2" />
+               </>
+             )}
+ 
+@@ -251,26 +244,26 @@ export default function PayoffRunway({
+               d={`${path(withExtra)}L${x(monthsMain).toFixed(1)},${y(0).toFixed(
+                 1
+               )}L${x(0).toFixed(1)},${y(0).toFixed(1)}Z`}
+-              fill={GREEN}
++              className="fill-chart-green"
+               opacity="0.1"
+             />
+             <path
+               d={path(withExtra)}
+               fill="none"
+-              stroke={GREEN}
++              className="stroke-chart-green"
+               strokeWidth="2.5"
+               strokeLinejoin="round"
+               strokeLinecap="round"
+             />
+-            <circle cx={x(monthsMain)} cy={y(0)} r="6" fill={GREEN} stroke="#fff" strokeWidth="2" />
++            <circle cx={x(monthsMain)} cy={y(0)} r="6" className="fill-chart-green" stroke="white" strokeWidth="2" />
+ 
+             {hover !== null && (
+               <g pointerEvents="none">
+-                <line x1={x(hover)} x2={x(hover)} y1={PAD.top} y2={y(0)} stroke="#8CA98E" strokeWidth="1" />
++                <line x1={x(hover)} x2={x(hover)} y1={PAD.top} y2={y(0)} className="stroke-forest-400" strokeWidth="1" />
+                 {showBase && (
+-                  <circle cx={x(hover)} cy={y(at(requiredOnly, hover) ?? 0)} r="4.5" fill={BASELINE} stroke="#fff" strokeWidth="2" />
++                  <circle cx={x(hover)} cy={y(at(requiredOnly, hover) ?? 0)} r="4.5" className="fill-forest-500" stroke="white" strokeWidth="2" />
+                 )}
+-                <circle cx={x(hover)} cy={y(at(withExtra, hover) ?? 0)} r="5" fill={GREEN} stroke="#fff" strokeWidth="2" />
++                <circle cx={x(hover)} cy={y(at(withExtra, hover) ?? 0)} r="5" className="fill-chart-green" stroke="white" strokeWidth="2" />
+               </g>
+             )}
+           </svg>
+@@ -282,21 +275,21 @@ export default function PayoffRunway({
+             className="pointer-events-none absolute top-0 z-10 w-44 -translate-x-1/2 rounded-2xl border border-line bg-white px-3 py-2 shadow-lift"
+             style={{ left: tipLeft }}
+           >
+-            <p className="tnum text-xs font-semibold text-slate-600">
++            <p className="tnum text-xs font-semibold text-forest-600">
+               {shortMonthYearFromNow(hover, now)}
+             </p>
+             <p className="mt-0.5 flex items-baseline justify-between gap-2 text-sm">
+-              <span className="text-slate-700">
++              <span className="text-forest-700">
+                 {extra > 0 ? "With extra" : "You owe"}
+               </span>
+-              <span className="amt tnum font-bold text-slate-900">
++              <span className="amt tnum font-bold text-forest-900">
+                 {money(at(withExtra, hover))}
+               </span>
+             </p>
+             {showBase && (
+               <p className="flex items-baseline justify-between gap-2 text-sm">
+-                <span className="text-slate-700">Required only</span>
+-                <span className="amt tnum font-semibold text-slate-800">
++                <span className="text-forest-700">Required only</span>
++                <span className="amt tnum font-semibold text-forest-800">
+                   {money(at(requiredOnly, hover))}
+                 </span>
+               </p>
+@@ -316,7 +309,7 @@ export default function PayoffRunway({
+       >
+         <div className="overflow-x-auto rounded-2xl border border-line">
+           <table className="w-full text-left text-sm">
+-            <thead className="bg-slate-50 text-xs uppercase tracking-[0.08em] text-slate-700">
++            <thead className="bg-forest-50 text-xs uppercase tracking-[0.08em] text-forest-700">
+               <tr>
+                 <th scope="col" className="px-3.5 py-2.5 font-semibold">When</th>
+                 <th scope="col" className="px-3.5 py-2.5 text-right font-semibold">
+@@ -332,14 +325,14 @@ export default function PayoffRunway({
+             <tbody className="divide-y divide-line">
+               {rows.map((m) => (
+                 <tr key={m}>
+-                  <th scope="row" className="tnum px-3.5 py-2.5 font-normal text-slate-800">
++                  <th scope="row" className="tnum px-3.5 py-2.5 font-normal text-forest-800">
+                     {m === 0 ? "Today" : shortMonthYearFromNow(m, now)}
+                   </th>
+-                  <td className="px-3.5 py-2.5 text-right font-semibold text-slate-900">
++                  <td className="px-3.5 py-2.5 text-right font-semibold text-forest-900">
+                     <Money value={at(withExtra, m)} />
+                   </td>
+                   {showBase && (
+-                    <td className="px-3.5 py-2.5 text-right text-slate-800">
++                    <td className="px-3.5 py-2.5 text-right text-forest-800">
+                       <Money value={at(requiredOnly, m)} />
+                     </td>
+                   )}
+diff --git a/src/components/history/HistoryPanel.tsx b/src/components/history/HistoryPanel.tsx
+index 2dfda68..42f482a 100644
+--- a/src/components/history/HistoryPanel.tsx
++++ b/src/components/history/HistoryPanel.tsx
+@@ -52,10 +52,10 @@ export default function HistoryPanel({
+     <div className="space-y-5">
+       <FadeIn>
+         <Card className="p-5 sm:p-7">
+-          <h2 className="font-display text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
++          <h2 className="font-display text-2xl font-bold leading-tight text-forest-900 sm:text-3xl">
+             Your own record, dated
+           </h2>
+-          <p className="mt-2 text-base leading-relaxed text-slate-700">
++          <p className="mt-2 text-base leading-relaxed text-forest-700">
+             In March 2026 the Government Accountability Office found that four of
+             the five federal loan servicers missed accuracy standards, and that
+             accuracy evaluations had been paused since February 2025. A dated
+@@ -75,7 +75,7 @@ export default function HistoryPanel({
+               {busy ? "Preparing…" : "Download as a spreadsheet"}
+             </Button>
+           </div>
+-          <p className="mt-3 text-sm leading-relaxed text-slate-600">
++          <p className="mt-3 text-sm leading-relaxed text-forest-600">
+             A snapshot stores every loan exactly as it stands right now, on this
+             device. The spreadsheet is the copy you keep outside the browser.
+             {!sorted.length &&
+@@ -85,11 +85,11 @@ export default function HistoryPanel({
+       </FadeIn>
+ 
+       {!sorted.length && (
+-        <div className="rounded-3xl border border-dashed border-slate-300 px-5 py-8 text-center">
+-          <p className="font-display text-xl font-bold text-slate-900">
++        <div className="rounded-3xl border border-dashed border-forest-300 px-5 py-8 text-center">
++          <p className="font-display text-xl font-bold text-forest-900">
+             No snapshots yet
+           </p>
+-          <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-slate-700">
++          <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-forest-700">
+             Save one now to start the record. After your servicer next updates
+             your balances, save another, and this page will show what changed.
+           </p>
+@@ -106,16 +106,16 @@ export default function HistoryPanel({
+               <div className="flex flex-wrap items-baseline justify-between gap-2">
+                 <div className="flex items-center gap-2">
+                   <Badge tone="neutral">#{number}</Badge>
+-                  <p className="tnum text-base font-bold text-slate-900">
++                  <p className="tnum text-base font-bold text-forest-900">
+                     {niceDateTime(snap.takenAt)}
+                   </p>
+                 </div>
+                 <Money
+                   value={snap.totalBalance}
+-                  className="text-xl font-bold text-slate-900"
++                  className="text-xl font-bold text-forest-900"
+                 />
+               </div>
+-              <p className="mt-0.5 text-sm text-slate-600">
++              <p className="mt-0.5 text-sm text-forest-600">
+                 {snap.loans.length} loan{snap.loans.length === 1 ? "" : "s"} on
+                 record
+               </p>
+@@ -123,7 +123,7 @@ export default function HistoryPanel({
+               {older && (
+                 <div className="mt-4 border-t border-line pt-4">
+                   {diff.length === 0 ? (
+-                    <p className="text-sm text-slate-700">
++                    <p className="text-sm text-forest-700">
+                       Nothing changed since {niceDateTime(older.takenAt)}.
+                     </p>
+                   ) : (
+@@ -135,7 +135,7 @@ export default function HistoryPanel({
+                             key={`${d.nickname}-${d.field}-${j}`}
+                             className="flex flex-wrap items-baseline gap-x-2 text-sm"
+                           >
+-                            <span className="font-semibold text-slate-900">
++                            <span className="font-semibold text-forest-900">
+                               {d.nickname}
+                             </span>
+                             {d.kind === "added" && (
+@@ -150,10 +150,10 @@ export default function HistoryPanel({
+                             )}
+                             {d.kind === "changed" && (
+                               <>
+-                                <span className="text-slate-700">
++                                <span className="text-forest-700">
+                                   {d.field === "rate" ? "rate" : "balance"}
+                                 </span>
+-                                <span className="tnum font-semibold text-slate-900">
++                                <span className="tnum font-semibold text-forest-900">
+                                   {d.field === "rate" ? (
+                                     `${pct(d.before)} → ${pct(d.after)}`
+                                   ) : (
+diff --git a/src/components/loans/LoanForm.tsx b/src/components/loans/LoanForm.tsx
+index 4a2cdd7..b0986f0 100644
+--- a/src/components/loans/LoanForm.tsx
++++ b/src/components/loans/LoanForm.tsx
+@@ -226,23 +226,23 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+       }}
+       noValidate
+       aria-labelledby="loanform-title"
+-      className="unfold scroll-mt-24 rounded-3xl border-2 border-navy bg-white p-5 shadow-lift sm:p-7"
++      className="unfold scroll-mt-24 rounded-3xl border-2 border-brand bg-white p-5 shadow-lift sm:p-7"
+     >
+       <h3
+         id="loanform-title"
+         tabIndex={-1}
+         data-autofocus
+-        className="font-display text-2xl font-bold leading-tight text-slate-900 focus:outline-none"
++        className="font-display text-2xl font-bold leading-tight text-forest-900 focus:outline-none"
+       >
+         {initial ? "Edit this loan" : "Add a loan"}
+       </h3>
+-      <p className="mt-1 text-sm leading-relaxed text-slate-700">
++      <p className="mt-1 text-sm leading-relaxed text-forest-700">
+         Find these on{" "}
+         <a
+           href="https://studentaid.gov"
+           target="_blank"
+           rel="noopener noreferrer"
+-          className="font-semibold text-navy underline underline-offset-2 hover:text-navy-hover"
++          className="font-semibold text-brand underline underline-offset-2 hover:text-brand-hover"
+         >
+           studentaid.gov
+         </a>{" "}
+@@ -252,7 +252,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+       <div className="mt-6 space-y-6">
+         {/* ---- When ---- */}
+         <fieldset>
+-          <legend className="text-sm font-bold text-slate-900">
++          <legend className="text-sm font-bold text-forest-900">
+             Which school year was it for?
+           </legend>
+           <div className="mt-2 flex flex-wrap gap-2">
+@@ -269,10 +269,10 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+                   }}
+                   className={cn(
+                     "tnum min-h-[44px] rounded-full border px-4 text-sm font-semibold transition-colors",
+-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2",
++                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
+                     active
+-                      ? "border-navy bg-navy text-white"
+-                      : "border-slate-300 bg-white text-slate-900 hover:border-navy hover:bg-slate-100"
++                      ? "border-brand bg-brand text-white"
++                      : "border-forest-300 bg-white text-forest-900 hover:border-brand hover:bg-forest-100"
+                   )}
+                 >
+                   {y.label}
+@@ -309,7 +309,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+ 
+         {/* ---- Type ---- */}
+         <div>
+-          <p className="text-sm font-bold text-slate-900">What type is it?</p>
++          <p className="text-sm font-bold text-forest-900">What type is it?</p>
+           <ChoiceGroup
+             className="mt-2"
+             label="Loan type"
+@@ -318,7 +318,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+             onChange={setKind}
+             columns={2}
+           />
+-          <p className="mt-2 text-sm leading-snug text-slate-700" aria-live="polite">
++          <p className="mt-2 text-sm leading-snug text-forest-700" aria-live="polite">
+             {LOAN_KIND_HINTS[f.kind]}
+           </p>
+         </div>
+@@ -363,7 +363,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+                   {suggested}%.{" "}
+                   <button
+                     type="button"
+-                    className="font-semibold text-navy underline underline-offset-2 hover:text-navy-hover"
++                    className="font-semibold text-brand underline underline-offset-2 hover:text-brand-hover"
+                     onClick={() => {
+                       set("rate", String(suggested));
+                       setRateIsAuto(true);
+diff --git a/src/components/loans/LoanList.tsx b/src/components/loans/LoanList.tsx
+index b292296..b4eeb8d 100644
+--- a/src/components/loans/LoanList.tsx
++++ b/src/components/loans/LoanList.tsx
+@@ -45,15 +45,15 @@ export default function LoanList({ loans, onEdit, onDelete }: Props) {
+                 onClick={() => setOpenId(open ? null : l.id)}
+                 className={cn(
+                   "flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors",
+-                  "focus:outline-none focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-navy",
+-                  open ? "bg-slate-50/70" : "hover:bg-slate-50/70"
++                  "focus:outline-none focus-visible:bg-forest-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand",
++                  open ? "bg-forest-50/70" : "hover:bg-forest-50/70"
+                 )}
+               >
+                 <span className="min-w-0 flex-1">
+-                  <span className="block truncate text-base font-semibold text-slate-900">
++                  <span className="block truncate text-base font-semibold text-forest-900">
+                     {l.nickname}
+                   </span>
+-                  <span className="tnum mt-0.5 block truncate text-sm text-slate-600">
++                  <span className="tnum mt-0.5 block truncate text-sm text-forest-600">
+                     {LOAN_KIND_SHORT[l.kind]} · {pct(l.rate)}
+                     <span className="hidden sm:inline print:inline">
+                       {" · "}
+@@ -65,36 +65,36 @@ export default function LoanList({ loans, onEdit, onDelete }: Props) {
+                 <span className="text-right">
+                   <Money
+                     value={l.balance}
+-                    className="block text-base font-bold text-slate-900"
++                    className="block text-base font-bold text-forest-900"
+                   />
+                 </span>
+-                <Chevron open={open} className="no-print text-slate-500" />
++                <Chevron open={open} className="no-print text-forest-500" />
+               </button>
+ 
+               {open && (
+-                <div id={panelId} className="bg-slate-50/70 px-4 pb-4">
++                <div id={panelId} className="bg-forest-50/70 px-4 pb-4">
+                   <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-3.5 text-sm">
+                     <div>
+-                      <dt className="text-slate-600">You pay</dt>
+-                      <dd className="font-semibold text-slate-900">
++                      <dt className="text-forest-600">You pay</dt>
++                      <dd className="font-semibold text-forest-900">
+                         {l.servicer}
+                       </dd>
+                     </div>
+                     <div>
+-                      <dt className="text-slate-600">Paid out</dt>
+-                      <dd className="tnum font-semibold text-slate-900">
++                      <dt className="text-forest-600">Paid out</dt>
++                      <dd className="tnum font-semibold text-forest-900">
+                         {niceDate(l.disbursementDate)}
+                       </dd>
+                     </div>
+                     <div>
+-                      <dt className="text-slate-600">First borrowed</dt>
+-                      <dd className="font-semibold text-slate-900">
++                      <dt className="text-forest-600">First borrowed</dt>
++                      <dd className="font-semibold text-forest-900">
+                         <Money value={l.principal} />
+                       </dd>
+                     </div>
+                     <div>
+-                      <dt className="text-slate-600">Interest added so far</dt>
+-                      <dd className="font-semibold text-slate-900">
++                      <dt className="text-forest-600">Interest added so far</dt>
++                      <dd className="font-semibold text-forest-900">
+                         <Money value={interestSoFar(l)} />
+                       </dd>
+                     </div>
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..5e276fe 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -66,11 +66,11 @@ function Measure({
+   return (
+     <div>
+       <div className="flex items-baseline justify-between gap-2">
+-        <span className="text-sm text-slate-700">{label}</span>
+-        <span className="text-base font-bold text-slate-900">
++        <span className="text-sm text-forest-700">{label}</span>
++        <span className="text-base font-bold text-forest-900">
+           {value === null ? "—" : <Money value={value} />}
+           {note && (
+-            <span className="ml-1 text-xs font-normal text-slate-600">
++            <span className="ml-1 text-xs font-normal text-forest-600">
+               {note}
+             </span>
+           )}
+@@ -80,7 +80,7 @@ function Measure({
+         <div
+           className={cn(
+             "h-full rounded-r-full transition-[width] duration-300 ease-out",
+-            emphasis ? "bg-chart-green" : "bg-slate-500"
++            emphasis ? "bg-chart-green" : "bg-forest-500"
+           )}
+           style={{ width: `${ratio * 100}%` }}
+         />
+@@ -113,22 +113,22 @@ function PlanRow({
+     <Card
+       className={cn(
+         "overflow-hidden",
+-        selected && "border-navy ring-1 ring-navy"
++        selected && "border-brand ring-1 ring-brand"
+       )}
+     >
+       <div className="p-5 sm:p-6">
+         <div className="flex flex-wrap items-center gap-2">
+-          <h3 className="font-display text-xl font-bold text-slate-900">
++          <h3 className="font-display text-xl font-bold text-forest-900">
+             {meta.name}
+           </h3>
+           {selected && <Badge tone="brand">✓ Your plan</Badge>}
+           {isTopPick && !selected && <Badge tone="accent">Our pick</Badge>}
+         </div>
+-        <p className="mt-0.5 text-sm text-slate-700">{meta.tagline}</p>
++        <p className="mt-0.5 text-sm text-forest-700">{meta.tagline}</p>
+ 
+         {e.monthlyPayment === null && (
+-          <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+-            <p className="text-sm leading-relaxed text-slate-800">
++          <div className="mt-4 rounded-2xl bg-forest-50 p-4">
++            <p className="text-sm leading-relaxed text-forest-800">
+               This plan is priced off what you earn, not what you owe. Add your
+               yearly income and we will work out the payment.
+             </p>
+@@ -186,7 +186,7 @@ function PlanRow({
+         {/* Why this was not the pick. The point is to let someone disagree
+             with us on the merits instead of trusting the badge. */}
+         {plan.whyNot && e.monthlyPayment !== null && (
+-          <p className="mt-3 text-sm leading-relaxed text-slate-700">
++          <p className="mt-3 text-sm leading-relaxed text-forest-700">
+             {plan.whyNot}
+           </p>
+         )}
+@@ -214,9 +214,9 @@ function PlanRow({
+             aria-controls={panelId}
+             onClick={() => setOpen((v) => !v)}
+             className={cn(
+-              "inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-navy",
++              "inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-brand",
+               "transition-colors hover:bg-brand-light",
+-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
++              "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+             )}
+           >
+             <Chevron open={open} />
+@@ -226,27 +226,27 @@ function PlanRow({
+ 
+         {open && (
+           <div id={panelId} className="mt-4 space-y-4">
+-            <p className="text-base leading-relaxed text-slate-800">
++            <p className="text-base leading-relaxed text-forest-800">
+               {meta.summary}
+             </p>
+ 
+-            <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
++            <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-forest-50 p-4 text-sm">
+               <div>
+-                <dt className="text-slate-600">Interest you would pay</dt>
+-                <dd className="text-base font-bold text-slate-900">
++                <dt className="text-forest-600">Interest you would pay</dt>
++                <dd className="text-base font-bold text-forest-900">
+                   {e.totalInterest === null ? "—" : <Money value={e.totalInterest} />}
+                 </dd>
+               </div>
+               <div>
+-                <dt className="text-slate-600">How long</dt>
+-                <dd className="tnum text-base font-bold text-slate-900">
++                <dt className="text-forest-600">How long</dt>
++                <dd className="tnum text-base font-bold text-forest-900">
+                   {years(e.years)}
+                 </dd>
+               </div>
+             </dl>
+ 
+             {e.forgivenAmount > 1 && (
+-              <p className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800">
++              <p className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-forest-800">
+                 <strong>
+                   <Money value={e.forgivenAmount} />
+                 </strong>{" "}
+@@ -259,7 +259,7 @@ function PlanRow({
+             <div className="flex flex-wrap items-center gap-2">
+               <PslfBadge plan={plan} />
+             </div>
+-            <p className="text-sm leading-relaxed text-slate-700">{e.pslfNote}</p>
++            <p className="text-sm leading-relaxed text-forest-700">{e.pslfNote}</p>
+ 
+             <div className="grid gap-4 sm:grid-cols-2">
+               <div>
+@@ -268,7 +268,7 @@ function PlanRow({
+                   {meta.pros.map((p) => (
+                     <li
+                       key={p}
+-                      className="flex gap-2 text-sm leading-snug text-slate-800"
++                      className="flex gap-2 text-sm leading-snug text-forest-800"
+                     >
+                       <span aria-hidden className="text-emerald-700">+</span>
+                       {p}
+@@ -282,7 +282,7 @@ function PlanRow({
+                   {meta.cons.map((c) => (
+                     <li
+                       key={c}
+-                      className="flex gap-2 text-sm leading-snug text-slate-800"
++                      className="flex gap-2 text-sm leading-snug text-forest-800"
+                     >
+                       <span aria-hidden className="text-amber-800">−</span>
+                       {c}
+@@ -341,7 +341,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+ 
+       {top && top.estimate.monthlyPayment !== null && (
+         <FadeIn>
+-          <div className="rounded-3xl bg-navy p-5 text-white shadow-lift sm:p-7">
++          <div className="rounded-3xl bg-brand p-5 text-white shadow-lift sm:p-7">
+             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/80">
+               Where we would start
+             </p>
+@@ -368,7 +368,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+                 <button
+                   type="button"
+                   onClick={() => onSelectPlan(top.estimate.id)}
+-                  className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
++                  className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-brand transition-colors hover:bg-forest-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
+                 >
+                   Use {PLAN_META[top.estimate.id].name} as my plan
+                 </button>
+@@ -384,17 +384,17 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+ 
+       <div>
+         <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+-          <h2 className="font-display text-2xl font-bold text-slate-900">
++          <h2 className="font-display text-2xl font-bold text-forest-900">
+             {open.length === 1
+               ? "The one plan open to you"
+               : `All ${open.length} plans open to you`}
+           </h2>
+-          <p className="text-sm text-slate-600">
++          <p className="text-sm text-forest-600">
+             {open.length} of 6 federal plans
+           </p>
+         </div>
+         {open.length > 1 && (
+-          <p className="mt-1 px-1 text-sm leading-relaxed text-slate-700">
++          <p className="mt-1 px-1 text-sm leading-relaxed text-forest-700">
+             A smaller payment each month usually means paying more in total.
+             The bars show both, so you can see the trade.
+           </p>
+@@ -418,17 +418,17 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+       {/* Closed plans stay fully legible. Muting them to the point of
+           unreadability hides information the borrower may need to argue with. */}
+       {closed.length > 0 && (
+-        <Card className="border-dashed bg-slate-50/60 p-5 shadow-none sm:p-6">
+-          <h2 className="font-display text-xl font-bold text-slate-900">
++        <Card className="border-dashed bg-forest-50/60 p-5 shadow-none sm:p-6">
++          <h2 className="font-display text-xl font-bold text-forest-900">
+             {closed.length} plan{closed.length === 1 ? "" : "s"} not open to you
+           </h2>
+           <ul className="mt-3 space-y-3">
+             {closed.map((p) => (
+               <li key={p.estimate.id}>
+-                <p className="text-base font-semibold text-slate-900">
++                <p className="text-base font-semibold text-forest-900">
+                   {PLAN_META[p.estimate.id].name}
+                 </p>
+-                <p className="text-sm leading-relaxed text-slate-700">
++                <p className="text-sm leading-relaxed text-forest-700">
+                   {p.estimate.ineligibleReason}
+                   {p.estimate.id === "tiered_standard" &&
+                     rapOpen &&
+@@ -438,8 +438,8 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+             ))}
+           </ul>
+           {closed.some((p) => p.estimate.id === "tiered_standard") && (
+-            <p className="mt-4 border-t border-line pt-3 text-sm leading-relaxed text-slate-700">
+-              <strong className="font-semibold text-slate-900">
++            <p className="mt-4 border-t border-line pt-3 text-sm leading-relaxed text-forest-700">
++              <strong className="font-semibold text-forest-900">
+                 The cutoff only runs one way.
+               </strong>{" "}
+               Taking out a new federal loan, or consolidating the ones you
+@@ -474,12 +474,12 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+ 
+       {/* The full "not financial advice" text lives in the page footer, which
+           sits directly under this. It is not repeated here. */}
+-      <p className="px-1 text-sm leading-relaxed text-slate-600">
++      <p className="px-1 text-sm leading-relaxed text-forest-600">
+         {ASSUMPTIONS} If your situation is unusual, the people who can see your
+         actual account are your loan servicer and Federal Student Aid. The
+         federal{" "}
+         <a
+-          className="font-semibold text-navy underline underline-offset-2 hover:text-navy-hover"
++          className="font-semibold text-brand underline underline-offset-2 hover:text-brand-hover"
+           href="https://studentaid.gov/loan-simulator/"
+           target="_blank"
+           rel="noopener noreferrer"
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..c29cf7c 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -153,10 +153,10 @@ export default function RankingPanel({
+         <Card className="p-5 sm:p-7">
+           {required === null || !main || !comparison ? (
+             <>
+-              <h2 className="font-display text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
++              <h2 className="font-display text-2xl font-bold leading-tight text-forest-900 sm:text-3xl">
+                 Pick a repayment plan to see your debt-free date
+               </h2>
+-              <p className="mt-2 text-base leading-relaxed text-slate-700">
++              <p className="mt-2 text-base leading-relaxed text-forest-700">
+                 How long this takes depends almost entirely on which repayment
+                 plan you are on, because that sets your required monthly
+                 payment. We are not going to guess at it.
+@@ -173,7 +173,7 @@ export default function RankingPanel({
+               </Eyebrow>
+ 
+               {/* The headline is the takeaway, not a label. */}
+-              <h2 className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl">
++              <h2 className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-forest-900 sm:text-4xl">
+                 {!main.paidOff ? (
+                   <>This payment does not clear the balance</>
+                 ) : extra > 0 && monthsSaved > 0 ? (
+@@ -185,7 +185,7 @@ export default function RankingPanel({
+                   <>Debt free in {monthYearFromNow(main.months)}</>
+                 )}
+               </h2>
+-              <p className="mt-2 text-base leading-relaxed text-slate-700">
++              <p className="mt-2 text-base leading-relaxed text-forest-700">
+                 {!main.paidOff ? (
+                   <>
+                     At <Money value={comparison.budget} /> a month these
+@@ -196,11 +196,11 @@ export default function RankingPanel({
+                 ) : extra > 0 && monthsSaved > 0 ? (
+                   <>
+                     You would finish in{" "}
+-                    <strong className="font-semibold text-slate-900">
++                    <strong className="font-semibold text-forest-900">
+                       {monthYearFromNow(main.months)}
+                     </strong>{" "}
+                     and pay about{" "}
+-                    <strong className="font-semibold text-slate-900">
++                    <strong className="font-semibold text-forest-900">
+                       <Money value={roughly(interestSaved)} />
+                     </strong>{" "}
+                     less in interest.
+@@ -224,12 +224,12 @@ export default function RankingPanel({
+               </output>
+ 
+               {/* ---- The control: typed amount, presets, and a slider ---- */}
+-              <div className="mt-6 rounded-2xl bg-slate-50 p-4">
++              <div className="mt-6 rounded-2xl bg-forest-50 p-4">
+                 <div className="flex items-end gap-3">
+                   <div className="w-36 flex-shrink-0">
+                     <label
+                       htmlFor="extra"
+-                      className="block text-sm font-bold text-slate-900"
++                      className="block text-sm font-bold text-forest-900"
+                     >
+                       Extra each month
+                     </label>
+@@ -280,10 +280,10 @@ export default function RankingPanel({
+                       onClick={() => onExtraChange(p)}
+                       className={cn(
+                         "tnum min-h-[44px] rounded-full border px-1 text-sm font-semibold transition-colors",
+-                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2",
++                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
+                         extra === p
+-                          ? "border-navy bg-navy text-white"
+-                          : "border-slate-300 bg-white text-slate-900 hover:border-navy"
++                          ? "border-brand bg-brand text-white"
++                          : "border-forest-300 bg-white text-forest-900 hover:border-brand"
+                       )}
+                     >
+                       {p === 0 ? "None" : `$${p}`}
+@@ -304,33 +304,33 @@ export default function RankingPanel({
+               {main.paidOff && (
+                 <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-5">
+                   <div>
+-                    <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
++                    <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-forest-600">
+                       Done
+                     </dt>
+-                    <dd className="tnum mt-1 text-base font-bold text-slate-900 sm:text-xl">
++                    <dd className="tnum mt-1 text-base font-bold text-forest-900 sm:text-xl">
+                       {shortMonthYearFromNow(main.months)}
+                     </dd>
+                   </div>
+                   <div>
+-                    <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
++                    <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-forest-600">
+                       Interest
+                     </dt>
+-                    <dd className="mt-1 text-base font-bold text-slate-900 sm:text-xl">
++                    <dd className="mt-1 text-base font-bold text-forest-900 sm:text-xl">
+                       <Money value={main.totalInterest} />
+                     </dd>
+                   </div>
+                   <div>
+-                    <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
++                    <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-forest-600">
+                       Monthly
+                     </dt>
+-                    <dd className="mt-1 text-base font-bold text-slate-900 sm:text-xl">
++                    <dd className="mt-1 text-base font-bold text-forest-900 sm:text-xl">
+                       <Money value={comparison.budget} />
+                     </dd>
+                   </div>
+                 </dl>
+               )}
+ 
+-              <p className="mt-4 text-sm leading-relaxed text-slate-600">
++              <p className="mt-4 text-sm leading-relaxed text-forest-600">
+                 What this assumes: payments start this month, and your required
+                 payment stays at <Money value={comparison.requiredPayment} />{" "}
+                 the whole way.
+@@ -350,10 +350,10 @@ export default function RankingPanel({
+                   summary="See how a different plan changes this"
+                   openSummary="Hide the other plans"
+                 >
+-                  <div className="rounded-2xl border border-line bg-slate-50 p-4">
++                  <div className="rounded-2xl border border-line bg-forest-50 p-4">
+                     <label
+                       htmlFor="planswitch"
+-                      className="block text-sm font-bold text-slate-900"
++                      className="block text-sm font-bold text-forest-900"
+                     >
+                       Try a different repayment plan
+                     </label>
+@@ -371,7 +371,7 @@ export default function RankingPanel({
+                         </option>
+                       ))}
+                     </select>
+-                    <p id="planswitch-msg" className="mt-1.5 text-sm text-slate-600">
++                    <p id="planswitch-msg" className="mt-1.5 text-sm text-forest-600">
+                       This changes your selected plan everywhere in Loan Desk.
+                     </p>
+                   </div>
+@@ -385,10 +385,10 @@ export default function RankingPanel({
+       {/* ---- Where the extra goes ---- */}
+       <FadeIn delay={0.05}>
+         <Card className="p-5 sm:p-7">
+-          <h2 className="font-display text-2xl font-bold leading-tight text-slate-900">
++          <h2 className="font-display text-2xl font-bold leading-tight text-forest-900">
+             Where should extra money go?
+           </h2>
+-          <p className="mt-1.5 text-base leading-relaxed text-slate-700">
++          <p className="mt-1.5 text-base leading-relaxed text-forest-700">
+             Make your required payment first, always. This only decides where
+             anything left over lands.
+           </p>
+@@ -404,7 +404,7 @@ export default function RankingPanel({
+               sub: STRATEGY_COPY[s].sub,
+             }))}
+           />
+-          <p className="mt-3 text-sm leading-relaxed text-slate-700" aria-live="polite">
++          <p className="mt-3 text-sm leading-relaxed text-forest-700" aria-live="polite">
+             {STRATEGY_COPY[strategy].blurb}
+           </p>
+ 
+@@ -456,24 +456,24 @@ export default function RankingPanel({
+                     className={cn(
+                       "tnum mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold",
+                       rank === 1
+-                        ? "bg-navy text-white"
+-                        : "bg-slate-100 text-slate-800"
++                        ? "bg-brand text-white"
++                        : "bg-forest-100 text-forest-800"
+                     )}
+                   >
+                     {rank}
+                   </span>
+                   <div className="min-w-0 flex-1">
+                     <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+-                      <p className="text-base font-semibold text-slate-900">
++                      <p className="text-base font-semibold text-forest-900">
+                         {loan.nickname}
+                       </p>
+-                      <p className="text-sm text-slate-800">
++                      <p className="text-sm text-forest-800">
+                         <span className="tnum font-semibold">{pct(loan.rate)}</span>
+                         {" · "}
+                         <Money value={loan.balance} className="font-semibold" />
+                       </p>
+                     </div>
+-                    <p className="mt-1 text-sm leading-snug text-slate-700">
++                    <p className="mt-1 text-sm leading-snug text-forest-700">
+                       {rank === 1 && (
+                         <Badge tone="accent" className="mr-1.5">
+                           Extra goes here
+@@ -482,7 +482,7 @@ export default function RankingPanel({
+                       {reason}
+                     </p>
+                     {gone !== undefined && (
+-                      <p className="tnum mt-1 text-sm text-slate-600">
++                      <p className="tnum mt-1 text-sm text-forest-600">
+                         Gone by {shortMonthYearFromNow(gone)}
+                       </p>
+                     )}
+diff --git a/src/components/shared/ui.tsx b/src/components/shared/ui.tsx
+index 2315a07..5938f62 100644
+--- a/src/components/shared/ui.tsx
++++ b/src/components/shared/ui.tsx
+@@ -37,7 +37,7 @@ export function Eyebrow({
+   return (
+     <p
+       className={cn(
+-        "text-xs font-semibold uppercase tracking-[0.08em] text-slate-600",
++        "text-xs font-semibold uppercase tracking-[0.08em] text-forest-600",
+         className
+       )}
+     >
+@@ -85,17 +85,17 @@ export function Button({
+       className={cn(
+         "inline-flex items-center justify-center gap-2 rounded-full font-semibold",
+         "transition-[background-color,border-color,color,box-shadow,transform] duration-150",
+-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2",
++        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
+         "active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100",
+         size === "sm"
+           ? "min-h-[40px] px-4 py-2 text-sm"
+           : "min-h-[48px] px-5 py-3 text-base",
+         variant === "primary" &&
+-          "bg-navy text-white hover:bg-navy-hover active:bg-navy-hover",
++          "bg-brand text-white hover:bg-brand-hover active:bg-brand-hover",
+         variant === "secondary" &&
+-          "border border-slate-300 bg-white text-slate-900 hover:border-navy hover:bg-slate-100",
++          "border border-forest-300 bg-white text-forest-900 hover:border-brand hover:bg-forest-100",
+         variant === "ghost" &&
+-          "text-slate-800 hover:bg-slate-100 hover:text-slate-900",
++          "text-forest-800 hover:bg-forest-100 hover:text-forest-900",
+         variant === "danger" &&
+           "border border-red-300 bg-white text-red-800 hover:border-red-500 hover:bg-red-50",
+         className
+@@ -118,12 +118,11 @@ export function Badge({
+     <span
+       className={cn(
+         "inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold",
+-        tone === "neutral" && "bg-slate-100 text-slate-800",
+-        tone === "brand" && "bg-navy text-white",
++        tone === "neutral" && "bg-forest-100 text-forest-800",
++        tone === "brand" && "bg-brand text-white",
+         tone === "warn" && "bg-amber-100 text-amber-900",
+         tone === "danger" && "bg-red-100 text-red-900",
+-        // #A8531F on accent-light is 4.34:1, just under AA. #8A4213 is 5.93:1.
+-        tone === "accent" && "bg-accent-light text-[#8A4213]",
++                tone === "accent" && "bg-accent-light text-accent-ink",
+         tone === "good" && "bg-emerald-100 text-emerald-900",
+         className
+       )}
+@@ -162,7 +161,7 @@ export function Notice({
+           aria-hidden
+           className={cn(
+             "mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
+-            tone === "info" && "bg-navy",
++            tone === "info" && "bg-brand",
+             tone === "warn" && "bg-amber-700",
+             tone === "danger" && "bg-red-700",
+             tone === "good" && "bg-emerald-700"
+@@ -175,7 +174,7 @@ export function Notice({
+             <p
+               className={cn(
+                 "text-sm font-bold",
+-                tone === "info" && "text-navy",
++                tone === "info" && "text-brand",
+                 tone === "warn" && "text-amber-900",
+                 tone === "danger" && "text-red-900",
+                 tone === "good" && "text-emerald-900"
+@@ -188,7 +187,7 @@ export function Notice({
+             className={cn(
+               "text-sm leading-relaxed",
+               title && "mt-1",
+-              tone === "info" && "text-slate-800",
++              tone === "info" && "text-forest-800",
+               tone === "warn" && "text-amber-900",
+               tone === "danger" && "text-red-900",
+               tone === "good" && "text-emerald-900"
+@@ -220,7 +219,7 @@ export function Stat({
+       <Eyebrow>{label}</Eyebrow>
+       <p
+         className={cn(
+-          "font-bold text-slate-900",
++          "font-bold text-forest-900",
+           hero
+             ? "figure mt-1 text-[2.75rem] leading-none sm:text-6xl"
+             : "tnum mt-1 text-xl"
+@@ -228,7 +227,7 @@ export function Stat({
+       >
+         {value}
+       </p>
+-      {sub && <p className="mt-1 text-sm text-slate-600">{sub}</p>}
++      {sub && <p className="mt-1 text-sm text-forest-600">{sub}</p>}
+     </div>
+   );
+ }
+@@ -255,11 +254,11 @@ export function Field({
+     <div className={className}>
+       <label
+         htmlFor={htmlFor}
+-        className="block text-sm font-bold text-slate-900"
++        className="block text-sm font-bold text-forest-900"
+       >
+         {label}
+         {optional && (
+-          <span className="ml-1.5 font-normal text-slate-600">optional</span>
++          <span className="ml-1.5 font-normal text-forest-600">optional</span>
+         )}
+       </label>
+       <div className="mt-1.5">{children}</div>
+@@ -276,7 +275,7 @@ export function Field({
+         hint && (
+           <p
+             id={htmlFor ? `${htmlFor}-msg` : undefined}
+-            className="mt-1.5 text-sm leading-snug text-slate-600"
++            className="mt-1.5 text-sm leading-snug text-forest-600"
+           >
+             {hint}
+           </p>
+@@ -287,10 +286,10 @@ export function Field({
+ }
+ 
+ export const inputClass = cn(
+-  "w-full min-h-[48px] rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900",
+-  "placeholder:text-slate-500 transition-colors",
+-  "hover:border-slate-400",
+-  "focus:outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-1",
++  "w-full min-h-[48px] rounded-2xl border border-forest-300 bg-white px-3.5 py-2.5 text-base text-forest-900",
++  "placeholder:text-forest-500 transition-colors",
++  "hover:border-forest-400",
++  "focus:outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1",
+   "aria-[invalid=true]:border-red-600 aria-[invalid=true]:bg-red-50/40"
+ );
+ 
+@@ -312,7 +311,7 @@ export function AffixInput({
+       {prefix && (
+         <span
+           aria-hidden
+-          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-base font-semibold text-slate-600"
++          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-base font-semibold text-forest-600"
+         >
+           {prefix}
+         </span>
+@@ -330,7 +329,7 @@ export function AffixInput({
+       {suffix && (
+         <span
+           aria-hidden
+-          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-base font-semibold text-slate-600"
++          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-base font-semibold text-forest-600"
+         >
+           {suffix}
+         </span>
+@@ -382,10 +381,10 @@ export function ChoiceGroup<T extends string>({
+             onClick={() => onChange(o.value)}
+             className={cn(
+               "min-h-[48px] rounded-2xl border px-3 py-2 text-left text-sm font-semibold leading-tight transition-colors",
+-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2",
++              "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
+               active
+-                ? "border-navy bg-navy text-white"
+-                : "border-slate-300 bg-white text-slate-900 hover:border-navy hover:bg-slate-100"
++                ? "border-brand bg-brand text-white"
++                : "border-forest-300 bg-white text-forest-900 hover:border-brand hover:bg-forest-100"
+             )}
+           >
+             <span className="block">{o.label}</span>
+@@ -393,7 +392,7 @@ export function ChoiceGroup<T extends string>({
+               <span
+                 className={cn(
+                   "mt-0.5 block text-xs font-normal",
+-                  active ? "text-white/85" : "text-slate-600"
++                  active ? "text-white/85" : "text-forest-600"
+                 )}
+               >
+                 {o.sub}
+@@ -438,9 +437,9 @@ export function Disclosure({
+         onClick={() => setOpen((v) => !v)}
+         className={cn(
+           "-mx-2 inline-flex min-h-[44px] items-center gap-2 rounded-xl px-2 py-2 text-left",
+-          "text-sm font-semibold text-navy underline decoration-brand-border underline-offset-4",
+-          "transition-colors hover:bg-brand-light hover:decoration-navy",
+-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
++          "text-sm font-semibold text-brand underline decoration-brand-border underline-offset-4",
++          "transition-colors hover:bg-brand-light hover:decoration-brand",
++          "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+         )}
+       >
+         <Chevron open={open} />
+@@ -523,9 +522,9 @@ export function NextStep({
+       type="button"
+       onClick={onClick}
+       className={cn(
+-        "no-print group flex w-full items-center gap-4 rounded-3xl bg-navy p-5 text-left text-white",
+-        "transition-colors hover:bg-navy-hover",
+-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
++        "no-print group flex w-full items-center gap-4 rounded-3xl bg-brand p-5 text-left text-white",
++        "transition-colors hover:bg-brand-hover",
++        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+       )}
+     >
+       <span className="min-w-0 flex-1">
+@@ -544,7 +543,7 @@ export function NextStep({
+       </span>
+       <span
+         aria-hidden
+-        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white text-navy transition-transform group-hover:translate-x-0.5"
++        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white text-brand transition-transform group-hover:translate-x-0.5"
+       >
+         <svg
+           viewBox="0 0 16 16"
+@@ -583,7 +582,7 @@ export function Toast({
+       className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+     >
+       <div
+-        className="rise pointer-events-auto flex items-center gap-1 rounded-full bg-slate-900 py-1.5 pl-5 pr-1.5 text-sm font-semibold text-white shadow-lift"
++        className="rise pointer-events-auto flex items-center gap-1 rounded-full bg-forest-900 py-1.5 pl-5 pr-1.5 text-sm font-semibold text-white shadow-lift"
+       >
+         <span className="py-1.5 pr-3">{toast.message}</span>
+         {toast.action && (
+@@ -593,7 +592,7 @@ export function Toast({
+               toast.action!.run();
+               onDismiss();
+             }}
+-            className="min-h-[40px] rounded-full bg-white px-4 text-sm font-bold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
++            className="min-h-[40px] rounded-full bg-white px-4 text-sm font-bold text-brand transition-colors hover:bg-forest-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-forest-900"
+           >
+             {toast.action.label}
+           </button>
+diff --git a/tailwind.config.ts b/tailwind.config.ts
+index 2c991c5..e02732d 100644
+--- a/tailwind.config.ts
++++ b/tailwind.config.ts
+@@ -1,8 +1,10 @@
+ import type { Config } from "tailwindcss";
++import stock from "tailwindcss/colors";
+ 
+ // Cense brand palette, carried over verbatim from Loan Lab so the two tools
+-// read as one product. The neutral ramp intentionally overrides Tailwind's
+-// stock `slate` so slate-* classes pick up the warm green-on-cream theme.
++// read as one product. `colors` replaces Tailwind's palette outright, so a
++// stock class such as text-gray-500 produces no CSS rather than an off-brand
++// colour. Add a ramp here if it is genuinely needed.
+ const config: Config = {
+   content: [
+     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+@@ -10,9 +12,15 @@ const config: Config = {
+     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+   ],
+   theme: {
+-    extend: {
+-      colors: {
+-        slate: {
++    colors: {
++      transparent: "transparent",
++      current: "currentColor",
++      white: "#fff",
++      black: "#000",
++      amber: stock.amber,
++      red: stock.red,
++      emerald: stock.emerald,
++        forest: {
+           50: "#F6F3E1",
+           100: "#EAF3E7",
+           200: "#DCE7D8",
+@@ -24,7 +32,6 @@ const config: Config = {
+           800: "#2F6133",
+           900: "#275B2D",
+         },
+-        navy: { DEFAULT: "#275B2D", hover: "#1E4623" },
+         brand: {
+           DEFAULT: "#275B2D",
+           hover: "#1E4623",
+@@ -35,6 +42,8 @@ const config: Config = {
+           DEFAULT: "#C1652E",
+           hover: "#A8531F",
+           light: "#F7E4D6",
++          // On accent-light, where accent-hover is only 4.34:1 and this is 5.93:1.
++          ink: "#8A4213",
+         },
+         // Chart marks only. `green` is the brand green nudged until it clears
+         // every check in the palette validator against `orange`, including
+@@ -50,7 +59,11 @@ const config: Config = {
+         page: "#FFFCEC",
+         line: "#DCE7D8",
+         selected: "#EAF3E7",
+-      },
++    },
++    // Preflight reads this for every bare `border`. It is stock gray-200 today,
++    // and dropping `gray` from `colors` would silently turn it into currentColor.
++    borderColor: ({ theme }) => ({ ...theme("colors"), DEFAULT: "#e5e7eb" }),
++    extend: {
+       fontFamily: {
+         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+         display: [

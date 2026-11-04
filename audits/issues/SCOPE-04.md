@@ -1,0 +1,84 @@
+# SCOPE-04: FFEL, Perkins, private and consolidation loans entered as Direct types
+
+**P1** · effort S · Borrowers the model does not fit yet
+
+The loan form offers only Direct loan types and never says so, so a borrower with an FFEL, Perkins, private or consolidation loan is told RAP is open and their payments count toward PSLF when they do not, or is shown a 10-year Standard payment their consolidation loan is not on.
+
+| | |
+|---|---|
+| Who it hurts | Public-service workers with FFEL or Perkins loans are told RAP is open and their payments count toward PSLF, with the rest cancelled tax free after 120, so they can pay for years earning no qualifying payments instead of consolidating first; parents with a consolidated Parent PLUS loan are steered to a $110 RAP payment their loan cannot use, and consolidation borrowers see a Standard payment 56% to 72% above their real one. |
+| Standard | 34 CFR 685.209(c)(6) and (d)(4): RAP is for Direct Loan borrowers and Direct loan types only. 685.219(a), (b)(7), (c)(1)(iii) and (c)(3): PSLF counts payments on eligible Direct loans only, and an FFEL borrower must consolidate into a Direct loan to use it (682.201(d)(5)). 685.208(b)(1) and (b)(2)(iii): a consolidation loan that entered repayment after July 1, 2006 has a 10- to 30-year Standard term set by its balance. 685.209(b)(6), (c)(5)(iii)(A), (d)(2), (d)(4) and (d)(5): a consolidation that repaid a Parent PLUS loan is excepted from IBR and RAP unless repaid under ICR, PAYE or IBR between July 4, 2025 and June 30, 2028, and one made on or after July 1, 2025 may use only ICR through June 30, 2028. |
+| Where | Add-a-loan form (type picker and its hint) from the empty first run and from the Loans tab; then the Plans hero, the 'All N plans open to you' list, the '✓ Counts toward PSLF' badge inside each card's 'How this plan works', the 'You owe' summary line, Payoff and the spreadsheet's Type column. Measured at 375x812 on localhost:3100 with every loan typed through the real form; the live site serves the same title and first-run headline. No viewport branch. Code: LoanKind has only the four Direct kinds (types/index.ts:6) and the picker labels leave out 'Direct' (LoanForm.tsx:55 reading types/index.ts:200); eligibility turns only on the July 2026 date and Parent PLUS (calc.ts:273, :308); Standard is always 10 years and always 'counts' (calc.ts:340, :346); the hero promises cancellation after 120 payments (calc.ts:536); the only consolidation caveat is gated on Parent PLUS (LoanForm.tsx:507, PlansPanel.tsx:334, page.tsx:559). |
+| Code | [`src/types/index.ts:6`](../../src/types/index.ts#L6), [`src/types/index.ts:184`](../../src/types/index.ts#L184), [`src/types/index.ts:200`](../../src/types/index.ts#L200), [`src/components/loans/LoanForm.tsx:55`](../../src/components/loans/LoanForm.tsx#L55), [`src/components/loans/LoanForm.tsx:249`](../../src/components/loans/LoanForm.tsx#L249), [`src/components/loans/LoanForm.tsx:321`](../../src/components/loans/LoanForm.tsx#L321), [`src/components/loans/LoanForm.tsx:507`](../../src/components/loans/LoanForm.tsx#L507), [`src/components/loans/LoanForm.tsx:510`](../../src/components/loans/LoanForm.tsx#L510) |
+| Test | `scope.spec.mjs`: "SCOPE-04 the loan form and the plan answer say they cover federal Direct Loans, not FFEL, Perkins, consolidation or private loans" |
+
+## Measured
+
+Form: the type picker offers Subsidized, Unsubsidized, Grad PLUS and Parent PLUS. The form text contains 'Direct', 'FFEL', 'Perkins' and 'private' 0 times, and 'FFEL', 'Perkins' and 'private loan' appear 0 times in all 7 JS chunks the site serves, so no state of the app can show them. The title is 'Loan Desk by Cense — every student loan you have, in one place' and the first-run h2 'Every loan you have, on one screen.', the same on the live site.
+FFEL Stafford loan entered as Unsubsidized (2008-09-15, $24,000 at 6.8%; Government, Going for forgiveness, $40,000): 'All 4 plans open to you', hero 'RAP $100 a month ... After 120 qualifying payments the rest is cancelled, tax free.', and RAP ($100), IBR ($134) and Standard ($276) each badged '✓ Counts toward PSLF' inside 'How this plan works'. Perkins loan entered as Subsidized ($6,000 at 5%, servicer ECSI): hero Standard $64 with the same sentence, RAP open at $100. Private loan entered as Unsubsidized ($30,000 at 9.5%; Lowest monthly payment, $50,000): RAP $167 is 'Our pick', IBR $217. The FFEL loan plus a 2019 $42,000 loan: RAP $179 with the PSLF sentence. Next to the 8 example loans the private loan makes the summary read '$58,101 across 9 loans ... $167 a month on RAP', which leaves out the private lender's own bill. The spreadsheet lists the FFEL and private loans as 'Direct Unsubsidized' and Perkins as 'Direct Subsidized'. Engine sweep, 5 non-Direct portfolios x 160 profiles: RAP open with PSLF 'counts' in 800 of 800, the hero's PSLF cancellation sentence in 200 of 800. An FFEL borrower who keeps paying FFEL IBR (15%, $200.75 here) because the card says it counts has paid $24,090 after 120 payments, still owes $12,915.26 and has 0 qualifying months.
+Consolidation: a $42,000 consolidation of a Parent PLUS loan entered as Unsubsidized (Private sector, $48,000, household of 2, Lowest monthly payment), disbursed 2025-09-15 at 8.125%: 'All 5 plans open to you', hero 'RAP $110 a month ... the smallest payment of the plans open to you', IBR $130 ($129.50), Standard $512.35 over 10 yr badged 'counts'. Disbursed 2019-03-15 at 7.625%: RAP $110, IBR $130, Standard $501.29 over 10 yr. A $95,000 2015 consolidation at 7.25%: Standard $1,115.31. The same 2019 loan entered as Parent PLUS gets the form note 'this tool shows only the plans it can confirm' and still shows Standard $501 over 10 yr with '✓ Counts toward PSLF'. Sweep: RAP open in 640 of 640 consolidation profiles, IBR in 480 of 480 before the cutoff, RAP or IBR the top pick in 96 of 160 for 2019 and for 2025, RAP the top pick in 108 of 160 for 2026; on a finer 800-profile grid, 60 (2019) and 56 (2025) profiles picked Standard with the 120-payment forgiveness promise. On the Unsubsidized path only 3 rendered sentences mention consolidation, none of them a caveat.
+
+## Required
+
+RAP is open to 'any Direct Loan borrower' (685.209(c)(6)) for Direct Subsidized, Unsubsidized, grad PLUS and non-excepted Direct Consolidation loans only (685.209(d)(4)). PSLF forgives Direct loans after 120 payments on eligible Direct loans (685.219(a), (b)(7), (c)(1)(iii)), and only Direct Loan payments carry into a consolidation (685.219(c)(3)). So an FFEL or Perkins loan earns 0 PSLF credit and cannot use RAP until it is consolidated into a Direct Consolidation Loan (682.201(d)(5)); FFEL keeps its own IBR through its holder (682.215); a private loan has no federal plan. A consolidation that entered repayment after July 1, 2006 with $7,500 or more has a 12- to 30-year Standard term (685.208(b)(1), (b)(2)(iii)): 25 years at $40,000 to $60,000 gives $313.80 at $42,000 and 7.625% (app $501.29, 59.7% higher) and $327.65 at 8.125% (app $512.35, 56.4% higher); $95,000 at 7.25% over 30 years is $648.07 (app $1,115.31, 72.1% higher). At those terms the payment is below the 10-year amount and earns no PSLF credit (685.219(b)(28)(ii)-(iii)). A consolidation that repaid a Parent PLUS loan is excepted and out of IBR and RAP (685.209(b)(6)(i), (d)(2), (d)(4)) unless it was repaid under ICR, PAYE or IBR between July 4, 2025 and June 30, 2028 ((b)(6)(ii)); one made on or after July 1, 2025 may use only ICR through June 30, 2028 ((c)(5)(iii)(A)); one made on or after July 1, 2026 can never use RAP ((d)(5)). The screen must say which loans its answers cover before it shows a plan, and must not badge these loans 'Counts toward PSLF'.
+
+## Reproduce
+
+1. In a fresh browser (no saved data) open http://localhost:3100 and click 'Add my first loan'. The type picker reads Subsidized, Unsubsidized, Grad PLUS, Parent PLUS, and nothing in the form mentions Direct, FFEL, Perkins, consolidation or private loans.
+2. FFEL case: type 09/15/2008 in 'Date it was paid out', pick Unsubsidized, type 24000 in 'What you owe on it today' and 6.8 in 'Interest rate', then click 'Save loan'.
+3. Open Plans, pick 'Going for forgiveness' and 'Government', and type 40000 for income. The heading says 'All 4 plans open to you' and the hero 'RAP $100 a month ... After 120 qualifying payments the rest is cancelled, tax free.' Open 'How this plan works' on RAP, IBR and Standard: each shows '✓ Counts toward PSLF'. On Loans, 'Download as a spreadsheet' lists the loan as 'Direct Unsubsidized'.
+4. Consolidation case: on Loans open 'Clear my data' and click 'Clear every loan', then add a loan dated 09/15/2025, Unsubsidized, 42000 at 8.125. On Plans pick 'Lowest monthly payment' and 'Private sector', income 48000, household '2 people'. The heading says 'All 5 plans open to you', the hero 'RAP $110 a month', IBR shows $130 and Standard '$512' over 10 yr.
+5.
+
+Or run its test from `audits/`: `AUDIT_SHOW_KNOWN=1 npx playwright test -g "SCOPE-04"`.
+
+## Fix
+
+Say plainly which loans the answers cover, at entry and where the answer is shown. Copy and labels only; no engine change.
+
+1. LoanForm.tsx:55: label the picker from a picker-only map, so LOAN_KIND_SHORT keeps the short names that LoanList.tsx:57 and autoName (LoanForm.tsx:75) use:
+```tsx
+const KIND_PICKER: Record<LoanKind, string> = {
+  direct_sub: "Direct Subsidized",
+  direct_unsub: "Direct Unsubsidized",
+  grad_plus: "Direct Grad PLUS",
+  parent_plus: "Direct Parent PLUS",
+};
+const KIND_OPTIONS = (Object.keys(KIND_PICKER) as LoanKind[]).map((k) => ({
+  value: k,
+  label: KIND_PICKER[k],
+}));
+```
+2. After the type hint at LoanForm.tsx:321-323, always visible:
+```tsx
+<p className="mt-2 text-sm leading-snug text-slate-700">
+  These four are federal Direct Loans. This tool does not model FFEL, Perkins,
+  consolidation or private loans: FFEL and Perkins loans cannot use RAP or earn
+  PSLF credit unless they are consolidated into a Direct Consolidation Loan, and
+  a consolidation loan&apos;s Standard plan runs 10 to 30 years depending on the
+  balance. Check those loans with your servicer or on studentaid.gov.
+</p>
+```
+3. Beside the notices at LoanForm.tsx:499-515, a targeted warning when f.disbursementDate < "2010-07-01" or f.servicer === "ECSI": title 'Is this an FFEL or Perkins loan?', body 'No FFEL loans were made after June 30, 2010, and ECSI services Perkins and campus loans. If studentaid.gov calls this loan FFEL or Perkins, RAP and Public Service Loan Forgiveness do not apply to it unless it is consolidated into a Direct Consolidation Loan (34 CFR 685.209(d)(4), 685.219(b)(7)). Perkins loans carry their own cancellation for teachers, nurses, firefighters and other public-service jobs, which consolidating gives up, so ask your school first.'
+4. Where the answer is shown, so loans already saved are covered too: calc.ts:536 ends '... After 120 qualifying payments on Direct Loans the rest is cancelled, tax free.', and the hero footnote at PlansPanel.tsx:377-380 reads 'An estimate for federal Direct Loans, not financial advice. FFEL, Perkins, consolidation and private loans are not modeled. Your servicer sets your actual payment.'
+5. Stop promising every loan: say 'federal Direct Loans' in the title, description, OpenGraph and Twitter text (layout.tsx:20, :22, :26, :32), the first-run h2 (page.tsx:359) and README.md:5.
+
+## Severity
+
+Hits borrowers whose loans are FFEL, Perkins, private or Direct Consolidation, every time they enter one: the form has no option for these loans and no warning, so the eligibility answer is wrong in every case measured (RAP open with PSLF credit in 800 of 800 non-Direct profiles, RAP open in 640 of 640 consolidation profiles). They are a recognizable group rather than the typical borrower in the main flow (FFEL stopped lending in 2010 and Perkins in 2017, and the form's school-year shortcuts start at 2022–23), so P1 rather than P0; nothing on screen says the tool covers Direct Loans only, so no level is dropped.
+
+Proposed P1; independent severity judges said P1; final P1.
+
+## Verification
+
+Confirmed by 6 of 6 skeptics across 2 filings (standards, reproduce, impact on each), with their own probes through the real form on the local build and against the live title and headline; all six kept P0 under the audit leads' scale.
+
+<details><summary>Dissent and notes</summary>
+
+Severity: all six skeptics kept P0 under the audit leads' scale, where any wrong eligibility answer was P0; this report's stricter rubric puts harm limited to a recognizable group (non-Direct and consolidation loan holders) at P1. Fix: the FFEL filing's copy listed 'Consolidation' among loans the answers are 'not for'; all three of its skeptics rejected that, because a non-excepted Direct Consolidation Loan is RAP- and PSLF-eligible (685.209(d)(4), 685.219(b)(7)) and the same copy sends FFEL holders to one, so here consolidation is 'not modeled' instead. That filing renamed only two picker labels; the skeptics renamed all four because FFEL PLUS loans exist, and two of them kept LOAN_KIND_SHORT for LoanList and autoName, as here. The consolidation filing's copy fix edited only Parent-PLUS-gated text, which never renders on the Unsubsidized path where the RAP pick happens, and it attributed 'this tool shows only the plans it can confirm' to PARENT_PLUS_NOTE when the phrase is at LoanForm.tsx:510-511; all three of its skeptics moved the caveat under the type picker for every type. Facts corrected: 'a consolidation from 2025 or later never can' use RAP holds only for loans made on or after July 1, 2026; one made July 2025 to June 2026 is barred through June 30, 2028 and can open after an ICR payment ((b)(6)(ii), (c)(7)). 'Every consolidation loan' is too broad: under $7,500, or in repayment before July 1, 2006, the 10-year term is right and the app matches it. The 2019 case is wrong only if no ICR, PAYE or IBR payment was made since July 4, 2025; many Parent PLUS consolidation borrowers were on ICR. The 'required' payments re-amortise today's balance over a fresh term, while the regulation sets the term from the amount at consolidation (685.220(i)), so exact figures for older loans differ but stay far below the app's 10-year amount. The FFEL filing's three '✓ Counts toward PSLF' badges were measured with every card's detail open; by default the visible claim is the hero sentence. IBR showing as open for an FFEL loan is right in substance (682.215); only its PSLF badge is wrong. The private-loan path is weaker, because studentaid.gov lists only federal loans. How often parents enter a Parent PLUS consolidation as Unsubsidized was not measured.
+
+Fix choice: the S copy-and-label change that all six skeptics said should ship first, merged across both filings so one always-visible line covers FFEL, Perkins, private and consolidation loans, plus the impact skeptic's targeted FFEL/Perkins warning (with the Perkins-cancellation caveat under 34 CFR 674.53 and 674.56, so Perkins teachers and nurses are not pushed into consolidating) and 'on Direct Loans' at the point of the PSLF promise, which reaches loans already saved. It stops the tool presenting Direct-only answers as answers for these loans, but a loan entered anyway still gets figures. Follow-ups, M each: (a) a fifth kind 'Not a Direct Loan (FFEL, Perkins or private)' whose loans are listed with their balance but filtered out at all three places the plan context is built (page.tsx:196, PlansPanel.tsx:304, RankingPanel.tsx:86), with a guard for a portfolio with no Direct loan left (buildContext([]) ranks Standard $0.00 with the 120-payment promise) and a notice that FFEL keeps IBR and the fixed plans through its holder (682.215); (b) a 'direct_consolidation' kind with a consolidationTermYears table per 685.208(b)(2)(iii), set from the amount consolidated (685.220(i)) and priced per loan in mixed portfolios (a $42,000 consolidation plus a $20,000 Unsubsidized loan: the app shows $728.59 today, one portfolio-wide 30-year term would give $423.87, per-loan terms $524.67 to $541.20), Graduated on the same term, the Standard tagline, pros and 'counts' made conditional (plans.ts:89-98, calc.ts:346-348), a 'Did any of it come from a loan you took out as a parent?' question whose 'Not sure' keeps IBR and RAP listed with a warning instead of closing them, and an ICR notice so a public-service parent is not told 'None of the plans open to you earn forgiveness credit'. Related issues: UX-06 (the one-way consolidation warning is buried), SEO-03 (title and description wording), MONEY-23 and MONEY-24 (ICR not shown). Nothing here sends data off the device or adds a dependency.
+
+</details>
+
+Merged from audit findings: `gap-ffel-perkins-private-told-rap-and-pslf`, `gap-consolidation-shown-ibr-rap-and-10yr-standard`.

@@ -1,0 +1,450 @@
+{
+ "url": "http://localhost:3100/",
+ "results": {
+  "header-check": {
+   "url": "http://localhost:3100/",
+   "statusCode": 200,
+   "allHeaders": {
+    "cache-control": "s-maxage=31536000, stale-while-revalidate",
+    "connection": "close",
+    "content-length": "7320",
+    "content-type": "text/html; charset=utf-8",
+    "date": "Wed, 04 Nov 2026 20:51:05 GMT",
+    "etag": "\"36dxne4mh15ms\"",
+    "vary": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Accept-Encoding",
+    "x-nextjs-cache": "HIT",
+    "x-powered-by": "Next.js"
+   },
+   "analysis": [
+    {
+     "name": "Cache-Control",
+     "value": "s-maxage=31536000, stale-while-revalidate",
+     "status": "good",
+     "recommendation": "Cache-Control is configured."
+    },
+    {
+     "name": "Content-Encoding",
+     "value": null,
+     "status": "warning",
+     "recommendation": "Enable gzip or Brotli compression to reduce transfer sizes by 60-80%."
+    },
+    {
+     "name": "Strict-Transport-Security",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add HSTS header: \"max-age=63072000; includeSubDomains; preload\""
+    },
+    {
+     "name": "X-Content-Type-Options",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add \"X-Content-Type-Options: nosniff\" to prevent MIME sniffing."
+    },
+    {
+     "name": "X-Frame-Options",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add \"X-Frame-Options: DENY\" or \"SAMEORIGIN\" to prevent clickjacking."
+    },
+    {
+     "name": "Content-Security-Policy",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add a Content-Security-Policy to prevent XSS and data injection."
+    },
+    {
+     "name": "Referrer-Policy",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add \"Referrer-Policy: strict-origin-when-cross-origin\" for privacy."
+    },
+    {
+     "name": "Permissions-Policy",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add Permissions-Policy to control browser features (camera, geolocation, etc.)."
+    },
+    {
+     "name": "ETag",
+     "value": "\"36dxne4mh15ms\"",
+     "status": "good",
+     "recommendation": "ETag is set for conditional requests."
+    },
+    {
+     "name": "Vary",
+     "value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Accept-Encoding",
+     "status": "good",
+     "recommendation": "Vary header set: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Accept-Encoding"
+    }
+   ],
+   "summary": {
+    "good": 3,
+    "warnings": 1,
+    "missing": 6,
+    "total": 10
+   },
+   "score": 30
+  },
+  "meta-validate": {
+   "url": "http://localhost:3100/",
+   "tags": [
+    {
+     "name": "title",
+     "content": "Loan Desk by Cense — every student loan you have, in one place",
+     "status": "warning",
+     "recommendation": "Title is 62 chars. Keep under 60 for best display in search results."
+    },
+    {
+     "name": "meta description",
+     "content": "Put all your federal student loans on one screen: balances, rates, which repayment plans you actually qualify for, and which loan to attack first. Free, private, and nothing to sell.",
+     "status": "warning",
+     "recommendation": "Description is 182 chars. Keep under 160."
+    },
+    {
+     "name": "viewport",
+     "content": "width=device-width, initial-scale=1",
+     "status": "good",
+     "recommendation": "Viewport is set."
+    },
+    {
+     "name": "canonical",
+     "content": null,
+     "status": "warning",
+     "recommendation": "Add a canonical URL to prevent duplicate content issues."
+    },
+    {
+     "name": "og:title",
+     "content": "Loan Desk by Cense",
+     "status": "good",
+     "recommendation": "Set to: Loan Desk by Cense"
+    },
+    {
+     "name": "og:description",
+     "content": "Every federal student loan you have, on one screen. Balances, rates, eligible repayment plans, and payoff order.",
+     "status": "good",
+     "recommendation": "Set to: Every federal student loan you have, on one screen. Balances, rates, eligible re..."
+    },
+    {
+     "name": "og:image",
+     "content": null,
+     "status": "missing",
+     "recommendation": "Add og:image for better social media sharing."
+    },
+    {
+     "name": "og:url",
+     "content": null,
+     "status": "missing",
+     "recommendation": "Add og:url for better social media sharing."
+    },
+    {
+     "name": "og:type",
+     "content": "website",
+     "status": "good",
+     "recommendation": "Set to: website"
+    },
+    {
+     "name": "twitter:card",
+     "content": "summary_large_image",
+     "status": "good",
+     "recommendation": "Set to: summary_large_image"
+    },
+    {
+     "name": "twitter:title",
+     "content": "Loan Desk by Cense",
+     "status": "good",
+     "recommendation": "Set to: Loan Desk by Cense"
+    },
+    {
+     "name": "twitter:description",
+     "content": "Every federal student loan you have, on one screen.",
+     "status": "good",
+     "recommendation": "Set to: Every federal student loan you have, on one screen."
+    },
+    {
+     "name": "twitter:image",
+     "content": null,
+     "status": "warning",
+     "recommendation": "Add twitter:image for Twitter card previews."
+    },
+    {
+     "name": "lang attribute",
+     "content": "en",
+     "status": "good",
+     "recommendation": "Language: en"
+    },
+    {
+     "name": "favicon",
+     "content": "/icon.svg?497578d03306b208",
+     "status": "good",
+     "recommendation": "Favicon found: /icon.svg?497578d03306b208"
+    }
+   ],
+   "preview": {
+    "title": "Loan Desk by Cense",
+    "description": "Every federal student loan you have, on one screen. Balances, rates, eligible repayment plans, and payoff order.",
+    "image": null,
+    "url": "http://localhost:3100/",
+    "siteName": "localhost"
+   },
+   "summary": {
+    "good": 9,
+    "warnings": 4,
+    "missing": 2,
+    "total": 15
+   },
+   "score": 60
+  },
+  "structured-data": {
+   "url": "http://localhost:3100/",
+   "totalSchemas": 0,
+   "items": [],
+   "summary": {
+    "total": 0,
+    "valid": 0,
+    "withErrors": 0,
+    "totalErrors": 0,
+    "totalWarnings": 0,
+    "jsonLd": 0,
+    "microdata": 0
+   },
+   "richResultEligibility": {
+    "eligible": false,
+    "types": []
+   }
+  },
+  "sitemap-validate": {
+   "sitemapUrl": "http://localhost:3100/sitemap.xml",
+   "found": false,
+   "urls": [],
+   "issues": [
+    "Sitemap not found. Try providing a direct URL to your sitemap.xml."
+   ],
+   "summary": {
+    "total": 0,
+    "ok": 0,
+    "redirects": 0,
+    "errors": 0,
+    "dead": 0,
+    "slow": 0
+   },
+   "error": "Sitemap not found at http://localhost:3100/sitemap.xml. HTTP 404"
+  },
+  "redirect-check": {
+   "url": "http://localhost:3100/",
+   "finalUrl": "http://localhost:3100/",
+   "finalStatus": 200,
+   "hops": [
+    {
+     "url": "http://localhost:3100/",
+     "statusCode": 200,
+     "location": null,
+     "timeMs": 1
+    }
+   ],
+   "redirectCount": 0,
+   "totalTimeMs": 1,
+   "status": "good",
+   "message": "No redirects detected. URL resolves directly."
+  },
+  "broken-links": {
+   "url": "http://localhost:3100/",
+   "depth": "page",
+   "pagesScanned": 1,
+   "pagesScannedList": [
+    "http://localhost:3100/"
+   ],
+   "totalLinks": 11,
+   "totalDiscoveredLinks": 11,
+   "links": [
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/chunks/fd9d1056-0513bfa1d30c24ee.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 1,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/chunks/117-a5f7cb7a43194daa.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 1,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/chunks/main-app-5dbb5cf0ac765755.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 1,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/chunks/137-a3e1f3eebce6c471.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 1,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/chunks/app/page-3bb4ac53b8b8e59b.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 1,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/chunks/polyfills-42372ed130431b0a.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 2,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/chunks/webpack-2eb44b44e9a1fdeb.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 1,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/media/26d0ba92e140f0dc-s.p.woff2",
+     "anchorText": "preload",
+     "linkType": "link",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 2,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/media/9d5a263311222317-s.p.woff2",
+     "anchorText": "preload",
+     "linkType": "link",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 2,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/_next/static/css/6f246788c3ccd5c9.css",
+     "anchorText": "stylesheet",
+     "linkType": "link",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 4,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    },
+    {
+     "sourceUrl": "http://localhost:3100/",
+     "targetUrl": "http://localhost:3100/icon.svg?497578d03306b208",
+     "anchorText": "icon",
+     "linkType": "link",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 4,
+     "sources": [
+      "http://localhost:3100/"
+     ]
+    }
+   ],
+   "summary": {
+    "total": 11,
+    "ok": 11,
+    "broken": 0,
+    "redirects": 0,
+    "errors": 0,
+    "timeouts": 0
+   }
+  },
+  "webmcp-check": {
+   "url": "http://localhost:3100/",
+   "aiReadinessScore": 0,
+   "mcpDiscovery": {
+    "score": 0,
+    "found": false,
+    "valid": false,
+    "hasAuth": false,
+    "data": null,
+    "errors": [
+     "HTTP 404 response from http://localhost:3100/.well-known/mcp.json."
+    ]
+   },
+   "webmcpDeclarative": {
+    "score": 0,
+    "toolCount": 0,
+    "tools": [],
+    "findings": [
+     "No declarative WebMCP tools found (no toolname attributes in HTML)."
+    ]
+   },
+   "webmcpImperative": {
+    "score": 0,
+    "detected": false,
+    "registerToolCalls": 0,
+    "findings": [
+     "No imperative WebMCP tool registration detected in inline scripts.",
+     "Note: This check cannot detect tools registered via external JavaScript files."
+    ]
+   },
+   "recommendations": [
+    "Add a .well-known/mcp.json file to enable MCP server discovery. This lets AI agents find and connect to your API endpoints automatically.",
+    "Add WebMCP declarative tools to your HTML using toolname attributes on <form> elements. Example: <form toolname=\"search\" tooldescription=\"Search products\"> to expose functionality to AI agents.",
+    "Consider implementing imperative WebMCP tools using navigator.modelContext.registerTool() for dynamic tool registration that depends on runtime state.",
+    "This page has no AI/MCP integration. Start with .well-known/mcp.json for server discovery or add toolname attributes to existing forms for quick wins."
+   ]
+  }
+ }
+}

@@ -1,0 +1,2926 @@
+{
+ "audited": "2026-11-02",
+ "issues": [
+  {
+   "id": "MONEY-01",
+   "severity": "P0",
+   "effort": "M",
+   "area": "Money figures and eligibility",
+   "title": "Least-total pick compares unlike totals",
+   "summary": "Plan comparisons count every forgiven dollar as money the borrower paid, so an income-driven plan with a lower total is described as costing tens of thousands more, and the default recommendation can be the more expensive plan.",
+   "files": [
+    "src/lib/calc.ts:447",
+    "src/lib/calc.ts:466",
+    "src/lib/calc.ts:182",
+    "src/lib/calc.ts:519",
+    "src/lib/calc.ts:539",
+    "src/lib/calc.ts:551",
+    "src/lib/calc.ts:554",
+    "src/lib/calc.ts:555",
+    "src/lib/calc.ts:565",
+    "src/lib/calc.ts:582",
+    "src/lib/calc.ts:583",
+    "src/components/plans/PlansPanel.tsx:235",
+    "src/components/plans/PlansPanel.tsx:181",
+    "src/components/plans/PlansPanel.tsx:159",
+    "src/data/plans.ts:278"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-01 every \"more overall\" figure is the gap between the totals on screen, and no plan shows more interest than it collects"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-01.md"
+  },
+  {
+   "id": "MONEY-04",
+   "severity": "P0",
+   "effort": "M",
+   "area": "Money figures and eligibility",
+   "title": "Graduated breaks the 3x cap and hides its peak",
+   "summary": "Graduated's starting payment is understated by up to 56% because the step schedule behind it breaks the legal 3x cap, so borrowers comparing monthly payments choose on a wrong number and are never shown how high the payment climbs.",
+   "files": [
+    "src/lib/calc.ts:86",
+    "src/lib/calc.ts:89",
+    "src/lib/calc.ts:106",
+    "src/lib/calc.ts:108",
+    "src/lib/calc.ts:129",
+    "src/lib/calc.ts:363",
+    "src/types/index.ts:70",
+    "src/components/plans/PlansPanel.tsx:63",
+    "src/components/plans/PlansPanel.tsx:153",
+    "src/components/plans/PlansPanel.tsx:356",
+    "src/app/page.tsx:468",
+    "src/components/ranking/RankingPanel.tsx:369",
+    "src/data/plans.ts:110",
+    "src/data/plans.ts:115",
+    "src/data/plans.ts:122",
+    "verify.mjs:12",
+    "verify.mjs:339"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-04 Graduated starts where a schedule within the 3x cap must start, and shows how high it climbs"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-04.md"
+  },
+  {
+   "id": "MONEY-06",
+   "severity": "P0",
+   "effort": "M",
+   "area": "Money figures and eligibility",
+   "title": "Payoff ignores the chosen plan's schedule and forgiveness",
+   "summary": "Payoff runs every plan as one flat payment for up to 50 years, so Graduated borrowers are told their 10-year plan never ends, some IBR and RAP borrowers get debt-free dates years or decades past forgiveness, and extra payments are shown saving years they do not save.",
+   "files": [
+    "src/lib/ranking.ts:82",
+    "src/lib/ranking.ts:84",
+    "src/lib/ranking.ts:103",
+    "src/lib/ranking.ts:118",
+    "src/lib/ranking.ts:164",
+    "src/lib/ranking.ts:194",
+    "src/lib/calc.ts:128",
+    "src/components/ranking/RankingPanel.tsx:96",
+    "src/components/ranking/RankingPanel.tsx:107",
+    "src/components/ranking/RankingPanel.tsx:118",
+    "src/components/ranking/RankingPanel.tsx:136",
+    "src/components/ranking/RankingPanel.tsx:172",
+    "src/components/ranking/RankingPanel.tsx:178",
+    "src/components/ranking/RankingPanel.tsx:185",
+    "src/components/ranking/RankingPanel.tsx:192",
+    "src/components/ranking/RankingPanel.tsx:210",
+    "src/components/ranking/RankingPanel.tsx:319",
+    "src/components/ranking/RankingPanel.tsx:335",
+    "src/components/ranking/RankingPanel.tsx:338"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-06 Payoff runs the chosen plan: Graduated ends within its 10 years and IBR never runs past forgiveness"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-06.md"
+  },
+  {
+   "id": "MONEY-08",
+   "severity": "P0",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Unpriced plans lose to priced ones when income is blank",
+   "summary": "When income is blank, the recommendation ignores the unpriced IBR and RAP plans, so it tells borrowers that no open plan earns forgiveness credit, or that a $139 to $455 bill is their smallest option, while RAP or IBR is open and could cost $0 or $10.",
+   "files": [
+    "src/lib/calc.ts:420",
+    "src/lib/calc.ts:500",
+    "src/lib/calc.ts:536",
+    "src/lib/calc.ts:537",
+    "src/lib/calc.ts:541",
+    "src/lib/calc.ts:547",
+    "src/lib/calc.ts:548",
+    "src/lib/calc.ts:554",
+    "src/lib/calc.ts:555",
+    "src/lib/calc.ts:561",
+    "src/lib/calc.ts:602",
+    "src/lib/calc.ts:603",
+    "src/components/plans/PlansPanel.tsx:139",
+    "src/components/plans/PlansPanel.tsx:173",
+    "src/components/plans/PlansPanel.tsx:342",
+    "src/components/plans/PlansPanel.tsx:352",
+    "src/components/plans/PlansPanel.tsx:363",
+    "src/app/page.tsx:725",
+    "verify.mjs:470",
+    "verify.mjs:507"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-08 with income blank, the pick and its badges never claim a minimum over IBR and RAP, which are open but unpriced"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-08.md"
+  },
+  {
+   "id": "SCOPE-03",
+   "severity": "P0",
+   "effort": "S",
+   "area": "Borrowers the model does not fit yet",
+   "title": "Income asked as gross pay, plans priced on AGI",
+   "summary": "The income field asks for gross pay ('Yearly income, before tax') but IBR and RAP are priced on adjusted gross income, so borrowers with pre-tax 401(k) or health deductions see both payments too high and sometimes the wrong recommended plan.",
+   "files": [
+    "src/app/page.tsx:724",
+    "src/app/page.tsx:725",
+    "src/types/index.ts:111",
+    "src/lib/calc.ts:197",
+    "src/lib/calc.ts:203",
+    "src/data/plans.ts:47",
+    "src/data/plans.ts:55",
+    "src/data/plans.ts:148",
+    "src/data/plans.ts:189",
+    "src/data/plans.ts:200"
+   ],
+   "tests": [
+    "scope.spec.mjs > SCOPE-03 the income question asks for adjusted gross income, the figure IBR and RAP are priced on"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SCOPE-03.md"
+  },
+  {
+   "id": "SCOPE-06",
+   "severity": "P0",
+   "effort": "M",
+   "area": "Borrowers the model does not fit yet",
+   "title": "Repayment clock assumed to start this month",
+   "summary": "Every repayment term restarts this month, so a borrower four years into Standard is shown $372 a month instead of their $555 bill and a debt-free date of November 2036 instead of November 2032, and the date slides later on every return visit.",
+   "files": [
+    "src/lib/calc.ts:340",
+    "src/lib/calc.ts:354",
+    "src/lib/calc.ts:89",
+    "src/lib/calc.ts:374",
+    "src/lib/calc.ts:222",
+    "src/lib/calc.ts:389",
+    "src/lib/ranking.ts:164",
+    "src/types/index.ts:27",
+    "src/types/index.ts:110",
+    "src/components/loans/LoanForm.tsx:214",
+    "src/components/loans/LoanForm.tsx:480",
+    "src/lib/export.ts:53",
+    "src/data/plans.ts:278",
+    "src/components/plans/PlansPanel.tsx:152",
+    "src/components/plans/PlansPanel.tsx:478",
+    "src/components/ranking/RankingPanel.tsx:185",
+    "src/components/ranking/RankingPanel.tsx:311",
+    "src/components/ranking/RankingPanel.tsx:334",
+    "src/components/ranking/RankingPanel.tsx:486",
+    "src/components/charts/PayoffRunway.tsx:98",
+    "src/components/charts/PayoffRunway.tsx:336",
+    "src/lib/utils.ts:86",
+    "src/app/page.tsx:218",
+    "src/app/page.tsx:454",
+    "src/app/page.tsx:468",
+    "src/app/page.tsx:672",
+    "src/components/history/HistoryPanel.tsx:67",
+    "verify.mjs:345"
+   ],
+   "tests": [
+    "scope.spec.mjs > SCOPE-06 a borrower four years into Standard sees their $555 bill and a November 2032 end date, and a year later is told the balances are old"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SCOPE-06.md"
+  },
+  {
+   "id": "A11Y-01",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Header forces sideways scrolling at 320px",
+   "summary": "Below 361px wide, including a 1280px screen at 400% zoom, the header is wider than the screen, so every section with loans scrolls sideways and the hide-amounts button sits off screen.",
+   "files": [
+    "src/app/page.tsx:323",
+    "src/app/page.tsx:324",
+    "src/app/page.tsx:334",
+    "src/app/page.tsx:335",
+    "src/app/page.tsx:340-341",
+    "src/app/page.tsx:345"
+   ],
+   "tests": [
+    "a11y.spec.mjs > A11Y-01 from 320 to 360 CSS px wide every section fits the screen and the hide-amounts button stays in view"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-01.md"
+  },
+  {
+   "id": "A11Y-02",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Toast status region is not announced",
+   "summary": "The toast's status region is added to the page already holding its message, so desktop screen readers such as NVDA and JAWS likely never announce 'Saved', 'Removed' or the Undo offer, and Undo itself announces nothing.",
+   "files": [
+    "src/components/shared/ui.tsx:578",
+    "src/components/shared/ui.tsx:580-583",
+    "src/components/shared/ui.tsx:592-595",
+    "src/app/page.tsx:176",
+    "src/app/page.tsx:255-258",
+    "src/app/page.tsx:265",
+    "src/app/page.tsx:271",
+    "src/app/page.tsx:862"
+   ],
+   "tests": [
+    "a11y.spec.mjs > A11Y-02 removing a loan and pressing Undo are each announced through a live region already on the page"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-02.md"
+  },
+  {
+   "id": "MONEY-02",
+   "severity": "P1",
+   "effort": "M",
+   "area": "Money figures and eligibility",
+   "title": "PSLF path not priced",
+   "summary": "The 120-payment PSLF path is never priced, so public-service borrowers compare 20- and 30-year totals that can be tens of thousands off, and those who ask to pay the least are steered to Standard without being told PSLF would cost them less.",
+   "files": [
+    "src/lib/calc.ts:536",
+    "src/lib/calc.ts:438",
+    "src/lib/calc.ts:457",
+    "src/lib/calc.ts:529",
+    "src/lib/calc.ts:555",
+    "src/lib/calc.ts:565",
+    "src/lib/calc.ts:582",
+    "src/lib/calc.ts:584",
+    "src/lib/calc.ts:603",
+    "src/types/index.ts:79",
+    "src/components/plans/PlansPanel.tsx:159",
+    "src/components/plans/PlansPanel.tsx:167",
+    "src/components/plans/PlansPanel.tsx:253"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-02 a public-service borrower sees what 120 qualifying payments cost and what is left to cancel"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-02.md"
+  },
+  {
+   "id": "MONEY-03",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "$50 minimum payment missing",
+   "summary": "Standard and Tiered Standard ignore the $50 minimum payment, so borrowers who owe under about $4,400 see a payment the servicer cannot bill, a debt-free date years late and totals up to $671 too high.",
+   "files": [
+    "src/lib/calc.ts:75",
+    "src/lib/calc.ts:340",
+    "src/lib/calc.ts:344",
+    "src/lib/calc.ts:379",
+    "src/lib/calc.ts:390",
+    "src/lib/calc.ts:407",
+    "src/lib/calc.ts:410",
+    "src/lib/calc.ts:233",
+    "src/lib/calc.ts:436",
+    "src/data/plans.ts:40",
+    "src/data/plans.ts:89",
+    "src/data/plans.ts:91",
+    "verify.mjs:353",
+    "verify.mjs:52"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-03 Standard and Tiered Standard bill at least $50 a month and total what that payment really costs"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-03.md"
+  },
+  {
+   "id": "MONEY-05",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "IBR compounds unpaid interest",
+   "summary": "IBR charges interest on unpaid interest every month, which the rules do not allow while a borrower stays on IBR, so borrowers whose payment is below their interest see a forgiven, taxable balance typically about 40% to 50% too high.",
+   "files": [
+    "src/lib/calc.ts:157",
+    "src/lib/calc.ts:164",
+    "src/lib/calc.ts:167",
+    "src/lib/calc.ts:168",
+    "src/lib/calc.ts:438",
+    "src/lib/calc.ts:447",
+    "src/lib/calc.ts:449",
+    "src/lib/calc.ts:582",
+    "src/components/plans/PlansPanel.tsx:237",
+    "src/components/plans/PlansPanel.tsx:251"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-05 IBR leaves the balance that uncompounded unpaid interest gives after 20 years"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-05.md"
+  },
+  {
+   "id": "MONEY-07",
+   "severity": "P1",
+   "effort": "M",
+   "area": "Money figures and eligibility",
+   "title": "Plans and Payoff price multi-rate portfolios differently",
+   "summary": "Plans prices Standard, Extended and Tiered Standard at one blended rate while Payoff splits the payment by balance, so a borrower with loans at different rates sees two end dates and two interest totals for the same plan, with Payoff running past the legal term.",
+   "files": [
+    "src/lib/calc.ts:37",
+    "src/lib/calc.ts:74",
+    "src/lib/calc.ts:233",
+    "src/lib/calc.ts:340",
+    "src/lib/calc.ts:374",
+    "src/lib/calc.ts:389",
+    "src/lib/calc.ts:436",
+    "src/lib/ranking.ts:77",
+    "src/lib/ranking.ts:110",
+    "src/lib/ranking.ts:116",
+    "src/lib/ranking.ts:120",
+    "src/lib/ranking.ts:164",
+    "src/lib/ranking.ts:194",
+    "src/components/ranking/RankingPanel.tsx:102",
+    "src/components/ranking/RankingPanel.tsx:107",
+    "src/components/ranking/RankingPanel.tsx:113",
+    "README.md:114",
+    "README.md:180",
+    "verify.mjs:345"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-07 a fixed plan shows one payment, one end date and one interest total on Plans and on Payoff"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-07.md"
+  },
+  {
+   "id": "MONEY-09",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "$0 income cannot be entered",
+   "summary": "Typing 0 in the income field is silently treated as blank, so a borrower with no income can never see the $0 IBR or $10 RAP payment and keeps being steered to a plan with a real monthly bill.",
+   "files": [
+    "src/types/index.ts:111",
+    "src/types/index.ts:112",
+    "src/lib/calc.ts:228",
+    "src/app/page.tsx:725",
+    "src/app/page.tsx:735",
+    "src/app/page.tsx:739",
+    "src/app/page.tsx:743",
+    "src/components/plans/PlansPanel.tsx:132",
+    "src/components/plans/PlansPanel.tsx:139",
+    "src/lib/storage.ts:47"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-09 typing 0 as income prices IBR at $0 and RAP at $10, and the 0 stays visible after a reload"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-09.md"
+  },
+  {
+   "id": "MONEY-11",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Dollar fields drop the decimal point",
+   "summary": "The income and extra-payment fields drop a typed or pasted decimal point and keep the cents as digits, so $52,000.50 income is priced as $5,200,050 and the borrower can be shown the wrong plan and payment.",
+   "files": [
+    "src/lib/utils.ts:112-117",
+    "src/app/page.tsx:728-748",
+    "src/components/ranking/RankingPanel.tsx:98",
+    "src/components/ranking/RankingPanel.tsx:237-249",
+    "src/components/shared/ui.tsx:301-340",
+    "src/lib/utils.ts:120-127",
+    "src/components/loans/LoanForm.tsx:337",
+    "src/components/loans/LoanForm.tsx:344",
+    "README.md:187-188"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-11 a decimal point in income or extra is read as cents, never as more digits"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-11.md"
+  },
+  {
+   "id": "MONEY-12",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Two-digit year saves as year 0026 and flips eligibility",
+   "summary": "The loan date field accepts year 0026 when a borrower types a short date such as 09/15/26, so a loan paid out after the July 1, 2026 cutoff is treated as old and the borrower is told plans are open that are closed to them.",
+   "files": [
+    "src/components/loans/LoanForm.tsx:173-175",
+    "src/components/loans/LoanForm.tsx:185",
+    "src/components/loans/LoanForm.tsx:227",
+    "src/components/loans/LoanForm.tsx:295-306",
+    "src/lib/calc.ts:44-46",
+    "src/lib/calc.ts:299",
+    "src/types/index.ts:25",
+    "src/lib/storage.ts:37-40"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-12 a date typed with a two-digit year is never saved as year 0026"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-12.md"
+  },
+  {
+   "id": "MONEY-13",
+   "severity": "P1",
+   "effort": "M",
+   "area": "Money figures and eligibility",
+   "title": "Pre-2014 IBR borrowers priced as new borrowers",
+   "summary": "IBR ignores loans paid out before July 1, 2014, so a borrower still repaying one sees an IBR payment about a third too low, forgiveness at 20 years instead of 25, and sometimes the wrong recommended plan.",
+   "files": [
+    "src/lib/calc.ts:199",
+    "src/lib/calc.ts:280",
+    "src/lib/calc.ts:427",
+    "src/lib/calc.ts:437",
+    "src/lib/calc.ts:438",
+    "src/lib/calc.ts:448",
+    "src/data/plans.ts:148",
+    "src/data/plans.ts:156",
+    "src/data/plans.ts:160",
+    "src/data/plans.ts:163",
+    "src/data/plans.ts:201",
+    "src/data/plans.ts:279",
+    "src/components/plans/PlansPanel.tsx:108",
+    "README.md:131"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-13 IBR charges 15% of discretionary income and forgives at 25 years when a loan was paid out before July 1, 2014"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-13.md"
+  },
+  {
+   "id": "MONEY-21",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Households over 8 priced as 8",
+   "summary": "Households larger than 8 can only pick '8 people or more' and are priced as 8, so their income-driven payments show too high (RAP $117 a month instead of $17 for 10 people at $80,000) and the recommended plan can change.",
+   "files": [
+    "src/app/page.tsx:768",
+    "src/app/page.tsx:771",
+    "src/data/plans.ts:26",
+    "src/lib/calc.ts:197",
+    "src/lib/calc.ts:204"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-21 a household of 10 can enter its size, and RAP is priced for 10 people"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-21.md"
+  },
+  {
+   "id": "MONEY-23",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Plan count omits PAYE and ICR",
+   "summary": "The plan count ('4 of the 6 federal plans') leaves out PAYE and ICR, which ED still offers until July 2028, so borrowers with older loans are told fewer plans are open than ED offers and some PSLF borrowers are told a costlier plan is their lowest PSLF payment.",
+   "files": [
+    "src/app/page.tsx:616",
+    "src/app/page.tsx:199",
+    "src/components/plans/PlansPanel.tsx:388",
+    "src/components/plans/PlansPanel.tsx:393",
+    "src/lib/calc.ts:536",
+    "src/lib/calc.ts:537",
+    "src/lib/calc.ts:273",
+    "src/data/plans.ts:209",
+    "src/data/plans.ts:260",
+    "src/types/index.ts:8",
+    "README.md:16"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-23 the plan count does not present the compared plans as all federal plans, and PAYE and ICR are named"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-23.md"
+  },
+  {
+   "id": "RES-01",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "Editing example loans then adding one deletes the edits",
+   "summary": "Typing your own numbers over the example loans and then adding a loan deletes every row you typed, with only a 'Saved' message and no Undo.",
+   "files": [
+    "src/app/page.tsx:81-82",
+    "src/components/loans/LoanForm.tsx:205",
+    "src/app/page.tsx:219-222",
+    "src/app/page.tsx:242",
+    "src/app/page.tsx:246",
+    "src/app/page.tsx:306",
+    "src/app/page.tsx:412-413",
+    "src/app/page.tsx:435-438"
+   ],
+   "tests": [
+    "data-safety.spec.mjs > RES-01 edits typed over the example loans are still there after adding a loan of your own"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-01.md"
+  },
+  {
+   "id": "RES-02",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "A second open tab silently overwrites the first",
+   "summary": "With the app open in two tabs, a change in the tab that has not reloaded silently overwrites what the other tab saved, so loans, dated records and income are lost.",
+   "files": [
+    "src/app/page.tsx:139-149",
+    "src/app/page.tsx:151-159",
+    "src/app/page.tsx:257",
+    "src/app/page.tsx:265",
+    "src/app/page.tsx:271",
+    "src/lib/storage.ts:36-55"
+   ],
+   "tests": [
+    "data-safety.spec.mjs > RES-02 a loan saved in one tab survives a change made in another tab that was already open"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-02.md"
+  },
+  {
+   "id": "RES-03",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "Failed save still says Saved",
+   "summary": "When the browser blocks site storage, every save still says 'Saved' and nothing warns the borrower, so the loans and dated records entered in that visit are gone on reload.",
+   "files": [
+    "src/lib/storage.ts:27-34",
+    "src/app/page.tsx:151-159",
+    "src/app/page.tsx:242",
+    "src/app/page.tsx:246",
+    "src/app/page.tsx:276",
+    "src/app/page.tsx:419-420",
+    "src/app/page.tsx:862",
+    "src/components/shared/ui.tsx:565-569",
+    "src/components/history/HistoryPanel.tsx:79-80"
+   ],
+   "tests": [
+    "data-safety.spec.mjs > RES-03 when the browser refuses to save, the page never says \"Saved\" and keeps a warning on screen"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-03.md"
+  },
+  {
+   "id": "RES-04",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "\"Clear my data\" leaves income and records behind",
+   "summary": "'Clear my data' says it removes the borrower's data, but it never clears their income or plan answers and, when 'Clear every loan' is pressed first, keeps every dated loan record while hiding every control that could remove it, so the next person on that browser sees it all and gets payments priced on someone else's income.",
+   "files": [
+    "src/app/page.tsx:261",
+    "src/app/page.tsx:268",
+    "src/app/page.tsx:644",
+    "src/app/page.tsx:646",
+    "src/app/page.tsx:659",
+    "src/app/page.tsx:305",
+    "src/app/page.tsx:368",
+    "src/app/page.tsx:509",
+    "src/app/page.tsx:544",
+    "src/app/page.tsx:568",
+    "src/app/page.tsx:244",
+    "src/app/page.tsx:151",
+    "src/app/page.tsx:784",
+    "src/components/ranking/RankingPanel.tsx:363",
+    "src/lib/storage.ts:44"
+   ],
+   "tests": [
+    "data-safety.spec.mjs > RES-04 after \"Clear my data\" nothing of the borrower is left for the next person on that browser"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-04.md"
+  },
+  {
+   "id": "RES-05",
+   "severity": "P1",
+   "effort": "M",
+   "area": "Data safety and resilience",
+   "title": "No backup or restore: the browser holds the only copy",
+   "summary": "Nothing can restore a borrower's loans and dated records once the browser drops them (Safari's automatic removal after weeks away, cleared site data, a new phone or browser), so they come back to an empty start screen with no warning and the dated records are gone for good.",
+   "files": [
+    "src/lib/storage.ts:15",
+    "src/lib/storage.ts:57",
+    "src/lib/storage.ts:75",
+    "src/lib/export.ts:80",
+    "src/lib/export.ts:82",
+    "src/lib/export.ts:95",
+    "src/lib/export.ts:243",
+    "src/lib/export.ts:262",
+    "src/components/history/HistoryPanel.tsx:78",
+    "src/components/history/HistoryPanel.tsx:93",
+    "src/app/page.tsx:139",
+    "src/app/page.tsx:151",
+    "src/app/page.tsx:274",
+    "src/app/page.tsx:368",
+    "src/app/page.tsx:418",
+    "src/app/page.tsx:544",
+    "src/app/page.tsx:625"
+   ],
+   "tests": [
+    "data-safety.spec.mjs > RES-05 after the browser drops its data, the start screen loads it back from a file the app saved"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-05.md"
+  },
+  {
+   "id": "RES-12",
+   "severity": "P1",
+   "effort": "M",
+   "area": "Data safety and resilience",
+   "title": "Machine-translated pages show stale figures and crash",
+   "summary": "When a borrower uses browser translation, changing a plan or extra payment leaves the previous plan's dates, payments and names on screen, or crashes the app to an error page with no way back.",
+   "files": [
+    "src/components/ranking/RankingPanel.tsx:170-173",
+    "src/components/ranking/RankingPanel.tsx:176-187",
+    "src/components/ranking/RankingPanel.tsx:188-221",
+    "src/components/ranking/RankingPanel.tsx:333-341",
+    "src/components/ranking/RankingPanel.tsx:419-435",
+    "src/components/ranking/RankingPanel.tsx:476-483",
+    "src/components/ranking/RankingPanel.tsx:484-488",
+    "src/components/ranking/RankingPanel.tsx:497-504",
+    "src/components/charts/PayoffRunway.tsx:144-159",
+    "src/components/charts/PayoffRunway.tsx:162-172",
+    "src/app/page.tsx:458-473",
+    "src/components/plans/PlansPanel.tsx:352-357",
+    "src/components/plans/PlansPanel.tsx:368-374",
+    "src/components/loans/LoanList.tsx:56-63",
+    "src/components/history/HistoryPanel.tsx:78-83",
+    "src/components/loans/LoanForm.tsx:354-378",
+    "src/components/shared/ui.tsx:266-284",
+    "src/components/shared/ui.tsx:446-447"
+   ],
+   "tests": [
+    "resilience.spec.mjs > RES-12 a translated page shows the same figures as the untranslated one and never crashes"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-12.md"
+  },
+  {
+   "id": "SCOPE-01",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Borrowers the model does not fit yet",
+   "title": "PSLF promised without the full-time rule",
+   "summary": "The Plans tab promises Public Service Loan Forgiveness on employer type alone and never mentions the 30-hour full-time rule, so a part-time government or nonprofit worker is told a $0 payment ends in cancellation after 120 payments when none of their months count.",
+   "files": [
+    "src/lib/calc.ts:235",
+    "src/lib/calc.ts:529",
+    "src/lib/calc.ts:536",
+    "src/lib/calc.ts:262",
+    "src/lib/calc.ts:348",
+    "src/lib/calc.ts:431",
+    "src/lib/calc.ts:452",
+    "src/lib/calc.ts:471",
+    "src/types/index.ts:156",
+    "src/types/index.ts:157",
+    "src/data/plans.ts:98",
+    "src/data/plans.ts:155",
+    "src/data/plans.ts:196",
+    "src/components/plans/PlansPanel.tsx:42",
+    "src/app/page.tsx:701"
+   ],
+   "tests": [
+    "scope.spec.mjs > SCOPE-01 a part-time public-service worker is told only full-time months earn PSLF wherever forgiveness is promised"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SCOPE-01.md"
+  },
+  {
+   "id": "SCOPE-02",
+   "severity": "P1",
+   "effort": "M",
+   "area": "Borrowers the model does not fit yet",
+   "title": "Married borrowers cannot be priced correctly",
+   "summary": "Married borrowers who file jointly cannot be priced correctly: one household number sets both IBR family size and RAP dependents, and a spouse's own federal loans cannot be entered, so IBR or RAP is off by up to $71 a month (much more when both spouses borrowed) and the recommended plan can flip.",
+   "files": [
+    "src/app/page.tsx:752",
+    "src/app/page.tsx:753",
+    "src/app/page.tsx:724",
+    "src/app/page.tsx:725",
+    "src/lib/calc.ts:197",
+    "src/lib/calc.ts:204",
+    "src/lib/calc.ts:272",
+    "src/lib/calc.ts:437",
+    "src/lib/calc.ts:456",
+    "src/types/index.ts:110",
+    "src/types/index.ts:113",
+    "src/types/index.ts:122",
+    "src/lib/storage.ts:47",
+    "verify.mjs:248"
+   ],
+   "tests": [
+    "scope.spec.mjs > SCOPE-02 a married couple filing jointly can be priced by the rule: IBR $163 with RAP $217, and the spouse's own loans count"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SCOPE-02.md"
+  },
+  {
+   "id": "SCOPE-04",
+   "severity": "P1",
+   "effort": "S",
+   "area": "Borrowers the model does not fit yet",
+   "title": "FFEL, Perkins, private and consolidation loans entered as Direct types",
+   "summary": "The loan form offers only Direct loan types and never says so, so a borrower with an FFEL, Perkins, private or consolidation loan is told RAP is open and their payments count toward PSLF when they do not, or is shown a 10-year Standard payment their consolidation loan is not on.",
+   "files": [
+    "src/types/index.ts:6",
+    "src/types/index.ts:184",
+    "src/types/index.ts:200",
+    "src/components/loans/LoanForm.tsx:55",
+    "src/components/loans/LoanForm.tsx:249",
+    "src/components/loans/LoanForm.tsx:321",
+    "src/components/loans/LoanForm.tsx:507",
+    "src/components/loans/LoanForm.tsx:510",
+    "src/lib/calc.ts:273",
+    "src/lib/calc.ts:340",
+    "src/lib/calc.ts:346",
+    "src/lib/calc.ts:536",
+    "src/components/plans/PlansPanel.tsx:42",
+    "src/components/plans/PlansPanel.tsx:334",
+    "src/components/plans/PlansPanel.tsx:377",
+    "src/data/plans.ts:241",
+    "src/data/plans.ts:255",
+    "src/app/layout.tsx:20",
+    "src/app/layout.tsx:22",
+    "src/app/layout.tsx:26",
+    "src/app/layout.tsx:32",
+    "src/app/page.tsx:359",
+    "src/app/page.tsx:559",
+    "src/lib/export.ts:47",
+    "src/components/loans/LoanList.tsx:57",
+    "README.md:5",
+    "README.md:26"
+   ],
+   "tests": [
+    "scope.spec.mjs > SCOPE-04 the loan form and the plan answer say they cover federal Direct Loans, not FFEL, Perkins, consolidation or private loans"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SCOPE-04.md"
+  },
+  {
+   "id": "SCOPE-05",
+   "severity": "P1",
+   "effort": "M",
+   "area": "Borrowers the model does not fit yet",
+   "title": "Defaulted loans shown plans and dates that do not apply",
+   "summary": "Choosing 'Default Resolution Group' as the servicer changes nothing, so a borrower in default is told Standard, Graduated and Extended are open, steered to one of them and given a debt-free date, when in default only IBR or RAP can repay the loan and rehabilitation is the way back to choosing a plan.",
+   "files": [
+    "src/types/index.ts:185",
+    "src/components/loans/LoanForm.tsx:399",
+    "src/lib/calc.ts:208",
+    "src/lib/calc.ts:222",
+    "src/lib/calc.ts:283",
+    "src/lib/calc.ts:299",
+    "src/lib/calc.ts:308",
+    "src/lib/calc.ts:338",
+    "src/lib/calc.ts:544",
+    "src/lib/calc.ts:551",
+    "src/lib/ranking.ts:77",
+    "src/data/plans.ts:249",
+    "src/data/plans.ts:276",
+    "src/components/plans/PlansPanel.tsx:321",
+    "src/components/plans/PlansPanel.tsx:346",
+    "src/components/plans/PlansPanel.tsx:388",
+    "src/components/ranking/RankingPanel.tsx:95",
+    "src/components/ranking/RankingPanel.tsx:154",
+    "src/app/page.tsx:616",
+    "src/app/page.tsx:789",
+    "verify.mjs:583"
+   ],
+   "tests": [
+    "scope.spec.mjs > SCOPE-05 a borrower in default is offered only IBR or RAP and gets no debt-free date on a plan default closes"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SCOPE-05.md"
+  },
+  {
+   "id": "SCOPE-07",
+   "severity": "P1",
+   "effort": "M",
+   "area": "Borrowers the model does not fit yet",
+   "title": "Payments already credited toward forgiveness ignored",
+   "summary": "The app never asks how many payments already count toward forgiveness and prices IBR, RAP and PSLF from payment one, so a borrower with 120 months of IBR credit is told forgiveness comes in November 2046 after $48,120 when it comes in November 2036 after $24,060.",
+   "files": [
+    "src/types/index.ts:110",
+    "src/types/index.ts:122",
+    "src/types/index.ts:65",
+    "src/app/page.tsx:672",
+    "src/lib/calc.ts:146",
+    "src/lib/calc.ts:152",
+    "src/lib/calc.ts:436",
+    "src/lib/calc.ts:438",
+    "src/lib/calc.ts:448",
+    "src/lib/calc.ts:457",
+    "src/lib/calc.ts:467",
+    "src/lib/calc.ts:499",
+    "src/lib/calc.ts:536",
+    "src/lib/calc.ts:560",
+    "src/components/plans/PlansPanel.tsx:159",
+    "src/components/plans/PlansPanel.tsx:253"
+   ],
+   "tests": [
+    "scope.spec.mjs > SCOPE-07 a borrower with 120 months of IBR credit can enter it and sees forgiveness after 120 more payments, not 240"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SCOPE-07.md"
+  },
+  {
+   "id": "SEO-01",
+   "severity": "P1",
+   "effort": "M",
+   "area": "SEO and findability",
+   "title": "Server HTML is empty: prerender the first-run screen",
+   "summary": "The page's HTML has no body text until all its JavaScript runs, so AI assistants that read raw HTML get only the title and description, no page on the site gives any crawler the repayment rules, and a first-time borrower on a slow phone waits about 0.9s longer than necessary to read anything.",
+   "files": [
+    "src/app/page.tsx:294-303",
+    "src/app/page.tsx:131",
+    "src/app/page.tsx:151-167",
+    "src/app/page.tsx:356-430",
+    "src/app/page.tsx:357",
+    "src/app/page.tsx:370-380",
+    "src/app/page.tsx:394-428",
+    "src/app/page.tsx:839-859",
+    "src/app/layout.tsx:46",
+    "src/app/layout.tsx:48-53",
+    "src/lib/storage.ts:9",
+    "src/components/plans/PlansPanel.tsx:441-449",
+    "src/data/plans.ts:269-270",
+    "src/data/plans.ts:257-258",
+    "src/data/plans.ts:40",
+    "src/lib/calc.ts:391-414",
+    "src/components/history/HistoryPanel.tsx:59-61"
+   ],
+   "tests": [
+    "seo-agentic.spec.mjs > SEO-01 a reader that runs no JavaScript gets the first-run screen and can follow links to the repayment rules"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEO-01.md"
+  },
+  {
+   "id": "A11Y-03",
+   "severity": "P2",
+   "effort": "M",
+   "area": "Accessibility",
+   "title": "Focus is lost to the page after common actions",
+   "summary": "After 19 of 37 common actions, including every Next card and saving or cancelling a loan edit, keyboard focus falls to the page instead of a nearby control, so keyboard and screen-reader users lose their place and phone users are left with the edited loan off screen.",
+   "files": [
+    "src/app/page.tsx:205-216",
+    "src/app/page.tsx:218-248",
+    "src/app/page.tsx:250-259",
+    "src/app/page.tsx:261-272",
+    "src/app/page.tsx:279",
+    "src/app/page.tsx:370",
+    "src/app/page.tsx:373-377",
+    "src/app/page.tsx:391",
+    "src/app/page.tsx:437",
+    "src/app/page.tsx:453",
+    "src/app/page.tsx:546",
+    "src/app/page.tsx:574",
+    "src/app/page.tsx:589",
+    "src/app/page.tsx:618",
+    "src/app/page.tsx:632",
+    "src/app/page.tsx:653",
+    "src/app/page.tsx:783",
+    "src/app/page.tsx:794",
+    "src/app/page.tsx:816",
+    "src/app/page.tsx:822",
+    "src/components/shared/ui.tsx:89",
+    "src/components/shared/ui.tsx:524",
+    "src/components/shared/ui.tsx:592",
+    "src/components/loans/LoanList.tsx:41-45",
+    "src/components/loans/LoanList.tsx:116",
+    "src/components/loans/LoanForm.tsx:364-370",
+    "src/components/plans/PlansPanel.tsx:37",
+    "src/components/plans/PlansPanel.tsx:364",
+    "src/components/plans/PlansPanel.tsx:370",
+    "src/components/history/HistoryPanel.tsx:42",
+    "src/components/history/HistoryPanel.tsx:73",
+    "src/components/ranking/RankingPanel.tsx:165"
+   ],
+   "tests": [
+    "a11y.spec.mjs > A11Y-03 after Next cards, saving or cancelling an edit, Remove, Undo, Clear and the first-run buttons, keyboard focus lands on a nearby control"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-03.md"
+  },
+  {
+   "id": "A11Y-04",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Undo expires at 7 seconds and never pauses",
+   "summary": "The Undo after removing a loan or clearing data disappears after a fixed 7 seconds, even while focused or hovered, so a keyboard or switch user who cannot Tab the 6 to 13 stops to it in time must retype the loan, and cleared records are lost for good.",
+   "files": [
+    "src/app/page.tsx:170",
+    "src/app/page.tsx:172",
+    "src/app/page.tsx:205",
+    "src/app/page.tsx:250",
+    "src/app/page.tsx:261",
+    "src/app/page.tsx:268",
+    "src/app/page.tsx:646",
+    "src/app/page.tsx:862",
+    "src/components/shared/ui.tsx:571",
+    "src/components/shared/ui.tsx:589",
+    "src/components/loans/LoanList.tsx:120",
+    "src/components/loans/LoanForm.tsx:205",
+    "src/lib/storage.ts:59",
+    "src/lib/storage.ts:75",
+    "README.md:202"
+   ],
+   "tests": [
+    "a11y.spec.mjs > A11Y-04 a keyboard user pressing Tab once a second can reach Undo after removing a loan and get the loan back"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-04.md"
+  },
+  {
+   "id": "A11Y-06",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Radio choices ignore arrow keys",
+   "summary": "The radio-button choices (the two Plans questions, loan type, payoff order) ignore the arrow keys and make every option its own Tab stop, so keyboard borrowers Tab through 8 stops instead of 2 on Plans, and pressing an arrow scrolls the page instead of changing the answer.",
+   "files": [
+    "src/components/shared/ui.tsx:8",
+    "src/components/shared/ui.tsx:347",
+    "src/components/shared/ui.tsx:364",
+    "src/components/shared/ui.tsx:374",
+    "src/components/shared/ui.tsx:380",
+    "src/app/page.tsx:683",
+    "src/app/page.tsx:703",
+    "src/components/loans/LoanForm.tsx:313",
+    "src/components/ranking/RankingPanel.tsx:396"
+   ],
+   "tests": [
+    "a11y.spec.mjs > A11Y-06 each radio group is one Tab stop and the arrow keys move the answer, wrapping at both ends"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-06.md"
+  },
+  {
+   "id": "A11Y-07",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Input borders below 3:1",
+   "summary": "Text input and select borders are only 1.48:1 against white, so a low-vision borrower adding a loan cannot see the outline of the empty Name field, and every other field looks faint.",
+   "files": [
+    "src/components/shared/ui.tsx:290",
+    "src/components/shared/ui.tsx:292",
+    "src/components/loans/LoanForm.tsx:446",
+    "src/components/loans/LoanForm.tsx:423",
+    "tailwind.config.ts:19"
+   ],
+   "tests": [
+    "a11y.spec.mjs > A11Y-07 every text field and select has an outline of at least 3:1 at rest and on hover"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-07.md"
+  },
+  {
+   "id": "A11Y-08",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Slider track below 3:1",
+   "summary": "The Payoff slider's unfilled track is 1.14:1 against its panel, so at the default $0 a low-vision borrower sees only a lone circle, with no sign that it slides or how far.",
+   "files": [
+    "src/app/globals.css:93",
+    "src/app/globals.css:102",
+    "src/components/ranking/RankingPanel.tsx:227",
+    "src/components/ranking/RankingPanel.tsx:254"
+   ],
+   "tests": [
+    "a11y.spec.mjs > A11Y-08 at $0 the Payoff slider shows a track of at least 3:1 against its panel"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-08.md"
+  },
+  {
+   "id": "A11Y-10",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Two text colours below 4.5:1",
+   "summary": "The saved-records count in the section bar and the placeholder in a loan field that failed validation are below the 4.5:1 contrast minimum, so low-vision borrowers may not be able to read them.",
+   "files": [
+    "src/app/page.tsx:534",
+    "src/components/shared/ui.tsx:291",
+    "src/components/shared/ui.tsx:294",
+    "README.md:74"
+   ],
+   "tests": [
+    "a11y-details.spec.mjs > A11Y-10 the saved-records count in the section bar and the hints in empty loan fields read at 4.5:1, at rest, on hover and after a failed save"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-10.md"
+  },
+  {
+   "id": "A11Y-12",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Forced colors hides the selected state",
+   "summary": "With Windows Contrast Themes on, selected choices, presets, school-year chips and the open section look the same as unselected ones, so borrowers who need high contrast cannot see what they picked or where they are.",
+   "files": [
+    "src/components/shared/ui.tsx:386",
+    "src/app/page.tsx:526",
+    "src/components/ranking/RankingPanel.tsx:284",
+    "src/components/loans/LoanForm.tsx:273",
+    "src/app/globals.css:93",
+    "src/app/globals.css:102",
+    "src/components/charts/PayoffRunway.tsx:29",
+    "src/app/globals.css:140"
+   ],
+   "tests": [
+    "a11y-details.spec.mjs > A11Y-12 under Windows contrast themes the chosen answer, preset, school year and open section look chosen, the slider shows its track and the chart stays readable"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-12.md"
+  },
+  {
+   "id": "A11Y-14",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Field names, units and required state",
+   "summary": "The add-a-loan form hides its % and $ units and which fields are required from screen readers and agents, and saves a rate typed as 0.0653 without a word, so a $12,000 loan shows a $100 Standard payment instead of $136.",
+   "files": [
+    "src/components/shared/ui.tsx:256-264",
+    "src/components/shared/ui.tsx:312-319",
+    "src/components/shared/ui.tsx:330-337",
+    "src/components/loans/LoanForm.tsx:177-180",
+    "src/components/loans/LoanForm.tsx:295-306",
+    "src/components/loans/LoanForm.tsx:328-348",
+    "src/components/loans/LoanForm.tsx:350-395",
+    "src/components/loans/LoanForm.tsx:398-402",
+    "src/components/loans/LoanForm.tsx:456-494",
+    "src/app/page.tsx:723-728",
+    "src/components/ranking/RankingPanel.tsx:98",
+    "src/components/ranking/RankingPanel.tsx:148",
+    "src/components/ranking/RankingPanel.tsx:230-235",
+    "src/components/ranking/RankingPanel.tsx:244-248",
+    "src/components/ranking/RankingPanel.tsx:253-267",
+    "src/components/ranking/RankingPanel.tsx:280"
+   ],
+   "tests": [
+    "a11y-details.spec.mjs > A11Y-14 money and rate fields say their unit, field names read as words, required and optional fields say which they are, the slider speaks dollars and keeps a typed $2,000, and a rate typed as 0.0653 is not saved silently"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-14.md"
+  },
+  {
+   "id": "DX-01",
+   "severity": "P2",
+   "effort": "M",
+   "area": "Testing and maintainability",
+   "title": "No CI, no npm test, no browser regression suite",
+   "summary": "No build step, CI job or committed browser test runs the money checks before a deploy, so a change that shows borrowers a wrong monthly payment still builds green and ships.",
+   "files": [
+    "package.json:5",
+    "package.json:7",
+    "verify.mjs:7",
+    "verify.mjs:632",
+    "README.md:90",
+    "README.md:142",
+    "src/app/page.tsx:152"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-01 a change that fails the money checks cannot get through the build that deploys"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-01.md"
+  },
+  {
+   "id": "DX-02",
+   "severity": "P2",
+   "effort": "M",
+   "area": "Testing and maintainability",
+   "title": "verify.mjs misses bugs and can pass on stale output",
+   "summary": "verify.mjs passes 180 of 180 while borrowers see wrong totals, forgiven amounts and payoff figures, because it checks payments and rule tables but not the simulated results, and it can test stale compiled code.",
+   "files": [
+    "verify.mjs:3",
+    "verify.mjs:49",
+    "verify.mjs:52",
+    "verify.mjs:84",
+    "verify.mjs:302",
+    "verify.mjs:315",
+    "verify.mjs:318",
+    "verify.mjs:338",
+    "verify.mjs:437",
+    "verify.mjs:520",
+    "verify.mjs:626",
+    "README.md:86",
+    "src/components/ranking/RankingPanel.tsx:102",
+    "src/lib/ranking.ts:191"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-02 the money harness fails when a borrower-facing figure breaks or its compiled code is stale"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": "fixes/DX-02/",
+   "details": "issues/DX-02.md"
+  },
+  {
+   "id": "MONEY-10",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "$0 IBR payment sends Payoff into a pick-a-plan loop",
+   "summary": "When IBR prices at exactly $0, Payoff treats the chosen plan as no plan and tells the borrower to pick one, so the lowest-income borrowers loop between Plans and Payoff and never get the extra-payment control.",
+   "files": [
+    "src/lib/ranking.ts:170",
+    "src/lib/ranking.ts:199",
+    "src/components/ranking/RankingPanel.tsx:101-109",
+    "src/components/ranking/RankingPanel.tsx:136",
+    "src/components/ranking/RankingPanel.tsx:139",
+    "src/components/ranking/RankingPanel.tsx:154",
+    "src/components/ranking/RankingPanel.tsx:157",
+    "src/components/ranking/RankingPanel.tsx:189-195",
+    "src/app/page.tsx:789-795",
+    "verify.mjs:437-438",
+    "README.md:90"
+   ],
+   "tests": [
+    "money-core.spec.mjs > MONEY-10 a $0 IBR payment is a real plan: Payoff projects it and offers the extra-payment control"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-10.md"
+  },
+  {
+   "id": "MONEY-14",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "IBR $5 and $10 rounding rule missing",
+   "summary": "IBR skips the federal rule that turns a payment under $5 into $0 and one from $5 to $10 into $10, so borrowers earning just above 150% of the poverty line see an IBR figure up to $5 a month off.",
+   "files": [
+    "src/lib/calc.ts:437",
+    "src/lib/calc.ts:199",
+    "verify.mjs:269"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-14 IBR applies the $5 and $10 rule: a calculated payment under $5 is $0 and one from $5 to $10 is $10"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-14.md"
+  },
+  {
+   "id": "MONEY-15",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Extended opens at exactly $30,000",
+   "summary": "Extended shows as open when the loans total exactly $30,000, though the rule and the app's own card text require more than $30,000, so those borrowers are offered a plan they cannot get.",
+   "files": [
+    "src/lib/calc.ts:323",
+    "src/lib/calc.ts:334",
+    "src/lib/calc.ts:29",
+    "src/data/plans.ts:69",
+    "src/data/plans.ts:129",
+    "src/data/plans.ts:140",
+    "verify.mjs:520"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-15 Extended is closed at exactly $30,000 however the cents are split across loans, and open from $30,000.01"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-15.md"
+  },
+  {
+   "id": "MONEY-16",
+   "severity": "P2",
+   "effort": "M",
+   "area": "Money figures and eligibility",
+   "title": "Card and reason copy contradicts the numbers",
+   "summary": "Plan-card and recommendation sentences contradict the figures beside them, such as Standard's 'Least total interest of any plan' next to RAP's 'Least interest overall' badge and 'At least $50 a month goes to principal' on a $10 RAP payment, so borrowers checking the reasoning see the screen disprove itself.",
+   "files": [
+    "src/data/plans.ts:91",
+    "src/data/plans.ts:96",
+    "src/data/plans.ts:101",
+    "src/data/plans.ts:103",
+    "src/data/plans.ts:195",
+    "src/types/index.ts:159",
+    "src/types/index.ts:173",
+    "src/lib/calc.ts:529",
+    "src/lib/calc.ts:536",
+    "src/lib/calc.ts:537",
+    "src/lib/calc.ts:588",
+    "src/components/ranking/RankingPanel.tsx:136",
+    "src/components/ranking/RankingPanel.tsx:216",
+    "src/lib/ranking.ts:37",
+    "src/lib/ranking.ts:40",
+    "src/lib/ranking.ts:49"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-16 every plan and payoff sentence agrees with the figures shown beside it"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-16.md"
+  },
+  {
+   "id": "MONEY-17",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Rate table goes stale in July 2027",
+   "summary": "The loan form fills in 6.52% and calls it the published rate for any payout date after June 30, 2027, so from July 2027 every new Subsidized or Unsubsidized loan gets last year's rate under a false label.",
+   "files": [
+    "src/data/seed.ts:136",
+    "src/data/seed.ts:128",
+    "src/data/seed.ts:146",
+    "src/components/loans/LoanForm.tsx:296",
+    "src/components/loans/LoanForm.tsx:357",
+    "src/components/loans/LoanForm.tsx:362"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-17 the loan form never calls a filled-in rate published for an award year that has no published rate"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-17.md"
+  },
+  {
+   "id": "MONEY-18",
+   "severity": "P2",
+   "effort": "M",
+   "area": "Money figures and eligibility",
+   "title": "Two different \"interest added so far\" figures",
+   "summary": "'Interest added so far' in the Loans summary disagrees with the loan rows when one loan is paid down and another has grown, and a blank 'Amount you first borrowed' is saved as today's balance, so the row and the spreadsheet show a principal the borrower never entered.",
+   "files": [
+    "src/app/page.tsx:307",
+    "src/app/page.tsx:482",
+    "src/app/page.tsx:491",
+    "src/components/loans/LoanList.tsx:22",
+    "src/components/loans/LoanList.tsx:92",
+    "src/components/loans/LoanList.tsx:98",
+    "src/components/loans/LoanForm.tsx:202",
+    "src/components/loans/LoanForm.tsx:428",
+    "src/lib/export.ts:49",
+    "src/lib/export.ts:63"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-18 the summary\\'s interest added equals the loan rows, and a principal nobody entered is never shown as borrowed"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-18.md"
+  },
+  {
+   "id": "MONEY-24",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "SAVE, PAYE and ICR 2028 transition not mentioned",
+   "summary": "The app never mentions that SAVE has ended or that PAYE and ICR end by July 1, 2028, so a borrower choosing a plan here is not told a 90-day servicer deadline is running or which plan they land on if they do nothing.",
+   "files": [
+    "src/components/plans/PlansPanel.tsx:321",
+    "src/app/page.tsx:550",
+    "src/data/plans.ts:170",
+    "src/data/plans.ts:182",
+    "src/data/plans.ts:242",
+    "src/data/plans.ts:255",
+    "src/components/loans/LoanForm.tsx:511",
+    "src/lib/calc.ts:299"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-24 the Plans tab says SAVE has ended, about the 90-day window, the default plan and the 2028 end of PAYE and ICR"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-24.md"
+  },
+  {
+   "id": "RES-06",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "\"On your device\" is really \"in this browser\"",
+   "summary": "The header says 'On your device', but each browser, in-app browser and iOS 26 Home Screen icon keeps its own separate copy, so a borrower who comes back a different way sees an empty start screen with no hint that their loans are still in the other place.",
+   "files": [
+    "src/app/page.tsx:337",
+    "src/app/page.tsx:338",
+    "src/components/history/HistoryPanel.tsx:79",
+    "src/app/page.tsx:420",
+    "src/app/page.tsx:659",
+    "src/data/plans.ts:285",
+    "src/lib/storage.ts:3",
+    "src/app/page.tsx:416",
+    "src/app/page.tsx:368",
+    "src/app/page.tsx:139",
+    "src/app/page.tsx:544",
+    "src/app/layout.tsx:19"
+   ],
+   "tests": [
+    "data-safety.spec.mjs > RES-06 the page says loans are kept in this browser, and the start screen says they may be in another one"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-06.md"
+  },
+  {
+   "id": "RES-07",
+   "severity": "P2",
+   "effort": "M",
+   "area": "Data safety and resilience",
+   "title": "Malformed storage locks the borrower out",
+   "summary": "With no check on saved data and no error boundary, a malformed stored loan or snapshot leaves the borrower on an 'Application error' page with no controls on every visit, with their loans still stored but unreachable, and saved values that cannot be parsed are silently erased.",
+   "files": [
+    "src/lib/storage.ts:15-25",
+    "src/app/page.tsx:151-159",
+    "src/lib/storage.ts:37-40",
+    "src/lib/storage.ts:53",
+    "src/lib/storage.ts:45-48",
+    "src/lib/calc.ts:29",
+    "src/app/page.tsx:182",
+    "src/app/page.tsx:82",
+    "src/app/page.tsx:533",
+    "src/lib/utils.ts:31",
+    "src/components/loans/LoanList.tsx:30",
+    "src/components/history/HistoryPanel.tsx:38-40",
+    "src/components/history/HistoryPanel.tsx:104",
+    "src/components/history/HistoryPanel.tsx:119",
+    "src/lib/storage.ts:75",
+    "src/app/page.tsx:653",
+    "src/components/ranking/RankingPanel.tsx:98",
+    "src/app/page.tsx:760",
+    "src/app/page.tsx:261",
+    "src/app/page.tsx:268",
+    "src/app/page.tsx:659-660"
+   ],
+   "tests": [
+    "data-safety.spec.mjs > RES-07 one unreadable saved loan does not lock the borrower out of the loans that are fine"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-07.md"
+  },
+  {
+   "id": "RES-08",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "Spreadsheet download fails silently",
+   "summary": "When the spreadsheet code cannot load (offline, blocked, a 404, or after a 2-minute stall), both 'Download as a spreadsheet' buttons quietly return to their label, so a borrower trying to keep their copy outside the browser gets no file and no message.",
+   "files": [
+    "src/app/page.tsx:279-286",
+    "src/app/page.tsx:631",
+    "src/app/page.tsx:643",
+    "src/components/history/HistoryPanel.tsx:42-49",
+    "src/components/history/HistoryPanel.tsx:72",
+    "src/components/history/HistoryPanel.tsx:77",
+    "src/components/history/HistoryPanel.tsx:79-80",
+    "src/lib/export.ts:75-78",
+    "src/lib/export.ts:80-92",
+    "src/app/page.tsx:172",
+    "src/components/shared/ui.tsx:578"
+   ],
+   "tests": [
+    "data-safety.spec.mjs > RES-08 when a spreadsheet cannot be prepared, the borrower is told beside the button until they try again"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-08.md"
+  },
+  {
+   "id": "RES-09",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "Export file name uses the UTC date",
+   "summary": "Spreadsheet file names use the UTC date, so a US borrower who downloads in the evening gets a file named for tomorrow while the 'Saved' date inside it says today.",
+   "files": [
+    "src/lib/export.ts:12-14",
+    "src/lib/export.ts:114",
+    "src/lib/export.ts:301",
+    "src/lib/export.ts:16-24",
+    "src/lib/export.ts:101",
+    "src/lib/export.ts:103"
+   ],
+   "tests": [
+    "resilience.spec.mjs > RES-09 spreadsheet file names carry the borrower's local date"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-09.md"
+  },
+  {
+   "id": "RES-10",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "Undo holds only one action",
+   "summary": "Undo only covers the latest action, so a borrower who removes a second loan, clears loans after clearing records, or picks a plan within the 7-second window can no longer bring back what they removed first.",
+   "files": [
+    "src/app/page.tsx:172",
+    "src/app/page.tsx:176-180",
+    "src/app/page.tsx:250-259",
+    "src/app/page.tsx:261-272",
+    "src/app/page.tsx:274-277",
+    "src/app/page.tsx:783-786",
+    "src/components/shared/ui.tsx:565-569"
+   ],
+   "tests": [
+    "resilience.spec.mjs > RES-10 one Undo brings back everything removed while it is offered"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-10.md"
+  },
+  {
+   "id": "RES-11",
+   "severity": "P2",
+   "effort": "M",
+   "area": "Data safety and resilience",
+   "title": "Half-typed loan form lost without warning",
+   "summary": "A half-filled loan form disappears without warning when the borrower taps another section, taps Edit on another loan, or reloads, so the balance, rate and date they typed are lost.",
+   "files": [
+    "src/app/page.tsx:205-208",
+    "src/app/page.tsx:605-608",
+    "src/app/page.tsx:126-127",
+    "src/app/page.tsx:139-149",
+    "src/app/page.tsx:384-393",
+    "src/app/page.tsx:568-579",
+    "src/components/loans/LoanForm.tsx:83-115",
+    "src/components/loans/LoanForm.tsx:119-121"
+   ],
+   "tests": [
+    "resilience.spec.mjs > RES-11 a half-filled loan survives a section switch, a reload and Edit on another loan"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-11.md"
+  },
+  {
+   "id": "SEC-01",
+   "severity": "P2",
+   "effort": "S",
+   "area": "Security, privacy and best practices",
+   "title": "Privacy promise is not enforced by a CSP",
+   "summary": "Nothing enforces the \"Stays on this device\" promise: the site sends no Content-Security-Policy and node verify.mjs never scans the UI code, so one added analytics line or dependency could send every borrower's saved loans off the device without any check failing.",
+   "files": [
+    "next.config.mjs:2",
+    "src/data/plans.ts:284-285",
+    "src/app/page.tsx:337-338",
+    "src/app/page.tsx:841",
+    "src/lib/storage.ts:30",
+    "verify.mjs:49-54",
+    "verify.mjs:626",
+    "package.json:11-19",
+    "README.md:79-81"
+   ],
+   "tests": [
+    "security-privacy.spec.mjs > SEC-01 no page on this site can send a borrower's saved loans to another site"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEC-01.md"
+  },
+  {
+   "id": "SEO-02",
+   "severity": "P2",
+   "effort": "S",
+   "area": "SEO and findability",
+   "title": "Share card has no image or URL",
+   "summary": "The page asks for a large-image link preview but provides no image and no og:url, so a borrower who is sent the link in a chat or social post sees a text-only preview.",
+   "files": [
+    "src/app/layout.tsx:19",
+    "src/app/layout.tsx:23-33"
+   ],
+   "tests": [
+    "seo-agentic.spec.mjs > SEO-02 a shared link shows a preview image and names its own address"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": "fixes/SEO-02/",
+   "details": "issues/SEO-02.md"
+  },
+  {
+   "id": "SEO-04",
+   "severity": "P2",
+   "effort": "S",
+   "area": "SEO and findability",
+   "title": "Cense site nav links the superseded tools",
+   "summary": "The Cense newsletter's site-wide Resources menu links the older Loan Lab quiz and never Loan Desk, so readers looking for a repayment tool reach Loan Desk only if they finish a six-step quiz and scroll to the bottom of its results.",
+   "files": [
+    "README.md:8-10",
+    "src/types/index.ts:5-6",
+    "src/app/page.tsx:849"
+   ],
+   "tests": [],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEO-04.md"
+  },
+  {
+   "id": "UX-01",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Choosing a plan reads as enrolling",
+   "summary": "Picking a plan says 'Standard is now your plan' though it only changes the numbers in this app, and nothing tells the borrower they still have to apply at studentaid.gov or ask their servicer, so they can leave thinking their plan has changed.",
+   "files": [
+    "src/app/page.tsx:785",
+    "src/app/page.tsx:470",
+    "src/components/plans/PlansPanel.tsx:124",
+    "src/components/plans/PlansPanel.tsx:208",
+    "src/components/plans/PlansPanel.tsx:225",
+    "src/components/plans/PlansPanel.tsx:365",
+    "src/components/plans/PlansPanel.tsx:373",
+    "src/components/plans/PlansPanel.tsx:377-380",
+    "src/components/ranking/RankingPanel.tsx:171",
+    "src/components/ranking/RankingPanel.tsx:375"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-01 choosing a plan says it only changes the numbers here and names the real step"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-01.md"
+  },
+  {
+   "id": "UX-02",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Records says \"Nothing changed\" when nobody checked",
+   "summary": "Records tells borrowers to save again after their servicer updates, but the app cannot see the servicer, so a save without retyped balances writes a dated 'Nothing changed' card and a 'No change' spreadsheet row into the record they keep as evidence.",
+   "files": [
+    "src/components/history/HistoryPanel.tsx:79-80",
+    "src/components/history/HistoryPanel.tsx:93-94",
+    "src/components/history/HistoryPanel.tsx:127",
+    "src/lib/export.ts:169",
+    "src/lib/export.ts:139-144",
+    "src/lib/export.ts:232-234",
+    "src/lib/export.ts:258-260",
+    "src/lib/storage.ts:91",
+    "src/lib/storage.ts:101",
+    "src/app/page.tsx:820"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-02 Records says the app cannot see the servicer, and a save with nothing retyped is not called \"Nothing changed\""
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-02.md"
+  },
+  {
+   "id": "UX-03",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Next-step cards land mid-section",
+   "summary": "The Next cards scroll the sticky tab bar into view instead of the new section, so tapping 'See your debt-free date' leaves a phone user 1,340 to 2,690px below the date, looking at the next card instead.",
+   "files": [
+    "src/app/page.tsx:205-216",
+    "src/app/page.tsx:511-512",
+    "src/app/page.tsx:545",
+    "src/app/globals.css:7"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-03 a Next card or section tab lands with the new section heading below the sticky bar"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-03.md"
+  },
+  {
+   "id": "UX-04",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Answering a question changes the pick off screen",
+   "summary": "Answering a Plans question changes the recommended plan and payment below the fold with nothing on screen or announced, so a phone user cannot tell their answer just moved the pick from Standard at $311 to Graduated at $139 a month.",
+   "files": [
+    "src/app/page.tsx:670-778",
+    "src/app/page.tsx:694",
+    "src/app/page.tsx:195-203",
+    "src/components/plans/PlansPanel.tsx:342-357",
+    "src/app/globals.css:5-8"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-04 an answer that changes the recommended plan shows the new pick where it was given, and announces it"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-04.md"
+  },
+  {
+   "id": "UX-05",
+   "severity": "P2",
+   "effort": "M",
+   "area": "UX and UI",
+   "title": "Plans cannot be compared on one screen",
+   "summary": "Each open plan's monthly payment, total and term sit in a separate tall card, so a phone never shows more than two plans' figures at once and a borrower cannot see Standard beside RAP without scrolling back and forth.",
+   "files": [
+    "src/components/plans/PlansPanel.tsx:396-403",
+    "src/components/plans/PlansPanel.tsx:6-8",
+    "src/components/plans/PlansPanel.tsx:110-113",
+    "src/components/charts/PayoffRunway.tsx:318",
+    "README.md:16"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-05 every open plan's monthly payment, total and term can be read together on one phone screen"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-05.md"
+  },
+  {
+   "id": "UX-06",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "One-way consolidation warning is buried",
+   "summary": "The warning that consolidating or taking a new federal loan permanently closes the older plans is plain text 2,124px below the recommendation, under a heading about plans the borrower cannot use, so a borrower who stops at the pick never sees it.",
+   "files": [
+    "src/components/plans/PlansPanel.tsx:440-450",
+    "src/components/plans/PlansPanel.tsx:421-423",
+    "src/components/plans/PlansPanel.tsx:342-383",
+    "src/components/plans/PlansPanel.tsx:433-435",
+    "src/components/plans/PlansPanel.tsx:457-470",
+    "src/components/plans/PlansPanel.tsx:308-311",
+    "src/lib/calc.ts:296-299"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-06 the warning that consolidating closes the older plans sits by the recommendation and names only plans that would close"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-06.md"
+  },
+  {
+   "id": "UX-07",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Hide amounts leaves figures readable",
+   "summary": "'Hide dollar amounts' blurs the headline figures but leaves the income, extra-payment and loan-form fields, the 'costs $X more' sentences on Plans and the plan dropdown's payments readable (and, in Safari's engine, the chart's axis amounts), so a borrower who turns it on in public still shows those figures to anyone beside them.",
+   "files": [
+    "src/app/globals.css:69",
+    "src/app/globals.css:72",
+    "src/app/globals.css:154",
+    "src/components/shared/ui.tsx:49-52",
+    "src/components/shared/ui.tsx:324",
+    "src/components/plans/PlansPanel.tsx:190",
+    "src/lib/calc.ts:578-582",
+    "src/app/page.tsx:728",
+    "src/app/page.tsx:807",
+    "src/app/page.tsx:341",
+    "src/components/ranking/RankingPanel.tsx:47-53",
+    "src/components/ranking/RankingPanel.tsx:237",
+    "src/components/ranking/RankingPanel.tsx:284-289",
+    "src/components/ranking/RankingPanel.tsx:369",
+    "src/components/loans/LoanForm.tsx:334",
+    "src/components/loans/LoanForm.tsx:462",
+    "src/components/loans/LoanForm.tsx:482",
+    "src/components/charts/PayoffRunway.tsx:211"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-07 with Hide dollar amounts on, no figure about the borrower can be read on any section"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-07.md"
+  },
+  {
+   "id": "UX-08",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Example data can pass for real",
+   "summary": "After 'Look around with example loans', the only 'example' marker is a banner that scrolls away on the first tab tap and is left off the printout and the spreadsheet, and a snapshot saved from the examples stays in the borrower's dated record, so demo figures can be printed, filed as 'your evidence' and later show up as eight loans 'removed from your list'.",
+   "files": [
+    "src/app/page.tsx:81-82",
+    "src/app/page.tsx:142",
+    "src/app/page.tsx:274-277",
+    "src/app/page.tsx:412-413",
+    "src/app/page.tsx:436",
+    "src/app/page.tsx:510-514",
+    "src/app/globals.css:7",
+    "src/lib/export.ts:99-104",
+    "src/lib/storage.ts:52-55",
+    "src/components/history/HistoryPanel.tsx:67",
+    "src/components/history/HistoryPanel.tsx:93",
+    "src/components/plans/PlansPanel.tsx:390",
+    "src/components/loans/LoanForm.tsx:205"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-08 example loans stay marked on every section, on paper and in the spreadsheet, and never enter the dated record"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-08.md"
+  },
+  {
+   "id": "UX-10",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Sections are not URLs: Back exits, reload resets",
+   "summary": "Sections are not in the URL, so Back takes a borrower out of the app instead of to the previous section, and a reload or a saved link always reopens on Loans.",
+   "files": [
+    "src/app/page.tsx:125",
+    "src/app/page.tsx:139-149",
+    "src/app/page.tsx:205-216",
+    "src/app/page.tsx:261-266",
+    "src/app/page.tsx:316-321",
+    "src/app/page.tsx:514-540",
+    "src/app/page.tsx:522",
+    "src/app/layout.tsx:20"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-10 Back and Forward walk the sections, and a reload or a saved link reopens the section that was open"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-10.md"
+  },
+  {
+   "id": "UX-11",
+   "severity": "P2",
+   "effort": "M",
+   "area": "UX and UI",
+   "title": "Saved records cannot be opened or deleted",
+   "summary": "Saved records show only a date, a total and a loan count, give no change amount and cannot be opened or deleted one at a time, so a borrower must download the spreadsheet to see what a loan's balance was and clear every record to remove one mistake.",
+   "files": [
+    "src/components/history/HistoryPanel.tsx:105-121",
+    "src/components/history/HistoryPanel.tsx:160-163",
+    "src/components/history/HistoryPanel.tsx:58-64",
+    "src/components/history/HistoryPanel.tsx:78-80",
+    "src/components/history/HistoryPanel.tsx:24-28",
+    "src/app/page.tsx:268-272",
+    "src/app/page.tsx:644-657",
+    "src/app/page.tsx:828-834"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-11 each saved record opens to every loan, states a change as a signed amount and can be deleted with Undo"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-11.md"
+  },
+  {
+   "id": "UX-12",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Servicer instruction for extra payments is buried",
+   "summary": "The instruction that makes extra payments count sits at the bottom of Payoff, below every loan in the order, and says only 'your servicer', so a borrower adding extra money can miss it and the servicer may spread the money across loans or push the due date ahead instead.",
+   "files": [
+    "src/components/ranking/RankingPanel.tsx:497-504",
+    "src/components/ranking/RankingPanel.tsx:500",
+    "src/components/ranking/RankingPanel.tsx:440",
+    "src/components/ranking/RankingPanel.tsx:146",
+    "src/components/ranking/RankingPanel.tsx:47-53",
+    "src/app/page.tsx:807-817",
+    "src/types/index.ts:177-188",
+    "src/components/loans/LoanForm.tsx:107"
+   ],
+   "tests": [
+    "ux-copy.spec.mjs > UX-12 the instruction that makes extra payments count comes before the payoff order and names the servicer to tell"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-12.md"
+  },
+  {
+   "id": "UX-13",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Late-fee notice reads as reassurance",
+   "summary": "The Loans tab's late-fee notice leads in bold with 'Missing a payment does not cost a late fee', which a skimming borrower can take as permission to skip one, and shows the same text to borrowers already in default, who are never told about collection charges, refund and wage seizure, or rehabilitation.",
+   "files": [
+    "src/app/page.tsx:621-623",
+    "src/data/plans.ts:275-276",
+    "src/components/shared/ui.tsx:152",
+    "src/types/index.ts:185",
+    "src/lib/calc.ts:56-58",
+    "src/app/page.tsx:185",
+    "src/app/page.tsx:26-39"
+   ],
+   "tests": [
+    "ux-copy.spec.mjs > UX-13 the late-fee notice leads with what a missed payment costs, and a borrower in default is told what default costs and how to end it"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-13.md"
+  },
+  {
+   "id": "UX-20",
+   "severity": "P2",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "No sources or \"rules checked\" date on screen",
+   "summary": "No screen says when the 2026 loan rules were last checked or links to any regulation, and the first-run headline claims something the next card contradicts, so borrowers cannot verify where the figures come from.",
+   "files": [
+    "src/app/page.tsx:843",
+    "src/app/page.tsx:26",
+    "src/app/page.tsx:363",
+    "src/app/page.tsx:400",
+    "src/components/loans/LoanForm.tsx:249",
+    "src/data/plans.ts:281",
+    "src/data/plans.ts:285",
+    "src/data/plans.ts:273",
+    "src/data/plans.ts:252",
+    "src/data/plans.ts:69",
+    "src/components/plans/PlansPanel.tsx:457",
+    "src/components/history/HistoryPanel.tsx:59",
+    "src/components/loans/LoanForm.tsx:501",
+    "src/components/loans/LoanForm.tsx:509",
+    "README.md:22"
+   ],
+   "tests": [
+    "ux-copy.spec.mjs > UX-20 the app says when the rules were last checked, links the regulations it applies, and its first screen does not contradict itself"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-20.md"
+  },
+  {
+   "id": "A11Y-05",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Section change is not announced",
+   "summary": "Switching sections swaps the content silently for screen-reader users: focus stays on the pressed button and nothing names the new section, so they have to explore to learn what changed.",
+   "files": [
+    "src/app/page.tsx:72",
+    "src/app/page.tsx:205",
+    "src/app/page.tsx:521",
+    "src/app/page.tsx:522",
+    "src/app/page.tsx:546",
+    "src/app/page.tsx:862"
+   ],
+   "tests": [
+    "a11y.spec.mjs > A11Y-05 switching sections tells a screen-reader user which section is now shown"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-05.md"
+  },
+  {
+   "id": "A11Y-13",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Toast covers focus and swallows taps",
+   "summary": "The bottom toast can completely cover the control a keyboard user has just tabbed to on the way to Undo, and a plain 'Saved' toast swallows taps on whatever sits under it for 2.6 seconds.",
+   "files": [
+    "src/app/globals.css:5-8",
+    "src/components/shared/ui.tsx:578",
+    "src/components/shared/ui.tsx:583",
+    "src/components/shared/ui.tsx:586",
+    "src/app/page.tsx:170-174",
+    "src/app/page.tsx:862"
+   ],
+   "tests": [
+    "a11y-details.spec.mjs > A11Y-13 the toast never hides the control a keyboard user is on, lets taps reach what is under it, and Undo still works by tap"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-13.md"
+  },
+  {
+   "id": "A11Y-15",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Repeated controls share one name",
+   "summary": "Each plan's 'How this plan works' button on the Plans tab has the same name, so a screen-reader borrower who lists the page's buttons cannot tell which plan each one opens.",
+   "files": [
+    "src/components/plans/PlansPanel.tsx:223",
+    "src/components/plans/PlansPanel.tsx:202-209",
+    "src/components/plans/PlansPanel.tsx:344-351",
+    "src/components/plans/PlansPanel.tsx:368-374",
+    "src/app/page.tsx:519-537"
+   ],
+   "tests": [
+    "a11y-details.spec.mjs > A11Y-15 every button on Plans has a name of its own, the recommendation can be found by name, and section names stay the same at every width and after a snapshot"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-15.md"
+  },
+  {
+   "id": "A11Y-16",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "aria-controls points at a missing id",
+   "summary": "Collapsed loan rows, plan cards and disclosures point aria-controls at panels that are not rendered, so a screen reader's jump-to-controlled-element command has nothing to land on.",
+   "files": [
+    "src/components/shared/ui.tsx:437",
+    "src/components/loans/LoanList.tsx:44",
+    "src/components/plans/PlansPanel.tsx:214"
+   ],
+   "tests": [
+    "a11y-details.spec.mjs > A11Y-16 every aria-controls on a loan row, plan card or disclosure points at an element on the page, open or closed"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-16.md"
+  },
+  {
+   "id": "A11Y-17",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Heading outline and H1",
+   "summary": "Headings make a poor outline: the H1 is the small 'Loan Desk' label, the loan form's H3 follows the H1 directly on Loans, the recommended plan's H2 says only 'Standard', and saved records have no headings, so screen-reader borrowers moving by heading lose context.",
+   "files": [
+    "src/app/page.tsx:330-332",
+    "src/app/page.tsx:358-360",
+    "src/components/loans/LoanForm.tsx:231-238",
+    "src/app/page.tsx:583",
+    "src/components/plans/PlansPanel.tsx:345-351",
+    "src/components/history/HistoryPanel.tsx:109-111"
+   ],
+   "tests": [
+    "a11y-details.spec.mjs > A11Y-17 headings never skip a level, the first-run h1 says what the page is for, the recommended plan\\'s heading says it is the recommendation, and each saved record has a heading"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-17.md"
+  },
+  {
+   "id": "A11Y-18",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Accessibility",
+   "title": "Chart tooltip ignores Escape",
+   "summary": "The payoff chart's hover box cannot be dismissed with Escape and covers about two thirds of the $30k and $15k axis labels, so a mouse or screen-magnifier user has to move the pointer away to read them.",
+   "files": [
+    "src/components/charts/PayoffRunway.tsx:77",
+    "src/components/charts/PayoffRunway.tsx:198-200",
+    "src/components/charts/PayoffRunway.tsx:279-283",
+    "src/components/charts/PayoffRunway.tsx:318"
+   ],
+   "tests": [
+    "a11y-details.spec.mjs > A11Y-18 Escape dismisses the payoff chart\\'s hover box without moving the pointer, and the chart\\'s table has a name"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/A11Y-18.md"
+  },
+  {
+   "id": "AGENT-01",
+   "severity": "P3",
+   "effort": "M",
+   "area": "Agentic friendliness",
+   "title": "Read-only WebMCP calculator tools (optional)",
+   "summary": "The app offers no read-only WebMCP tools, so a browser agent helping a borrower has to work the forms to get plan and payoff figures; this is optional for now, since stable Chrome does not expose WebMCP yet.",
+   "files": [
+    "src/app/page.tsx:139-149",
+    "src/components/plans/PlansPanel.tsx:153",
+    "src/lib/calc.ts:620-628",
+    "src/lib/ranking.ts:170",
+    "src/components/loans/LoanForm.tsx:221-226",
+    "README.md:154-158"
+   ],
+   "tests": [
+    "seo-agentic.spec.mjs > AGENT-01 a browser agent can list read-only Loan Desk tools for plan and payoff figures"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": "fixes/AGENT-01/",
+   "details": "issues/AGENT-01.md"
+  },
+  {
+   "id": "DX-03",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "README drift",
+   "summary": "The README says every figure is checked a second way and points to harnesses, sibling folders and a branch that are not in the repository, so the next person to change the money code relies on checks that do not exist to keep borrowers' figures right.",
+   "files": [
+    "README.md:9",
+    "README.md:10",
+    "README.md:86",
+    "README.md:90",
+    "README.md:96",
+    "README.md:102",
+    "README.md:139",
+    "README.md:141",
+    "README.md:142",
+    "README.md:170",
+    "README.md:199",
+    "package.json:13",
+    "src/lib/ranking.ts:3",
+    "verify.mjs:216"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-03 every path, harness, branch and count the README names exists in the repository"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-03.md"
+  },
+  {
+   "id": "DX-04",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "slate-* means green; colour literals outside the config",
+   "summary": "slate-* and navy classes secretly mean brand green and several colours are hard-coded outside the Tailwind config; borrowers see nothing wrong today, but a contributor who treats slate-500 as stock grey gets text at 4.38:1 on the cream page, under the 4.5:1 minimum.",
+   "files": [
+    "tailwind.config.ts:13",
+    "tailwind.config.ts:15",
+    "tailwind.config.ts:27",
+    "src/components/shared/ui.tsx:126",
+    "src/components/charts/PayoffRunway.tsx:29",
+    "src/components/charts/PayoffRunway.tsx:217",
+    "src/app/globals.css:11",
+    "src/app/globals.css:98",
+    "src/app/layout.tsx:37",
+    "src/app/page.tsx:361",
+    "README.md:160"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-04 every colour class means its stock name, and every colour is defined once in tailwind.config.ts"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": "fixes/DX-04/",
+   "details": "issues/DX-04.md"
+  },
+  {
+   "id": "DX-05",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "Dead code and needless exports",
+   "summary": "Unused functions, props and a colour token, plus eight exports used only in their own file, sit in the source; borrowers see nothing, but the unused requiredPaymentForPlan looks like the function to call for a plan's payment and has no callers or tests.",
+   "files": [
+    "src/lib/calc.ts:620",
+    "src/components/shared/ui.tsx:205",
+    "src/lib/utils.ts:19",
+    "src/data/plans.ts:81",
+    "src/components/shared/ui.tsx:509",
+    "src/components/shared/ui.tsx:359",
+    "src/components/loans/LoanForm.tsx:319",
+    "tailwind.config.ts:46",
+    "src/data/plans.ts:13",
+    "src/data/plans.ts:33",
+    "src/data/seed.ts:122",
+    "src/types/index.ts:3",
+    "src/data/plans.ts:72",
+    "src/lib/calc.ts:208",
+    "src/lib/ranking.ts:157",
+    "src/lib/ranking.ts:174",
+    "src/lib/calc.ts:37",
+    "src/lib/calc.ts:61",
+    "src/lib/ranking.ts:16"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-05 every export in src has a caller outside its own file"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-05.md"
+  },
+  {
+   "id": "DX-06",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "framer-motion installed but unused",
+   "summary": "framer-motion is still a production dependency although nothing imports it, so every install pulls three unused packages; borrowers download none of it.",
+   "files": [
+    "package.json:13",
+    "README.md:199"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-06 every production dependency is imported by the code"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-06.md"
+  },
+  {
+   "id": "DX-07",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "Formatters and sums written more than once",
+   "summary": "The plan count '6', the dollar formatter, the loan totals and the closed-plan record are each written out in more than one place, so a later change that misses one copy would show borrowers stale text instead of failing a check; today every copy agrees.",
+   "files": [
+    "src/app/page.tsx:616",
+    "src/components/plans/PlansPanel.tsx:393",
+    "src/app/page.tsx:193",
+    "src/data/plans.ts:260",
+    "src/lib/calc.ts:480",
+    "src/lib/utils.ts:10",
+    "src/lib/calc.ts:284",
+    "src/lib/calc.ts:309",
+    "src/lib/calc.ts:324",
+    "src/lib/storage.ts:61",
+    "src/lib/ranking.ts:92",
+    "src/lib/export.ts:63",
+    "src/lib/calc.ts:28",
+    "src/lib/export.ts:16",
+    "src/lib/utils.ts:71",
+    "src/lib/utils.ts:86",
+    "verify.mjs:50",
+    "README.md:118"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-07 the plan count, dollar format, loan totals and closed-plan record each have one definition"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-07.md"
+  },
+  {
+   "id": "DX-08",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "ESLint 8 end of life and weak rules",
+   "summary": "Lint runs on end-of-life ESLint 8 with only Next's default rules, so it never flags the two async download handlers behind the silent spreadsheet failure, and `npm run lint` stops working at the Next 16 upgrade; no borrower sees the lint setup directly.",
+   "files": [
+    ".eslintrc.json:1",
+    "package.json:9",
+    "package.json:25",
+    "src/app/page.tsx:631",
+    "src/app/page.tsx:279",
+    "src/components/history/HistoryPanel.tsx:72",
+    "src/components/history/HistoryPanel.tsx:42",
+    "src/app/page.tsx:140",
+    "src/components/loans/LoanForm.tsx:141",
+    "postcss.config.mjs:1"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-08 npm run lint flags a promise-returning onClick and the strict accessibility rules, on a supported ESLint"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-08.md"
+  },
+  {
+   "id": "DX-09",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "noUncheckedIndexedAccess off",
+   "summary": "TypeScript's noUncheckedIndexedAccess is off, so a table or array lookup that misses, such as a gap in the poverty-line table behind the IBR payment, would turn a borrower's figure into NaN with no compiler error; all ten such reads are in bounds today.",
+   "files": [
+    "tsconfig.json:7",
+    "src/data/plans.ts:25",
+    "src/data/plans.ts:26",
+    "src/lib/calc.ts:197",
+    "src/components/charts/PayoffRunway.tsx:44",
+    "src/lib/export.ts:158",
+    "src/lib/export.ts:161",
+    "src/lib/export.ts:190",
+    "src/app/page.tsx:178",
+    "verify.mjs:125"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-09 a table or array lookup that can miss is a type error, so it cannot reach a dollar figure as NaN"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-09.md"
+  },
+  {
+   "id": "DX-10",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "No Node version declared",
+   "summary": "The repo declares no Node version and verify.mjs only runs because Node guesses its compiled files are ES modules, so builds and the dollar-figure checks can move to an untested Node release unnoticed; borrowers see no effect today.",
+   "files": [
+    "package.json:4-5",
+    "verify.mjs:49-54",
+    "verify.mjs:84-86",
+    "README.md:31-36"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-10 one Node LTS major is declared, and the harness gives the same result whether or not Node guesses module type"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-10.md"
+  },
+  {
+   "id": "DX-11",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Testing and maintainability",
+   "title": "No license field in package.json",
+   "summary": "package.json has no license field, and neither the site nor the README lists the third-party code that ships, including Apache-2.0 SheetJS xlsx and @swc/helpers; this affects people reusing the code, not borrowers.",
+   "files": [
+    "package.json:3-4",
+    "LICENSE:1-3",
+    "README.md:209-211",
+    "src/lib/export.ts:75-78"
+   ],
+   "tests": [
+    "repo.spec.mjs > DX-11 package.json declares the license LICENSE grants, and the README credits the Apache-2.0 code that ships"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/DX-11.md"
+  },
+  {
+   "id": "MONEY-19",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Records diff rounds changes away",
+   "summary": "Records shows balance changes in whole dollars, so a 30-cent change reads '$2,257 → $2,257' and the borrower sees a change flagged with nothing visibly different.",
+   "files": [
+    "src/components/history/HistoryPanel.tsx:161",
+    "src/lib/storage.ts:91",
+    "src/components/shared/ui.tsx:53",
+    "src/lib/utils.ts:10",
+    "src/lib/utils.ts:19"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-19 a balance change in Records shows the cents that changed, and Hide dollar amounts still blurs them"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-19.md"
+  },
+  {
+   "id": "MONEY-20",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "Payoff start month off by one",
+   "summary": "The Payoff note says payments start this month, but the dates assume the first payment is next month, so the debt-free date a borrower reads is one month later than the note implies.",
+   "files": [
+    "src/components/ranking/RankingPanel.tsx:334",
+    "src/lib/ranking.ts:103",
+    "src/lib/utils.ts:88"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-20 the Payoff note\\'s first-payment month agrees with the debt-free date it shows"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-20.md"
+  },
+  {
+   "id": "MONEY-22",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Money figures and eligibility",
+   "title": "0% rate rejected",
+   "summary": "The interest rate field rejects 0% while its error says \"a number between 0 and 25\", so a borrower with a 0% loan cannot save it and is not told why.",
+   "files": [
+    "src/components/loans/LoanForm.tsx:180",
+    "src/components/loans/LoanForm.tsx:178",
+    "src/components/loans/LoanForm.tsx:95",
+    "src/lib/utils.ts:129",
+    "README.md:145"
+   ],
+   "tests": [
+    "money-edges.spec.mjs > MONEY-22 a 0% rate is either saved as 0% or refused with a message that says why"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/MONEY-22.md"
+  },
+  {
+   "id": "PERF-01",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Performance",
+   "title": "Display font ships unused weights",
+   "summary": "The headline font downloads every weight from 200 to 800 although the app only ever draws it bold, so first-time visitors on slow connections fetch 18.8 KB of unused font and see the page about 100ms later.",
+   "files": [
+    "src/app/layout.tsx:8"
+   ],
+   "tests": [
+    "perf.spec.mjs > PERF-01 a first visit downloads only the font weights the page draws"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/PERF-01.md"
+  },
+  {
+   "id": "PERF-02",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Performance",
+   "title": "Slider rebuilds Intl formatters and doubles simulations",
+   "summary": "Every move of the extra-payment slider builds dozens of new number and date formatters and runs the payoff simulation twice as often as needed, so the slider and the figures under it lag for borrowers with many loans on slow phones.",
+   "files": [
+    "src/lib/utils.ts:12",
+    "src/lib/utils.ts:88",
+    "src/lib/utils.ts:89",
+    "src/lib/utils.ts:98",
+    "src/lib/utils.ts:99",
+    "src/components/ranking/RankingPanel.tsx:105",
+    "src/components/ranking/RankingPanel.tsx:110",
+    "src/lib/ranking.ts:171",
+    "src/lib/ranking.ts:204"
+   ],
+   "tests": [
+    "perf.spec.mjs > PERF-02 with 60 loans on a slow phone, each move of the extra-payment slider fits in one frame and shows the same figures as a fresh page"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/PERF-02.md"
+  },
+  {
+   "id": "PERF-03",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Performance",
+   "title": "Snapshot fade-in delay grows with the list",
+   "summary": "Each older snapshot on the Records tab waits another 0.03s to fade in, so with 50 or more snapshots a borrower who jumps to the bottom sees blank space where their oldest records should be for seconds.",
+   "files": [
+    "src/components/history/HistoryPanel.tsx:104",
+    "src/components/shared/ui.tsx:497",
+    "src/app/globals.css:53",
+    "src/app/globals.css:144"
+   ],
+   "tests": [
+    "perf.spec.mjs > PERF-03 every saved record is fully visible within a second of opening Records, however many there are"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/PERF-03.md"
+  },
+  {
+   "id": "RES-13",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "Blank pulsing skeleton when JavaScript fails",
+   "summary": "If any of the app's script files fails to load, the page shows two pulsing grey bars forever with no text, so the borrower is never told to reload.",
+   "files": [
+    "src/app/page.tsx:294-303",
+    "src/app/page.tsx:139-149",
+    "src/app/layout.tsx:48-53",
+    "src/app/globals.css:38-67",
+    "src/app/globals.css:140-149"
+   ],
+   "tests": [
+    "resilience.spec.mjs > RES-13 when the app cannot start, the borrower is told to reload"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-13.md"
+  },
+  {
+   "id": "RES-14",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "Implausible values accepted silently",
+   "summary": "The loan form saves misread or implausible numbers without asking the borrower to check them, so a rate typed as 0.0653 shows a $42 Standard payment on $5,000 instead of $57 and a pasted 2.256,40 becomes a $2.25 balance; its rate error also says 0 is allowed when 0 is rejected.",
+   "files": [
+    "src/components/loans/LoanForm.tsx:169-181",
+    "src/components/loans/LoanForm.tsx:328-348",
+    "src/components/loans/LoanForm.tsx:350-395",
+    "src/lib/utils.ts:120-127",
+    "src/lib/utils.ts:129-132",
+    "src/data/seed.ts:122-138",
+    "src/components/shared/ui.tsx:266-284"
+   ],
+   "tests": [
+    "resilience.spec.mjs > RES-14 the loan form asks the borrower to check implausible numbers and states the real rate rule"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-14.md"
+  },
+  {
+   "id": "RES-15",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Data safety and resilience",
+   "title": "Long unbroken nickname breaks layout and hides Undo",
+   "summary": "A loan name containing one long unbroken run of characters (about 36 or more at 320px) pushes the Undo button off-screen when that loan is removed and makes Payoff, Plans and Records scroll sideways, so a phone user cannot undo the removal.",
+   "files": [
+    "src/components/shared/ui.tsx:585-588",
+    "src/app/page.tsx:250-259",
+    "src/components/loans/LoanForm.tsx:446-453",
+    "src/components/ranking/RankingPanel.tsx:467",
+    "src/components/ranking/RankingPanel.tsx:502",
+    "src/components/plans/PlansPanel.tsx:328-331",
+    "src/components/history/HistoryPanel.tsx:138-140"
+   ],
+   "tests": [
+    "resilience.spec.mjs > RES-15 a long loan name keeps Undo on screen and does not widen the page"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/RES-15.md"
+  },
+  {
+   "id": "SEC-02",
+   "severity": "P3",
+   "effort": "M",
+   "area": "Security, privacy and best practices",
+   "title": "Next 14 is end of life: plan the exit, static export first",
+   "summary": "The site runs on Next.js 14.2.35, which no longer gets security fixes, so a future Next.js flaw that reaches borrowers would have no patch; none of today's 25 advisories reaches this static deployment.",
+   "files": [
+    "package.json:14",
+    "package.json:15-16",
+    "package.json:8",
+    "package.json:9",
+    "next.config.mjs:2",
+    "src/app/page.tsx:140"
+   ],
+   "tests": [
+    "security-privacy.spec.mjs > SEC-02 the site runs on a Next.js release line that still gets security fixes"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEC-02.md"
+  },
+  {
+   "id": "SEC-03",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Security, privacy and best practices",
+   "title": "Baseline security headers missing",
+   "summary": "Responses carry none of the baseline security headers (frame, MIME-sniffing, referrer and permissions policies), so nothing would stop a later change from exposing borrowers; today the browser's storage partitioning and the links' rel=\"noopener noreferrer\" already cover each gap.",
+   "files": [
+    "next.config.mjs:2",
+    "src/app/page.tsx:404",
+    "src/app/page.tsx:851",
+    "src/components/loans/LoanForm.tsx:244",
+    "src/components/plans/PlansPanel.tsx:485"
+   ],
+   "tests": [
+    "security-privacy.spec.mjs > SEC-03 another site cannot frame the app, and its responses refuse MIME sniffing, referrers and unused device features"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEC-03.md"
+  },
+  {
+   "id": "SEC-04",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Security, privacy and best practices",
+   "title": "xlsx frozen on npm",
+   "summary": "The xlsx package is stuck at 0.18.5 on npm with two high advisories that can never clear there, but borrowers are not exposed because the app only writes spreadsheets and never reads one.",
+   "files": [
+    "package.json:18",
+    "package-lock.json:6467",
+    "src/lib/export.ts:76",
+    "src/lib/export.ts:113",
+    "src/lib/export.ts:300",
+    "README.md:79",
+    ".eslintrc.json:1"
+   ],
+   "tests": [
+    "security-privacy.spec.mjs > SEC-04 the spreadsheet library can still be patched, or the repo records why xlsx 0.18.5 is safe and nothing reads a spreadsheet"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": "fixes/SEC-04/",
+   "details": "issues/SEC-04.md"
+  },
+  {
+   "id": "SEC-05",
+   "severity": "P3",
+   "effort": "S",
+   "area": "Security, privacy and best practices",
+   "title": "Two lockfile updates clear production advisories",
+   "summary": "Two build-time packages, the postcss copy pinned inside Next 14 and source-map-js, keep the production audit red even though a lockfile-only update clears both without changing a byte of the built site; borrowers are not affected.",
+   "files": [
+    "package.json:14",
+    "package-lock.json:4303",
+    "package-lock.json:4342",
+    "package-lock.json:5440"
+   ],
+   "tests": [
+    "security-privacy.spec.mjs > SEC-05 the production install has no copy of postcss or source-map-js inside their advisory ranges"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEC-05.md"
+  },
+  {
+   "id": "SEO-05",
+   "severity": "P3",
+   "effort": "S",
+   "area": "SEO and findability",
+   "title": "No canonical, structured data or crawler policy",
+   "summary": "The page declares no canonical URL and no structured data, so search engines must guess which of the identical tagged and untagged addresses to show borrowers, and readers that do not run JavaScript get no machine-readable summary of what Loan Desk is.",
+   "files": [
+    "src/app/layout.tsx:19-34",
+    "src/app/page.tsx:294",
+    "src/app/page.tsx:296",
+    "src/app/page.tsx:310-315"
+   ],
+   "tests": [
+    "seo-agentic.spec.mjs > SEO-05 a tagged link to / declares one canonical address, and the server HTML describes Loan Desk as structured data"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEO-05.md"
+  },
+  {
+   "id": "SEO-06",
+   "severity": "P3",
+   "effort": "S",
+   "area": "SEO and findability",
+   "title": "SVG-only favicon, no touch icon",
+   "summary": "Loan Desk's only icon is an SVG, a format Google's favicon guide does not list, and there is no Apple touch icon, so Google results and iPhone Home Screen shortcuts may show a generic icon instead of the Cense mark (not yet observed on either).",
+   "files": [
+    "src/app/icon.svg:1"
+   ],
+   "tests": [
+    "seo-agentic.spec.mjs > SEO-06 search results and iPhone home screens get a raster Cense icon"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": "fixes/SEO-06/",
+   "details": "issues/SEO-06.md"
+  },
+  {
+   "id": "SEO-07",
+   "severity": "P3",
+   "effort": "S",
+   "area": "SEO and findability",
+   "title": "Default 404 is a dead end",
+   "summary": "A mistyped or guessed Loan Desk address shows Next.js's bare default 404 page, white or black, with no link back to the app and no word that saved loans are safe, so the borrower hits a dead end.",
+   "files": [
+    "src/app/layout.tsx:19-34"
+   ],
+   "tests": [
+    "seo-agentic.spec.mjs > SEO-07 a mistyped address shows a Loan Desk page with a way back and word that saved loans are safe"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEO-07.md"
+  },
+  {
+   "id": "SEO-08",
+   "severity": "P3",
+   "effort": "S",
+   "area": "SEO and findability",
+   "title": "vercel.app host: decide the domain now",
+   "summary": "Loan Desk lives on a rented vercel.app address with no recorded plan for it, and moving to a new domain later with a plain redirect would open an empty app for every returning borrower, because saved loans stay behind at the old address.",
+   "files": [
+    "README.md:3",
+    "src/lib/storage.ts:9-13",
+    "src/app/page.tsx:79",
+    "src/lib/export.ts:95",
+    "src/lib/export.ts:128"
+   ],
+   "tests": [
+    "seo-agentic.spec.mjs > SEO-08 a borrower can carry saved loans to a new address before the app moves"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEO-08.md"
+  },
+  {
+   "id": "SEO-09",
+   "severity": "P3",
+   "effort": "S",
+   "area": "SEO and findability",
+   "title": "Federal tool link is stale",
+   "summary": "The Plans tab links to the federal 'Loan Simulator', a tool now called 'Repayment Calculator', so borrowers are redirected to a page with a different name, and the app credits that tool with a flat-income assumption its current documentation does not state.",
+   "files": [
+    "src/components/plans/PlansPanel.tsx:483",
+    "src/components/plans/PlansPanel.tsx:487",
+    "src/data/plans.ts:279",
+    "src/lib/calc.ts:138-139",
+    "README.md:130"
+   ],
+   "tests": [
+    "seo-agentic.spec.mjs > SEO-09 the Plans note links the federal Repayment Calculator by its current name and address"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/SEO-09.md"
+  },
+  {
+   "id": "UX-09",
+   "severity": "P3",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "\"Print one page\" prints two",
+   "summary": "'Print one page' prints two pages for almost every borrower with more than one loan and puts no date on the printout, so someone keeping a paper record gets a second sheet of boilerplate (in Safari's engine, with their last loan on it) and an undated copy unless the browser adds a header.",
+   "files": [
+    "src/app/page.tsx:641",
+    "src/app/page.tsx:621-623",
+    "src/app/page.tsx:312",
+    "src/app/page.tsx:453",
+    "src/app/page.tsx:839-858",
+    "src/components/loans/LoanList.tsx:47",
+    "src/app/globals.css:151-155",
+    "src/components/plans/PlansPanel.tsx:344"
+   ],
+   "tests": [
+    "ux-journeys.spec.mjs > UX-09 the printed loan list keeps what its button promises, carries the date and fits one Letter page"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-09.md"
+  },
+  {
+   "id": "UX-16",
+   "severity": "P3",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Form messages point the wrong way",
+   "summary": "The loan form's error messages point to a date field 'below' that sits above them, give a rate range ('between 0 and 25') the check does not follow, and replace each field's hint, including the one-tap 'Use 6.53%' fix, so a borrower correcting the form is sent the wrong way.",
+   "files": [
+    "src/components/loans/LoanForm.tsx:175",
+    "src/components/loans/LoanForm.tsx:178-180",
+    "src/components/loans/LoanForm.tsx:340",
+    "src/components/loans/LoanForm.tsx:386",
+    "src/components/loans/LoanForm.tsx:289-293",
+    "src/components/loans/LoanForm.tsx:354-378",
+    "src/components/loans/LoanForm.tsx:476-481",
+    "src/components/shared/ui.tsx:266-284",
+    "src/components/shared/ui.tsx:247",
+    "src/lib/export.ts:53"
+   ],
+   "tests": [
+    "ux-copy.spec.mjs > UX-16 loan form messages point to where the field is, state the rule the check applies, and keep each hint in view"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-16.md"
+  },
+  {
+   "id": "UX-17",
+   "severity": "P3",
+   "effort": "M",
+   "area": "UX and UI",
+   "title": "One thing has several names across tabs",
+   "summary": "The app calls one thing by different names on different tabs ('snapshot' and 'record', 'paid out' and 'disbursed', 'Where we would start' and 'Our pick'), gives two different downloads the same label, and titles four warnings with phrases like 'Watch this one', so borrowers have to work out what each word means.",
+   "files": [
+    "src/components/plans/PlansPanel.tsx:346",
+    "src/components/plans/PlansPanel.tsx:125",
+    "src/lib/calc.ts:588",
+    "src/components/plans/PlansPanel.tsx:124",
+    "src/components/plans/PlansPanel.tsx:208",
+    "src/components/plans/PlansPanel.tsx:365",
+    "src/app/page.tsx:552",
+    "src/app/page.tsx:554-555",
+    "src/components/loans/LoanForm.tsx:501-502",
+    "src/components/plans/PlansPanel.tsx:464-468",
+    "src/lib/calc.ts:295",
+    "src/data/plans.ts:162",
+    "src/data/plans.ts:176",
+    "src/data/plans.ts:258",
+    "src/data/plans.ts:270",
+    "src/components/ranking/RankingPanel.tsx:432",
+    "src/components/history/HistoryPanel.tsx:68",
+    "src/components/history/HistoryPanel.tsx:79-82",
+    "src/components/history/HistoryPanel.tsx:90",
+    "src/app/page.tsx:276",
+    "src/app/page.tsx:337-338",
+    "src/app/page.tsx:634",
+    "src/components/history/HistoryPanel.tsx:75",
+    "src/components/plans/PlansPanel.tsx:195",
+    "src/components/plans/PlansPanel.tsx:324",
+    "src/app/page.tsx:551",
+    "src/components/ranking/RankingPanel.tsx:497",
+    "src/data/plans.ts:147-148"
+   ],
+   "tests": [
+    "ux-copy.spec.mjs > UX-17 each thing has one name on every tab, warning titles say what they warn about, and the two downloads are told apart"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-17.md"
+  },
+  {
+   "id": "UX-18",
+   "severity": "P3",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Payoff order rows repeat stock sentences",
+   "summary": "The Payoff order list repeats a stock sentence under seven of eight loans and shows one rate as both 5.50% and 5.5%, so phone users scroll a long list for one useful line, and the 'Smallest balance first' rows describe a payment rollover the app does not model.",
+   "files": [
+    "src/lib/ranking.ts:37-38",
+    "src/lib/ranking.ts:40",
+    "src/lib/ranking.ts:42",
+    "src/lib/ranking.ts:51",
+    "src/lib/ranking.ts:110-125",
+    "src/components/ranking/RankingPanel.tsx:471",
+    "src/components/ranking/RankingPanel.tsx:440",
+    "src/components/ranking/RankingPanel.tsx:476-483",
+    "src/components/ranking/RankingPanel.tsx:484-488",
+    "src/components/ranking/RankingPanel.tsx:55-68",
+    "verify.mjs:50"
+   ],
+   "tests": [
+    "ux-copy.spec.mjs > UX-18 each payoff-order row carries only what is its own, in one rate format, and no row promises a rollover the projection does not make"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-18.md"
+  },
+  {
+   "id": "UX-19",
+   "severity": "P3",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Adding several loans costs avoidable taps",
+   "summary": "Adding several loans costs an extra tap per school year because the next form stays on Unsubsidized, and after Cancel a new loan opens pre-filled with a year, rate and type the borrower never picked.",
+   "files": [
+    "src/app/page.tsx:234",
+    "src/app/page.tsx:236",
+    "src/app/page.tsx:288",
+    "src/app/page.tsx:574",
+    "src/components/loans/LoanForm.tsx:102"
+   ],
+   "tests": [
+    "ux-copy.spec.mjs > UX-19 the subsidized and unsubsidized loans of each year need no type tap, and a new add after Cancel starts blank"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-19.md"
+  },
+  {
+   "id": "UX-21",
+   "severity": "P3",
+   "effort": "S",
+   "area": "UX and UI",
+   "title": "Loan rows repeat the type and hide the servicer on phones",
+   "summary": "On phones each loan row repeats the type already in its name, hides the servicer, and starts the rate at two different positions, so borrowers must open rows to see who holds each loan and compare rates along a ragged edge.",
+   "files": [
+    "src/components/loans/LoanList.tsx:57",
+    "src/components/loans/LoanList.tsx:58",
+    "src/components/loans/LoanList.tsx:62",
+    "src/components/loans/LoanForm.tsx:72",
+    "src/components/loans/LoanForm.tsx:206"
+   ],
+   "tests": [
+    "ux-copy.spec.mjs > UX-21 on a phone each loan row shows its type once and its servicer, starts every rate in one column and keeps the cutoff tag readable"
+   ],
+   "patch": null,
+   "patchStatus": null,
+   "drafts": null,
+   "details": "issues/UX-21.md"
+  }
+ ]
+}

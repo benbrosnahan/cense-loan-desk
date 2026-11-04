@@ -1,0 +1,32 @@
+{
+  "lighthouse": {
+    "label": "Category minimums for every Lighthouse page (empty and seeded), median run.",
+    "mobile": { "performance": 90, "accessibility": 100, "bestPractices": 95, "seo": 100 },
+    "desktop": { "performance": 90, "accessibility": 100, "bestPractices": 95, "seo": 100 }
+  },
+  "metrics": {
+    "label": "Maximums for every mobile Lighthouse page, median run. Times are milliseconds; CLS has no unit.",
+    "mobile": { "lcp": 2500, "fcp": 1800, "cls": 0.1, "tbt": 200 }
+  },
+  "flow": {
+    "label": "Worst INP of any user-flow timespan, per form factor, in milliseconds.",
+    "inp": 200
+  },
+  "bundle": {
+    "label": "First-load JavaScript of the route in kB, counted as next build prints it. Read from the production build next to audits/, so it is checked only when that build exists and the target is served from this machine; skipped for --target live.",
+    "route": "/",
+    "firstLoadJsKb": 130
+  },
+  "floors": {
+    "label": "Not goals: the scores measured on 2026-11-02. Dropping below one is a regression and fails the run. Raise a floor when its score improves. securityLive applies to the live deployment only, since plain-HTTP local runs cannot measure TLS or headers. readableFirstMs works the other way round: it is the readable step's median first-visit readable time in milliseconds, and going over it fails the run. It sits well above the 2.86 s measured on 2026-11-02 (2.9 s returning), because throttled loads on a shared machine are noisy, so it only guards against regressions.",
+    "securityLive": 71,
+    "geo": 44,
+    "readableFirstMs": 3500
+  },
+  "targets": {
+    "label": "Where these should get to: the scores at or above, readableFirstMs at or below. Reported in SUMMARY.md, never fail the run.",
+    "securityLive": 90,
+    "geo": 80,
+    "readableFirstMs": 1600
+  }
+}

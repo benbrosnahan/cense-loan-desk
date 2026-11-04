@@ -1,0 +1,457 @@
+{
+ "url": "https://cense-loan-desk.vercel.app/",
+ "results": {
+  "header-check": {
+   "url": "https://cense-loan-desk.vercel.app/",
+   "statusCode": 200,
+   "allHeaders": {
+    "accept-ranges": "bytes",
+    "access-control-allow-origin": "*",
+    "age": "132272",
+    "cache-control": "public, max-age=0, must-revalidate",
+    "connection": "close",
+    "content-disposition": "inline",
+    "content-length": "7320",
+    "content-type": "text/html; charset=utf-8",
+    "date": "Tue, 03 Nov 2026 06:37:12 GMT",
+    "etag": "\"1cdd3a8838a6aea2cbec4678100dfa3f\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "vary": "RSC, Next-Router-State-Tree, Next-Router-Prefetch",
+    "x-matched-path": "/",
+    "x-vercel-cache": "HIT",
+    "x-vercel-id": "sfo1::kdmrr-1793687832877-82a3025de905"
+   },
+   "analysis": [
+    {
+     "name": "Cache-Control",
+     "value": "public, max-age=0, must-revalidate",
+     "status": "good",
+     "recommendation": "Cache-Control is configured."
+    },
+    {
+     "name": "Content-Encoding",
+     "value": null,
+     "status": "warning",
+     "recommendation": "Enable gzip or Brotli compression to reduce transfer sizes by 60-80%."
+    },
+    {
+     "name": "Strict-Transport-Security",
+     "value": "max-age=63072000; includeSubDomains; preload",
+     "status": "good",
+     "recommendation": "Strict-Transport-Security is set."
+    },
+    {
+     "name": "X-Content-Type-Options",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add \"X-Content-Type-Options: nosniff\" to prevent MIME sniffing."
+    },
+    {
+     "name": "X-Frame-Options",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add \"X-Frame-Options: DENY\" or \"SAMEORIGIN\" to prevent clickjacking."
+    },
+    {
+     "name": "Content-Security-Policy",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add a Content-Security-Policy to prevent XSS and data injection."
+    },
+    {
+     "name": "Referrer-Policy",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add \"Referrer-Policy: strict-origin-when-cross-origin\" for privacy."
+    },
+    {
+     "name": "Permissions-Policy",
+     "value": null,
+     "status": "missing",
+     "recommendation": "Add Permissions-Policy to control browser features (camera, geolocation, etc.)."
+    },
+    {
+     "name": "ETag",
+     "value": "\"1cdd3a8838a6aea2cbec4678100dfa3f\"",
+     "status": "good",
+     "recommendation": "ETag is set for conditional requests."
+    },
+    {
+     "name": "Vary",
+     "value": "RSC, Next-Router-State-Tree, Next-Router-Prefetch",
+     "status": "good",
+     "recommendation": "Vary header set: RSC, Next-Router-State-Tree, Next-Router-Prefetch"
+    }
+   ],
+   "summary": {
+    "good": 4,
+    "warnings": 1,
+    "missing": 5,
+    "total": 10
+   },
+   "score": 40
+  },
+  "meta-validate": {
+   "url": "https://cense-loan-desk.vercel.app/",
+   "tags": [
+    {
+     "name": "title",
+     "content": "Loan Desk by Cense — every student loan you have, in one place",
+     "status": "warning",
+     "recommendation": "Title is 62 chars. Keep under 60 for best display in search results."
+    },
+    {
+     "name": "meta description",
+     "content": "Put all your federal student loans on one screen: balances, rates, which repayment plans you actually qualify for, and which loan to attack first. Free, private, and nothing to sell.",
+     "status": "warning",
+     "recommendation": "Description is 182 chars. Keep under 160."
+    },
+    {
+     "name": "viewport",
+     "content": "width=device-width, initial-scale=1",
+     "status": "good",
+     "recommendation": "Viewport is set."
+    },
+    {
+     "name": "canonical",
+     "content": null,
+     "status": "warning",
+     "recommendation": "Add a canonical URL to prevent duplicate content issues."
+    },
+    {
+     "name": "og:title",
+     "content": "Loan Desk by Cense",
+     "status": "good",
+     "recommendation": "Set to: Loan Desk by Cense"
+    },
+    {
+     "name": "og:description",
+     "content": "Every federal student loan you have, on one screen. Balances, rates, eligible repayment plans, and payoff order.",
+     "status": "good",
+     "recommendation": "Set to: Every federal student loan you have, on one screen. Balances, rates, eligible re..."
+    },
+    {
+     "name": "og:image",
+     "content": null,
+     "status": "missing",
+     "recommendation": "Add og:image for better social media sharing."
+    },
+    {
+     "name": "og:url",
+     "content": null,
+     "status": "missing",
+     "recommendation": "Add og:url for better social media sharing."
+    },
+    {
+     "name": "og:type",
+     "content": "website",
+     "status": "good",
+     "recommendation": "Set to: website"
+    },
+    {
+     "name": "twitter:card",
+     "content": "summary_large_image",
+     "status": "good",
+     "recommendation": "Set to: summary_large_image"
+    },
+    {
+     "name": "twitter:title",
+     "content": "Loan Desk by Cense",
+     "status": "good",
+     "recommendation": "Set to: Loan Desk by Cense"
+    },
+    {
+     "name": "twitter:description",
+     "content": "Every federal student loan you have, on one screen.",
+     "status": "good",
+     "recommendation": "Set to: Every federal student loan you have, on one screen."
+    },
+    {
+     "name": "twitter:image",
+     "content": null,
+     "status": "warning",
+     "recommendation": "Add twitter:image for Twitter card previews."
+    },
+    {
+     "name": "lang attribute",
+     "content": "en",
+     "status": "good",
+     "recommendation": "Language: en"
+    },
+    {
+     "name": "favicon",
+     "content": "/icon.svg?497578d03306b208",
+     "status": "good",
+     "recommendation": "Favicon found: /icon.svg?497578d03306b208"
+    }
+   ],
+   "preview": {
+    "title": "Loan Desk by Cense",
+    "description": "Every federal student loan you have, on one screen. Balances, rates, eligible repayment plans, and payoff order.",
+    "image": null,
+    "url": "https://cense-loan-desk.vercel.app/",
+    "siteName": "cense-loan-desk.vercel.app"
+   },
+   "summary": {
+    "good": 9,
+    "warnings": 4,
+    "missing": 2,
+    "total": 15
+   },
+   "score": 60
+  },
+  "structured-data": {
+   "url": "https://cense-loan-desk.vercel.app/",
+   "totalSchemas": 0,
+   "items": [],
+   "summary": {
+    "total": 0,
+    "valid": 0,
+    "withErrors": 0,
+    "totalErrors": 0,
+    "totalWarnings": 0,
+    "jsonLd": 0,
+    "microdata": 0
+   },
+   "richResultEligibility": {
+    "eligible": false,
+    "types": []
+   }
+  },
+  "sitemap-validate": {
+   "sitemapUrl": "https://cense-loan-desk.vercel.app/sitemap.xml",
+   "found": false,
+   "urls": [],
+   "issues": [
+    "Sitemap not found. Try providing a direct URL to your sitemap.xml."
+   ],
+   "summary": {
+    "total": 0,
+    "ok": 0,
+    "redirects": 0,
+    "errors": 0,
+    "dead": 0,
+    "slow": 0
+   },
+   "error": "Sitemap not found at https://cense-loan-desk.vercel.app/sitemap.xml. HTTP 404"
+  },
+  "redirect-check": {
+   "url": "https://cense-loan-desk.vercel.app/",
+   "finalUrl": "https://cense-loan-desk.vercel.app/",
+   "finalStatus": 200,
+   "hops": [
+    {
+     "url": "https://cense-loan-desk.vercel.app/",
+     "statusCode": 200,
+     "location": null,
+     "timeMs": 28
+    }
+   ],
+   "redirectCount": 0,
+   "totalTimeMs": 28,
+   "status": "good",
+   "message": "No redirects detected. URL resolves directly."
+  },
+  "broken-links": {
+   "url": "https://cense-loan-desk.vercel.app/",
+   "depth": "page",
+   "pagesScanned": 1,
+   "pagesScannedList": [
+    "https://cense-loan-desk.vercel.app/"
+   ],
+   "totalLinks": 11,
+   "totalDiscoveredLinks": 11,
+   "links": [
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/chunks/fd9d1056-0513bfa1d30c24ee.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 29,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/chunks/117-a5f7cb7a43194daa.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 95,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/chunks/main-app-2dcde4753ea0d175.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 29,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/chunks/137-a3e1f3eebce6c471.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 31,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/chunks/app/page-eae479cdacf15b74.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 86,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/chunks/polyfills-42372ed130431b0a.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 97,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/chunks/webpack-2eb44b44e9a1fdeb.js",
+     "anchorText": "",
+     "linkType": "script",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 228,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/media/26d0ba92e140f0dc-s.p.woff2",
+     "anchorText": "preload",
+     "linkType": "link",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 92,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/media/9d5a263311222317-s.p.woff2",
+     "anchorText": "preload",
+     "linkType": "link",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 95,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/_next/static/css/064f4ce9f21bbb6c.css",
+     "anchorText": "stylesheet",
+     "linkType": "link",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 109,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    },
+    {
+     "sourceUrl": "https://cense-loan-desk.vercel.app/",
+     "targetUrl": "https://cense-loan-desk.vercel.app/icon.svg?497578d03306b208",
+     "anchorText": "icon",
+     "linkType": "link",
+     "isInternal": true,
+     "statusCode": 200,
+     "statusText": "ok",
+     "responseTimeMs": 103,
+     "sources": [
+      "https://cense-loan-desk.vercel.app/"
+     ]
+    }
+   ],
+   "summary": {
+    "total": 11,
+    "ok": 11,
+    "broken": 0,
+    "redirects": 0,
+    "errors": 0,
+    "timeouts": 0
+   }
+  },
+  "webmcp-check": {
+   "url": "https://cense-loan-desk.vercel.app/",
+   "aiReadinessScore": 0,
+   "mcpDiscovery": {
+    "score": 0,
+    "found": false,
+    "valid": false,
+    "hasAuth": false,
+    "data": null,
+    "errors": [
+     "HTTP 404 response from https://cense-loan-desk.vercel.app/.well-known/mcp.json."
+    ]
+   },
+   "webmcpDeclarative": {
+    "score": 0,
+    "toolCount": 0,
+    "tools": [],
+    "findings": [
+     "No declarative WebMCP tools found (no toolname attributes in HTML)."
+    ]
+   },
+   "webmcpImperative": {
+    "score": 0,
+    "detected": false,
+    "registerToolCalls": 0,
+    "findings": [
+     "No imperative WebMCP tool registration detected in inline scripts.",
+     "Note: This check cannot detect tools registered via external JavaScript files."
+    ]
+   },
+   "recommendations": [
+    "Add a .well-known/mcp.json file to enable MCP server discovery. This lets AI agents find and connect to your API endpoints automatically.",
+    "Add WebMCP declarative tools to your HTML using toolname attributes on <form> elements. Example: <form toolname=\"search\" tooldescription=\"Search products\"> to expose functionality to AI agents.",
+    "Consider implementing imperative WebMCP tools using navigator.modelContext.registerTool() for dynamic tool registration that depends on runtime state.",
+    "This page has no AI/MCP integration. Start with .well-known/mcp.json for server discovery or add toolname attributes to existing forms for quick wins."
+   ]
+  }
+ }
+}

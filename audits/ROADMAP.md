@@ -2,7 +2,7 @@
 
 Work top to bottom, but land MONEY-04 and MONEY-05 with MONEY-06, and MONEY-15 with or before MONEY-04, as their issue files say. Priorities 1 to 5 correct dollar figures and dates that a typical borrower sees wrong today, and priority 6 stops everyday data loss. After that come fixes for misread inputs and recognizable groups of borrowers, then backups and damaged data, accessibility, findability, next steps after choosing a plan, and upkeep. Most items are small: 84 of the 109 issues are estimated at under an hour each, and none at more than a day.
 
-Every issue has its own file in [`issues/`](issues/) with the measurement, steps to reproduce, the fix and how it was verified. Most have a test in [`tests/`](tests/) that fails today and starts passing once the issue is fixed. Draft material for six fixes is in [`fixes/`](fixes/); no fix has been applied here or proven with its test yet. When an issue's test starts passing, remove its `knownIssue()` line and tick the issue off here.
+Every issue has its own file in [`issues/`](issues/) with the measurement, steps to reproduce, the fix and how it was verified. Most have a test in [`tests/`](tests/) that fails today and starts passing once the issue is fixed. [`fixes/`](fixes/) holds a patch for 29 of the 30 P0 and P1 issues, each proven on a copy of the repo: 26 validated and 3 partial (a first step). It also holds unproven draft material for six other fixes. None is applied here. When an issue's test starts passing, remove its `knownIssue()` line and tick the issue off here.
 
 ## Top Priorities
 

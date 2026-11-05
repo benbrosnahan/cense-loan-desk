@@ -1,0 +1,87 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..749d495 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -722,7 +722,7 @@ export default function Page() {
+                       <div className="grid gap-5 sm:grid-cols-2">
+                         <Field
+                           label="Yearly income, before tax"
+-                          hint="Leave blank if you are not earning yet. We will skip the plans priced off income."
++                          hint="Not earning right now? Enter 0 to see what you would pay today. Leave blank to skip the plans priced off income."
+                           htmlFor="income"
+                         >
+                           <AffixInput
+@@ -732,19 +732,19 @@ export default function Page() {
+                             autoComplete="off"
+                             aria-describedby="income-msg"
+                             value={
+-                              profile.income
++                              profile.income > 0 || profile.incomeKnown
+                                 ? profile.income.toLocaleString("en-US")
+                                 : ""
+                             }
+-                            placeholder="0"
+-                            onChange={(e) =>
++                            onChange={(e) => {
++                              // A typed 0 is an answer. Text with no digit is blank.
++                              const raw = formatWholeDollars(e.target.value);
+                               setProfile((p) => ({
+                                 ...p,
+-                                income: parseNumber(
+-                                  formatWholeDollars(e.target.value)
+-                                ),
+-                              }))
+-                            }
++                                income: parseNumber(raw),
++                                incomeKnown: raw !== "",
++                              }));
++                            }}
+                           />
+                         </Field>
+ 
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..9547936 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -130,7 +130,8 @@ function PlanRow({
+           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+             <p className="text-sm leading-relaxed text-slate-800">
+               This plan is priced off what you earn, not what you owe. Add your
+-              yearly income and we will work out the payment.
++              yearly income, or 0 if you are not earning, and we will work out
++              the payment.
+             </p>
+             <Button
+               size="sm"
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..24d6510 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -225,7 +225,7 @@ export function buildContext(loans: Loan[], profile: Profile): PlanContext {
+   return {
+     loans,
+     profile,
+-    hasIncome: profile.income > 0,
++    hasIncome: profile.income > 0 || profile.incomeKnown === true,
+     postCutoff: anyPostCutoff(loans),
+     parentPlus: anyParentPlus(loans),
+     balance,
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..80df30e 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -108,8 +108,13 @@ export interface LoanDiffRow {
+ }
+ 
+ export interface Profile {
+-  /** Annual gross income. 0 = not supplied, which hides income-driven estimates. */
++  /**
++   * Annual gross income. 0 without incomeKnown = not supplied, which hides
++   * income-driven estimates; 0 with incomeKnown = a real $0.
++   */
+   income: number;
++  /** True once an income has been typed, including 0. Cleared with the field. */
++  incomeKnown?: boolean;
+   householdSize: number;
+   employment: Employment;
+   goal: Goal;

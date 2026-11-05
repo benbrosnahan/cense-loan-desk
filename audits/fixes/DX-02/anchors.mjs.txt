@@ -1,0 +1,18 @@
+// ============================================================ 23. hand-derived anchors
+// Algebra only, no month loop, so these are not the app's logic typed a second time.
+console.log("\n[23] Closed-form anchors for RAP, IBR and the payoff chart");
+{
+  // RAP in shortfall: $90,000 at 8.05%, income $45,000 -> $150 a month. Interest stays above the payment for all
+  // 360 months, so under 685.209(h)(4) and (o)(2) principal falls by exactly $50 a month.
+  const rap = planOf([loan("l", 90000, 8.05)], person({ income: 45000 }), "rap");
+  near("RAP shortfall: total is 360 x $150", rap.totalPaid, 360 * 150, 0.01);
+  near("RAP shortfall: forgiven is balance less 360 x $50", rap.forgivenAmount, 90000 - 360 * 50, 0.01);
+  // One loan at a fixed budget: n = ceil(-ln(1 - B r / P) / ln(1 + r)), balance after k months = B g^k - P (g^k - 1) / r.
+  const B = 10000, P = 150, r = 6 / 1200, g = 1 + r;
+  const q = ranking.projectPayoff([loan("x", B, 6)], "avalanche", P, 0);
+  const n = Math.ceil(-Math.log(1 - (B * r) / P) / Math.log(g));
+  ok("payoff months match the closed form", q.months === n, `${q.months} vs ${n}`);
+  const after = (k) => B * g ** k - (P * (g ** k - 1)) / r;
+  ok("every chart point matches the closed form", q.balanceByMonth.every((v, k) => k === n || Math.abs(v - after(k)) < 0.01));
+  near("payoff interest matches the closed form", q.totalInterest, (n - 1) * P + after(n - 1) * g - B, 0.01);
+}

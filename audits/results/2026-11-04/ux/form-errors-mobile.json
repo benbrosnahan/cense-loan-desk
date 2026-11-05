@@ -1,0 +1,1887 @@
+{
+ "state": "form-errors",
+ "formFactor": "mobile",
+ "pageContext": {
+  "indexable": true,
+  "siteType": "saas"
+ },
+ "report": {
+  "uxScore": null,
+  "typographyScore": null,
+  "contrastScore": null,
+  "layoutScore": null,
+  "responsiveScore": null,
+  "navigationScore": null,
+  "contentScore": null,
+  "totalIssues": 7,
+  "p1Count": 1,
+  "p2Count": 6,
+  "p3Count": 0,
+  "findings": [
+   {
+    "id": "9a384f2f-f25a-4eb4-8959-4aa81e5c8aad",
+    "severity": "P2",
+    "category": "Accessibility",
+    "device": "mobile",
+    "title": "9 tap target(s) smaller than M3's comfortable 48×48px at 375px wide",
+    "description": "9 tap target(s) smaller than M3's comfortable 48×48px at 375px wide — they clear the WCAG 2.5.8 24px minimum (3 via the spacing/inline exception). Examples: a.sr-only.focus:not-sr-only \"Skip to content\" (1×1px); a.font-semibold.text-navy \"Cense\" (42×18px); a.font-semibold.text-navy \"studentaid.gov\" (99×18px). Measured at the 375×812px mobile viewport.",
+    "recommendation": "Enlarge the control or add padding so its hit area is at least 48×48px.",
+    "source": "engine",
+    "themeId": "eng:tap-target-comfort",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "wcagCriterion": "2.5.8",
+    "evidence": {
+     "measured": "1×1px",
+     "required": "≥48×48px",
+     "selector": "a.sr-only.focus:not-sr-only",
+     "sample": "Skip to content",
+     "count": 9
+    }
+   },
+   {
+    "id": "ddd290db-51a9-4c87-b7c0-4e68c8225179",
+    "severity": "P2",
+    "category": "Accessibility",
+    "device": "mobile",
+    "title": "Missing landmark(s): nav.",
+    "description": "Missing landmark(s): nav.",
+    "recommendation": "Add the missing landmark elements (main, nav, header, footer) so assistive tech can navigate the page.",
+    "source": "engine",
+    "themeId": "eng:missing-landmarks",
+    "scope": "page",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "0 matches for nav, [role=\"navigation\"]",
+     "contributors": [
+      {
+       "selector": "nav, [role=\"navigation\"]",
+       "value": "no matching element"
+      }
+     ]
+    }
+   },
+   {
+    "id": "eac68f15-efd8-45a7-95cc-2751d565b7ce",
+    "severity": "P2",
+    "category": "Typography",
+    "device": "mobile",
+    "title": "9 reading-copy text node(s) below 16px (or any text below 11px).",
+    "description": "9 reading-copy text node(s) below 16px (or any text below 11px). Examples: p.mt-1.text-sm \"Find these on studentaid.gov under My Ai\" (14px); p.mt-1.5.flex \"!Pick the school year, or enter the date\" (14px); p.mt-2.text-sm \"The government covers the interest while\" (14px). Measured at the 375×812px mobile viewport.",
+    "recommendation": "Raise reading copy to at least 16px (12px absolute minimum for any text).",
+    "source": "engine",
+    "themeId": "eng:small-body-text",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "14px",
+     "required": "≥16px (≥11px absolute)",
+     "selector": "p.mt-1.text-sm",
+     "sample": "Find these on studentaid.gov under My Ai",
+     "count": 9
+    }
+   },
+   {
+    "id": "f4e30558-25e7-4da0-8a5b-4f0c7a36a3a1",
+    "severity": "P2",
+    "category": "Design Consistency",
+    "device": "mobile",
+    "title": "1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "description": "1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "recommendation": "Consolidate to a small token set: define CSS variables for the sanctioned values and replace ad-hoc ones.",
+    "source": "engine",
+    "themeId": "eng:radius-off-scale",
+    "scope": "page",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "0 matches for form.unfold.scroll-mt-24",
+     "contributors": [
+      {
+       "selector": "form.unfold.scroll-mt-24",
+       "value": "24px · 1 node(s)"
+      }
+     ]
+    }
+   },
+   {
+    "id": "f4991cca-b504-42aa-9633-600a671ffbe6",
+    "severity": "P2",
+    "category": "Motion",
+    "device": "mobile",
+    "title": "1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "description": "1 animation/transition(s) under 50ms (non-instant but too fast to read). Examples: *, ::after, ::before.",
+    "recommendation": "Keep animation durations within the 50–1000ms scale — long enough to read, short enough to feel responsive.",
+    "source": "engine",
+    "themeId": "eng:duration-too-short",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "1 occurrence(s)",
+     "required": "50–1000ms",
+     "selector": "*, ::after, ::before",
+     "count": 1
+    }
+   },
+   {
+    "id": "cd34de60-e1ef-41c2-8f7d-76509409ee57",
+    "severity": "P1",
+    "category": "Motion",
+    "device": "mobile",
+    "title": "1 transition(s) animate layout props (width/height/top/left/margin)",
+    "description": "1 transition(s) animate layout props (width/height/top/left/margin) — animate transform/opacity instead (jank). Examples: .transition-\\[width\\].",
+    "recommendation": "Animate transform/opacity instead of layout properties (width/height/top/left/margin) to avoid jank.",
+    "source": "engine",
+    "themeId": "eng:layout-animated",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "1 transition(s) animating layout properties",
+     "selector": ".transition-\\[width\\]",
+     "count": 1
+    }
+   },
+   {
+    "id": "dc875367-3f43-4eff-9b44-6133d386d84c",
+    "severity": "P2",
+    "category": "Motion",
+    "device": "mobile",
+    "title": "1 infinite decorative loop(s)",
+    "description": "1 infinite decorative loop(s) — reserve infinite motion for progress indicators. Examples: .animate-pulse.",
+    "recommendation": "Reserve infinite animation for progress indicators; give decorative loops a finite iteration count.",
+    "source": "engine",
+    "themeId": "eng:infinite-loop",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "1 occurrence(s)",
+     "selector": ".animate-pulse",
+     "count": 1
+    }
+   }
+  ],
+  "pageContext": {
+   "indexable": true,
+   "siteType": "saas"
+  },
+  "scanData": {
+   "domContext": {
+    "textElements": [
+     {
+      "tag": "a",
+      "text": "Skip to content",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": -1,
+      "y": -1,
+      "width": 1,
+      "height": 1
+     },
+     {
+      "tag": "span",
+      "text": "Cense",
+      "fontSize": "18px",
+      "fontWeight": "700",
+      "lineHeight": "28px",
+      "color": "rgb(168, 83, 31)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.92,
+      "x": 16,
+      "y": 22,
+      "width": 54,
+      "height": 28
+     },
+     {
+      "tag": "h1",
+      "text": "Loan Desk",
+      "fontSize": "18px",
+      "fontWeight": "700",
+      "lineHeight": "28px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 76,
+      "y": 22,
+      "width": 90,
+      "height": 28
+     },
+     {
+      "tag": "span",
+      "text": "On your deviceStays on this device",
+      "fontSize": "13px",
+      "fontWeight": "600",
+      "lineHeight": "19.2px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgb(234, 243, 231)",
+      "contrastRatio": 6.42,
+      "x": 224,
+      "y": 20,
+      "width": 135,
+      "height": 31
+     },
+     {
+      "tag": "span",
+      "text": "On your device",
+      "fontSize": "13px",
+      "fontWeight": "600",
+      "lineHeight": "19.2px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 256,
+      "y": 26,
+      "width": 91,
+      "height": 19
+     },
+     {
+      "tag": "h2",
+      "text": "Every loan you have, on one screen.",
+      "fontSize": "36.8px",
+      "fontWeight": "700",
+      "lineHeight": "38.272px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 16,
+      "y": 91,
+      "width": 343,
+      "height": 115
+     },
+     {
+      "tag": "p",
+      "text": "Four years of school usually means eight separate ",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "lineHeight": "29.25px",
+      "color": "rgb(58, 107, 62)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.35,
+      "x": 16,
+      "y": 222,
+      "width": 343,
+      "height": 176
+     },
+     {
+      "tag": "h3",
+      "text": "Add a loan",
+      "fontSize": "24px",
+      "fontWeight": "700",
+      "lineHeight": "30px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 38,
+      "y": 452,
+      "width": 299,
+      "height": 30
+     },
+     {
+      "tag": "p",
+      "text": "Find these on studentaid.gov under My Aid. Each lo",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22.75px",
+      "color": "rgb(58, 107, 62)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.35,
+      "x": 38,
+      "y": 486,
+      "width": 299,
+      "height": 46
+     },
+     {
+      "tag": "a",
+      "text": "studentaid.gov",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "22.75px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 128,
+      "y": 488,
+      "width": 99,
+      "height": 18
+     },
+     {
+      "tag": "button",
+      "text": "2022–23",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 38,
+      "y": 583,
+      "width": 93,
+      "height": 44
+     },
+     {
+      "tag": "button",
+      "text": "2023–24",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 139,
+      "y": 583,
+      "width": 93,
+      "height": 44
+     },
+     {
+      "tag": "button",
+      "text": "2024–25",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 240,
+      "y": 583,
+      "width": 93,
+      "height": 44
+     },
+     {
+      "tag": "button",
+      "text": "2025–26",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 38,
+      "y": 635,
+      "width": 93,
+      "height": 44
+     },
+     {
+      "tag": "button",
+      "text": "2026–27",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 139,
+      "y": 635,
+      "width": 93,
+      "height": 44
+     },
+     {
+      "tag": "label",
+      "text": "Date it was paid out",
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 38,
+      "y": 691,
+      "width": 299,
+      "height": 20
+     },
+     {
+      "tag": "p",
+      "text": "!Pick the school year, or enter the date below.",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(153, 27, 27)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.53,
+      "x": 38,
+      "y": 771,
+      "width": 299,
+      "height": 40
+     },
+     {
+      "tag": "span",
+      "text": "!",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(153, 27, 27)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.53,
+      "x": 38,
+      "y": 771,
+      "width": 4,
+      "height": 20
+     },
+     {
+      "tag": "p",
+      "text": "What type is it?",
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 38,
+      "y": 835,
+      "width": 299,
+      "height": 20
+     },
+     {
+      "tag": "button",
+      "text": "Subsidized",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgb(39, 91, 45)",
+      "contrastRatio": 8.01,
+      "x": 38,
+      "y": 863,
+      "width": 146,
+      "height": 48
+     },
+     {
+      "tag": "span",
+      "text": "Subsidized",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 21,
+      "x": 51,
+      "y": 878,
+      "width": 120,
+      "height": 18
+     },
+     {
+      "tag": "button",
+      "text": "Unsubsidized",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 192,
+      "y": 863,
+      "width": 146,
+      "height": 48
+     },
+     {
+      "tag": "span",
+      "text": "Unsubsidized",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 205,
+      "y": 878,
+      "width": 120,
+      "height": 18
+     },
+     {
+      "tag": "button",
+      "text": "Grad PLUS",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 38,
+      "y": 919,
+      "width": 146,
+      "height": 48
+     },
+     {
+      "tag": "span",
+      "text": "Grad PLUS",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 51,
+      "y": 934,
+      "width": 120,
+      "height": 18
+     },
+     {
+      "tag": "button",
+      "text": "Parent PLUS",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 192,
+      "y": 919,
+      "width": 146,
+      "height": 48
+     },
+     {
+      "tag": "span",
+      "text": "Parent PLUS",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 205,
+      "y": 934,
+      "width": 120,
+      "height": 18
+     },
+     {
+      "tag": "p",
+      "text": "The government covers the interest while you are i",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "19.25px",
+      "color": "rgb(58, 107, 62)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.35,
+      "x": 38,
+      "y": 975,
+      "width": 299,
+      "height": 58
+     },
+     {
+      "tag": "label",
+      "text": "What you owe on it today",
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 38,
+      "y": 1057,
+      "width": 299,
+      "height": 20
+     },
+     {
+      "tag": "span",
+      "text": "$",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 52,
+      "y": 1095,
+      "width": 10,
+      "height": 24
+     },
+     {
+      "tag": "p",
+      "text": "!Enter what you owe on this loan today.",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(153, 27, 27)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.53,
+      "x": 38,
+      "y": 1137,
+      "width": 299,
+      "height": 20
+     },
+     {
+      "tag": "span",
+      "text": "!",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(153, 27, 27)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.53,
+      "x": 38,
+      "y": 1137,
+      "width": 4,
+      "height": 20
+     },
+     {
+      "tag": "label",
+      "text": "Interest rate",
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 38,
+      "y": 1177,
+      "width": 299,
+      "height": 20
+     },
+     {
+      "tag": "span",
+      "text": "%",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 310,
+      "y": 1215,
+      "width": 13,
+      "height": 24
+     },
+     {
+      "tag": "p",
+      "text": "!Enter the interest rate, a number between 0 and 2",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(153, 27, 27)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.53,
+      "x": 38,
+      "y": 1257,
+      "width": 299,
+      "height": 40
+     },
+     {
+      "tag": "span",
+      "text": "!",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(153, 27, 27)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.53,
+      "x": 38,
+      "y": 1257,
+      "width": 4,
+      "height": 20
+     },
+     {
+      "tag": "label",
+      "text": "Who do you pay?",
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 38,
+      "y": 1321,
+      "width": 299,
+      "height": 20
+     },
+     {
+      "tag": "p",
+      "text": "Your loan servicer, the company that sends the bil",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "19.25px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 38,
+      "y": 1401,
+      "width": 299,
+      "height": 39
+     },
+     {
+      "tag": "button",
+      "text": "Add more detail",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 30,
+      "y": 1463,
+      "width": 145,
+      "height": 44
+     },
+     {
+      "tag": "button",
+      "text": "Save loan",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgb(39, 91, 45)",
+      "contrastRatio": 8.01,
+      "x": 38,
+      "y": 1531,
+      "width": 299,
+      "height": 48
+     },
+     {
+      "tag": "button",
+      "text": "Save and add another",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "contrastRatio": 8.01,
+      "x": 38,
+      "y": 1587,
+      "width": 299,
+      "height": 50
+     },
+     {
+      "tag": "button",
+      "text": "Cancel",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 38,
+      "y": 1645,
+      "width": 299,
+      "height": 48
+     },
+     {
+      "tag": "p",
+      "text": "Everything you type stays in this browser. There i",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "22.75px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 16,
+      "y": 1796,
+      "width": 343,
+      "height": 114
+     },
+     {
+      "tag": "p",
+      "text": "These are estimates, not financial advice. The rig",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22.75px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 16,
+      "y": 1918,
+      "width": 343,
+      "height": 114
+     },
+     {
+      "tag": "p",
+      "text": "Built by Cense, a free weekly personal finance new",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 16,
+      "y": 2040,
+      "width": 343,
+      "height": 40
+     },
+     {
+      "tag": "a",
+      "text": "Cense",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 66,
+      "y": 2041,
+      "width": 42,
+      "height": 18
+     }
+    ],
+    "interactiveElements": [
+     {
+      "tag": "a",
+      "text": "Skip to content",
+      "width": 1,
+      "height": 1,
+      "x": -1,
+      "y": -1
+     },
+     {
+      "tag": "a",
+      "text": "studentaid.gov",
+      "width": 99,
+      "height": 18,
+      "x": 128,
+      "y": 488
+     },
+     {
+      "tag": "button",
+      "text": "2022–23",
+      "width": 93,
+      "height": 44,
+      "x": 38,
+      "y": 583
+     },
+     {
+      "tag": "button",
+      "text": "2023–24",
+      "width": 93,
+      "height": 44,
+      "x": 139,
+      "y": 583
+     },
+     {
+      "tag": "button",
+      "text": "2024–25",
+      "width": 93,
+      "height": 44,
+      "x": 240,
+      "y": 583
+     },
+     {
+      "tag": "button",
+      "text": "2025–26",
+      "width": 93,
+      "height": 44,
+      "x": 38,
+      "y": 635
+     },
+     {
+      "tag": "button",
+      "text": "2026–27",
+      "width": 93,
+      "height": 44,
+      "x": 139,
+      "y": 635
+     },
+     {
+      "tag": "button",
+      "text": "Subsidized",
+      "width": 146,
+      "height": 48,
+      "x": 38,
+      "y": 863
+     },
+     {
+      "tag": "button",
+      "text": "Unsubsidized",
+      "width": 146,
+      "height": 48,
+      "x": 192,
+      "y": 863
+     },
+     {
+      "tag": "button",
+      "text": "Grad PLUS",
+      "width": 146,
+      "height": 48,
+      "x": 38,
+      "y": 919
+     },
+     {
+      "tag": "button",
+      "text": "Parent PLUS",
+      "width": 146,
+      "height": 48,
+      "x": 192,
+      "y": 919
+     },
+     {
+      "tag": "button",
+      "text": "Add more detail",
+      "width": 145,
+      "height": 44,
+      "x": 30,
+      "y": 1463
+     },
+     {
+      "tag": "button",
+      "text": "Save loan",
+      "width": 299,
+      "height": 48,
+      "x": 38,
+      "y": 1531
+     },
+     {
+      "tag": "button",
+      "text": "Save and add another",
+      "width": 299,
+      "height": 50,
+      "x": 38,
+      "y": 1587
+     },
+     {
+      "tag": "button",
+      "text": "Cancel",
+      "width": 299,
+      "height": 48,
+      "x": 38,
+      "y": 1645
+     },
+     {
+      "tag": "a",
+      "text": "Cense",
+      "width": 42,
+      "height": 18,
+      "x": 66,
+      "y": 2041
+     }
+    ],
+    "images": [],
+    "headings": [
+     {
+      "tag": "h1",
+      "text": "Loan Desk",
+      "fontSize": "18px",
+      "x": 76,
+      "y": 22,
+      "width": 90,
+      "height": 28
+     },
+     {
+      "tag": "h2",
+      "text": "Every loan you have, on one screen.",
+      "fontSize": "36.8px",
+      "x": 16,
+      "y": 91,
+      "width": 343,
+      "height": 115
+     },
+     {
+      "tag": "h3",
+      "text": "Add a loan",
+      "fontSize": "24px",
+      "x": 38,
+      "y": 452,
+      "width": 299,
+      "height": 30
+     }
+    ],
+    "overflowElements": [
+     "a.sr-only"
+    ],
+    "stickyElements": [],
+    "documentDimensions": {
+     "scrollHeight": 2192,
+     "clientHeight": 812,
+     "scrollWidth": 375,
+     "clientWidth": 375
+    }
+   }
+  }
+ },
+ "design": {
+  "report": {
+   "score": 62,
+   "grade": "D",
+   "buckets": {
+    "accessibility": {
+     "score": 22.8,
+     "max": 30,
+     "findings": [
+      {
+       "severity": "warn",
+       "ruleId": "tap-target-comfort",
+       "message": "9 tap target(s) smaller than M3's comfortable 48×48px at 375px wide — they clear the WCAG 2.5.8 24px minimum (3 via the spacing/inline exception).",
+       "count": 9,
+       "examples": [
+        {
+         "sig": "a.sr-only.focus:not-sr-only",
+         "tag": "a",
+         "w": 1,
+         "h": 1,
+         "sample": "Skip to content",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         },
+         "exception": "spacing"
+        },
+        {
+         "sig": "a.font-semibold.text-navy",
+         "tag": "a",
+         "w": 42,
+         "h": 18,
+         "sample": "Cense",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         },
+         "exception": "inline"
+        },
+        {
+         "sig": "a.font-semibold.text-navy",
+         "tag": "a",
+         "w": 99,
+         "h": 18,
+         "sample": "studentaid.gov",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         },
+         "exception": "inline"
+        },
+        {
+         "sig": "button.tnum.min-h-[44px]",
+         "tag": "button",
+         "w": 93,
+         "h": 44,
+         "sample": "2022–23",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.tnum.min-h-[44px]",
+         "tag": "button",
+         "w": 93,
+         "h": 44,
+         "sample": "2023–24",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.tnum.min-h-[44px]",
+         "tag": "button",
+         "w": 93,
+         "h": 44,
+         "sample": "2024–25",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.tnum.min-h-[44px]",
+         "tag": "button",
+         "w": 93,
+         "h": 44,
+         "sample": "2025–26",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.tnum.min-h-[44px]",
+         "tag": "button",
+         "w": 93,
+         "h": 44,
+         "sample": "2026–27",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        }
+       ],
+       "scope": "element",
+       "required": "≥48×48px",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "wcagCriterion": "2.5.8"
+      },
+      {
+       "severity": "warn",
+       "ruleId": "missing-landmarks",
+       "message": "Missing landmark(s): nav.",
+       "landmarks": [
+        "nav"
+       ],
+       "scope": "page",
+       "contributors": [
+        {
+         "selector": "nav, [role=\"navigation\"]",
+         "value": "no matching element"
+        }
+       ]
+      }
+     ]
+    },
+    "consistency": {
+     "score": 15.2,
+     "max": 20,
+     "findings": [
+      {
+       "severity": "warn",
+       "ruleId": "small-body-text",
+       "message": "9 reading-copy text node(s) below 16px (or any text below 11px).",
+       "count": 9,
+       "examples": [
+        {
+         "sig": "p.mt-1.text-sm",
+         "px": 14,
+         "sample": "Find these on studentaid.gov under My Ai"
+        },
+        {
+         "sig": "p.mt-1.5.flex",
+         "px": 14,
+         "sample": "!Pick the school year, or enter the date"
+        },
+        {
+         "sig": "p.mt-2.text-sm",
+         "px": 14,
+         "sample": "The government covers the interest while"
+        },
+        {
+         "sig": "p.mt-1.5.flex",
+         "px": 14,
+         "sample": "!Enter what you owe on this loan today."
+        },
+        {
+         "sig": "p.mt-1.5.flex",
+         "px": 14,
+         "sample": "!Enter the interest rate, a number betwe"
+        },
+        {
+         "sig": "p.mt-1.5.text-sm",
+         "px": 14,
+         "sample": "Your loan servicer, the company that sen"
+        },
+        {
+         "sig": "p.text-sm.font-semibold",
+         "px": 14,
+         "sample": "Everything you type stays in this browse"
+        },
+        {
+         "sig": "p.mt-2.text-sm",
+         "px": 14,
+         "sample": "These are estimates, not financial advic"
+        }
+       ],
+       "scope": "element",
+       "renderContext": "dom",
+       "required": "≥16px (≥11px absolute)",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "severity": "info",
+       "ruleId": "small-ui-labels",
+       "message": "20 UI label(s) at 12-15.9px — legitimate M3 label roles (not scored); verify their tap targets meet 48px.",
+       "count": 20,
+       "examples": [
+        {
+         "sig": "span.sm:hidden",
+         "px": 13,
+         "sample": "On your device"
+        },
+        {
+         "sig": "a.font-semibold.text-navy",
+         "px": 14,
+         "sample": "studentaid.gov"
+        },
+        {
+         "sig": "strong",
+         "px": 14,
+         "sample": "My Aid"
+        },
+        {
+         "sig": "legend.text-sm.font-bold",
+         "px": 14,
+         "sample": "Which school year was it for?"
+        },
+        {
+         "sig": "button.tnum.min-h-[44px]",
+         "px": 14,
+         "sample": "2022–23"
+        },
+        {
+         "sig": "button.tnum.min-h-[44px]",
+         "px": 14,
+         "sample": "2023–24"
+        }
+       ],
+       "scope": "element",
+       "renderContext": "dom",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "severity": "warn",
+       "ruleId": "radius-off-scale",
+       "message": "1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+       "values": [
+        24
+       ],
+       "scope": "page",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "contributors": [
+        {
+         "selector": "form.unfold.scroll-mt-24",
+         "value": "24px · 1 node(s)"
+        }
+       ]
+      }
+     ]
+    },
+    "motion": {
+     "score": 10.5,
+     "max": 25,
+     "findings": [
+      {
+       "severity": "warn",
+       "ruleId": "duration-too-short",
+       "message": "1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+       "examples": [
+        {
+         "selector": "*, ::after, ::before",
+         "sig": "*, ::after, ::before",
+         "ms": 0
+        }
+       ],
+       "scope": "element",
+       "required": "50–1000ms"
+      },
+      {
+       "severity": "error",
+       "ruleId": "layout-animated",
+       "message": "1 transition(s) animate layout props (width/height/top/left/margin) — animate transform/opacity instead (jank).",
+       "examples": [
+        {
+         "selector": ".transition-\\[width\\]",
+         "sig": ".transition-\\[width\\]",
+         "props": [
+          "width"
+         ],
+         "kind": "transition"
+        }
+       ],
+       "scope": "element"
+      },
+      {
+       "severity": "warn",
+       "ruleId": "infinite-loop",
+       "message": "1 infinite decorative loop(s) — reserve infinite motion for progress indicators.",
+       "examples": [
+        {
+         "selector": ".animate-pulse",
+         "sig": ".animate-pulse"
+        }
+       ],
+       "scope": "element"
+      }
+     ]
+    },
+    "performance": {
+     "score": 13.5,
+     "max": 25,
+     "findings": [
+      {
+       "severity": "error",
+       "ruleId": "layout-animated",
+       "message": "1 transition(s) animate layout props (width/height/top/left/margin) — animate transform/opacity instead (jank).",
+       "examples": [
+        {
+         "selector": ".transition-\\[width\\]",
+         "sig": ".transition-\\[width\\]",
+         "props": [
+          "width"
+         ],
+         "kind": "transition"
+        }
+       ],
+       "scope": "element",
+       "reusedFrom": "motion"
+      },
+      {
+       "severity": "warn",
+       "ruleId": "infinite-loop",
+       "message": "1 infinite decorative loop(s) — reserve infinite motion for progress indicators.",
+       "examples": [
+        {
+         "selector": ".animate-pulse",
+         "sig": ".animate-pulse"
+        }
+       ],
+       "scope": "element",
+       "reusedFrom": "motion"
+      }
+     ]
+    }
+   },
+   "sections": {
+    "color": {
+     "sampled": 38,
+     "skippedUnknownBg": 0,
+     "skippedUnparseable": 0,
+     "skippedRenderContext": 0,
+     "distinctTextColors": 7,
+     "failureCount": 0,
+     "failures": []
+    },
+    "typography": {
+     "distinctFamilies": 2,
+     "families": [
+      "__Instrument_Sans_3f4a4b, __Instrument_Sans_Fallback_3f4a4b, system-ui, sans-serif",
+      "__Bricolage_Grotesque_1243c3, __Bricolage_Grotesque_Fallback_1243c3, __Instrument_Sans_3f4a4b, __Instrument_Sans_Fallback_3f4a4b, system-ui, sans-serif"
+     ],
+     "distinctSizes": 6,
+     "sizes": [
+      13,
+      14,
+      16,
+      18,
+      24,
+      36.8
+     ],
+     "distinctLineHeights": 8,
+     "smallBodyCount": 9,
+     "smallBody": [
+      {
+       "sig": "p.mt-1.text-sm",
+       "px": 14,
+       "sample": "Find these on studentaid.gov under My Ai"
+      },
+      {
+       "sig": "p.mt-1.5.flex",
+       "px": 14,
+       "sample": "!Pick the school year, or enter the date"
+      },
+      {
+       "sig": "p.mt-2.text-sm",
+       "px": 14,
+       "sample": "The government covers the interest while"
+      },
+      {
+       "sig": "p.mt-1.5.flex",
+       "px": 14,
+       "sample": "!Enter what you owe on this loan today."
+      },
+      {
+       "sig": "p.mt-1.5.flex",
+       "px": 14,
+       "sample": "!Enter the interest rate, a number betwe"
+      },
+      {
+       "sig": "p.mt-1.5.text-sm",
+       "px": 14,
+       "sample": "Your loan servicer, the company that sen"
+      },
+      {
+       "sig": "p.text-sm.font-semibold",
+       "px": 14,
+       "sample": "Everything you type stays in this browse"
+      },
+      {
+       "sig": "p.mt-2.text-sm",
+       "px": 14,
+       "sample": "These are estimates, not financial advic"
+      },
+      {
+       "sig": "p.mt-2.text-sm",
+       "px": 14,
+       "sample": "Built by Cense, a free weekly personal f"
+      }
+     ],
+     "smallLabelCount": 20,
+     "smallLabels": [
+      {
+       "sig": "span.sm:hidden",
+       "px": 13,
+       "sample": "On your device"
+      },
+      {
+       "sig": "a.font-semibold.text-navy",
+       "px": 14,
+       "sample": "studentaid.gov"
+      },
+      {
+       "sig": "strong",
+       "px": 14,
+       "sample": "My Aid"
+      },
+      {
+       "sig": "legend.text-sm.font-bold",
+       "px": 14,
+       "sample": "Which school year was it for?"
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "px": 14,
+       "sample": "2022–23"
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "px": 14,
+       "sample": "2023–24"
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "px": 14,
+       "sample": "2024–25"
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "px": 14,
+       "sample": "2025–26"
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "px": 14,
+       "sample": "2026–27"
+      },
+      {
+       "sig": "label.block.text-sm",
+       "px": 14,
+       "sample": "Date it was paid out"
+      },
+      {
+       "sig": "p.text-sm.font-bold",
+       "px": 14,
+       "sample": "What type is it?"
+      },
+      {
+       "sig": "span.block",
+       "px": 14,
+       "sample": "Subsidized"
+      }
+     ],
+     "tightLeadingCount": 0,
+     "tightLeading": [],
+     "displayLeadingRelaxed": 0,
+     "formattedBlocksSkipped": 0,
+     "distinctHeadingSizes": 3,
+     "headingCount": 3,
+     "skippedRenderContext": 0
+    },
+    "shape": {
+     "distinctRadii": 4,
+     "radii": [
+      12,
+      16,
+      24,
+      9999
+     ],
+     "scale": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      28,
+      9999
+     ],
+     "offScaleValues": [
+      24
+     ]
+    },
+    "elevation": {
+     "distinctShadows": 2,
+     "levels": 6,
+     "recipes": [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(39, 91, 45, 0.05) 0px 1px 0px 0px, rgba(39, 91, 45, 0.28) 0px 16px 32px -16px",
+      "rgb(255, 255, 255) 0px 0px 0px 1px, rgb(39, 91, 45) 0px 0px 0px 3px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+     ]
+    },
+    "states": {
+     "interactiveCount": 20,
+     "hasHoverRules": true,
+     "hasFocusVisibleRules": true,
+     "stylesheetsReachable": true,
+     "sheetsSkipped": 0,
+     "noVisibleFocusCount": 0,
+     "noVisibleFocusExamples": []
+    },
+    "motion": {
+     "hasReducedMotionQuery": true,
+     "reducedMotionStatus": "present",
+     "activeAnimations": 2,
+     "tooShort": [
+      {
+       "selector": "*, ::after, ::before",
+       "sig": "*, ::after, ::before",
+       "ms": 0
+      }
+     ],
+     "tooLong": [],
+     "linearMovement": [],
+     "easeInEntrance": [],
+     "layoutAnimated": [
+      {
+       "selector": ".transition-\\[width\\]",
+       "sig": ".transition-\\[width\\]",
+       "props": [
+        "width"
+       ],
+       "kind": "transition"
+      }
+     ],
+     "infiniteLoops": [
+      {
+       "selector": ".animate-pulse",
+       "sig": ".animate-pulse"
+      }
+     ],
+     "sheetsSkipped": 0
+    },
+    "a11yLayout": {
+     "smallTargetCount": 9,
+     "smallTargets": [
+      {
+       "sig": "a.sr-only.focus:not-sr-only",
+       "tag": "a",
+       "w": 1,
+       "h": 1,
+       "sample": "Skip to content",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "exception": "spacing"
+      },
+      {
+       "sig": "a.font-semibold.text-navy",
+       "tag": "a",
+       "w": 42,
+       "h": 18,
+       "sample": "Cense",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "exception": "inline"
+      },
+      {
+       "sig": "a.font-semibold.text-navy",
+       "tag": "a",
+       "w": 99,
+       "h": 18,
+       "sample": "studentaid.gov",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "exception": "inline"
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "tag": "button",
+       "w": 93,
+       "h": 44,
+       "sample": "2022–23",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "tag": "button",
+       "w": 93,
+       "h": 44,
+       "sample": "2023–24",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "tag": "button",
+       "w": 93,
+       "h": 44,
+       "sample": "2024–25",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "tag": "button",
+       "w": 93,
+       "h": 44,
+       "sample": "2025–26",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.tnum.min-h-[44px]",
+       "tag": "button",
+       "w": 93,
+       "h": 44,
+       "sample": "2026–27",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.-mx-2.inline-flex",
+       "tag": "button",
+       "w": 145,
+       "h": 44,
+       "sample": "Add more detail",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      }
+     ],
+     "undersizedCount": 0,
+     "belowComfortCount": 9,
+     "spacingExceptionChecked": true,
+     "spacingExceptionSkipReason": null,
+     "targetCount": 20,
+     "missingAltCount": 0,
+     "missingAlt": [],
+     "headingJumpCount": 0,
+     "headingJumps": [],
+     "h1Count": 1,
+     "missingLandmarks": [
+      "nav"
+     ]
+    }
+   },
+   "notAutoDetectable": [
+    "Spatial coherence — whether elements enter/exit from where they logically belong (a menu growing from its anchor, a sheet rising from the edge it docks to). The audit sees durations and easings, not spatial origin.",
+    "Clean fades — whether opacity transitions are free of mid-fade color shifts, banding, or double-compositing. Only a human eye (or pixel diff) can judge fade quality.",
+    "Jump cuts — abrupt state changes with no transition where one is expected (content swaps, route changes). Absence of animation is not itself in the DOM.",
+    "Unified direction — whether a group of elements animates along a consistent axis/choreography rather than each doing its own thing.",
+    "Perceived hierarchy / emphasis — whether motion draws the eye to the right thing at the right time.",
+    "Content-appropriate personality — expressive vs. standard scheme being the right call for the brand and context.",
+    "Interruptibility & continuity — whether in-flight animations respond gracefully to new input rather than snapping.",
+    "Real contrast under imagery/gradients — text over photos or gradient backgrounds (the audit samples solid computed backgrounds only).",
+    "Closed shadow roots — their internals are structurally unreachable from script and are not scanned."
+   ],
+   "meta": {
+    "url": "http://localhost:3100/",
+    "title": "Loan Desk by Cense — every student loan you have, in one place",
+    "timestamp": "2026-11-04T20:49:56.069Z",
+    "contentFingerprint": "w6cq0m",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true,
+     "w": 375,
+     "h": 812
+    },
+    "siteType": "saas",
+    "elementsScanned": 76,
+    "elementsTotal": 101,
+    "sampleCap": 1500,
+    "sampleCapped": false,
+    "sheetsSkipped": 0,
+    "openShadowRoots": 1,
+    "notes": [
+     "1 open shadow root(s) traversed. Closed shadow roots (if any) cannot be scanned."
+    ],
+    "durationMs": 8.3
+   }
+  },
+  "probes": {
+   "animationsAtLoad": {
+    "count": 2,
+    "running": 0,
+    "anims": [
+     {
+      "target": "div.rise.pt-10",
+      "name": "rise",
+      "dur": 240,
+      "infinite": false,
+      "state": "finished"
+     },
+     {
+      "target": "form.unfold.scroll-mt-24",
+      "name": "unfold",
+      "dur": 200,
+      "infinite": false,
+      "state": "finished"
+     }
+    ]
+   },
+   "animationsAfterScroll": {
+    "count": 2,
+    "running": 0,
+    "anims": [
+     {
+      "target": "div.rise.pt-10",
+      "name": "rise",
+      "dur": 240,
+      "infinite": false,
+      "state": "finished"
+     },
+     {
+      "target": "form.unfold.scroll-mt-24",
+      "name": "unfold",
+      "dur": 200,
+      "infinite": false,
+      "state": "finished"
+     }
+    ]
+   }
+  },
+  "durationMs": 2646
+ },
+ "extras": []
+}

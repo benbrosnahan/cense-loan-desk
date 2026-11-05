@@ -1,0 +1,171 @@
+diff --git a/README.md b/README.md
+index 11d8eb6..4a97531 100644
+--- a/README.md
++++ b/README.md
+@@ -128,8 +128,9 @@ replicated in Python.
+ - Poverty guidelines are the 48 contiguous states + DC. Alaska and Hawaii are
+   higher, so income-driven estimates run low there.
+ - Income is held flat for the whole term, matching the federal Loan Simulator.
+-- IBR figures assume a post-July-2014 borrower (10% / 20 years). Earlier
+-  borrowers get 15% / 25 years.
++- IBR is priced at 15% / 25 years when any listed loan was paid out before
++  July 1, 2014, and at 10% / 20 years otherwise. An older loan that is not
++  listed, for example one repaid by a later consolidation, cannot be seen.
+ - The Graduated step schedule is a model; regulation caps the largest payment at
+   three times the smallest but servicers set the exact steps.
+ 
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..6653781 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -11,6 +11,7 @@ import { useState } from "react";
+ import { Loan, PlanId, Profile, RankedPlan } from "@/types";
+ import {
+   ASSUMPTIONS,
++  IBR_OLDER_BORROWER_META,
+   PARENT_PLUS_NOTE,
+   PLAN_META,
+   POST_CUTOFF_WARNING,
+@@ -105,7 +106,12 @@ function PlanRow({
+   onSelect: () => void;
+ }) {
+   const { estimate: e, isTopPick, isLowestPayment, isLowestInterest } = plan;
+-  const meta = PLAN_META[e.id];
++  // calc.ts gives IBR 25 years when a loan predates July 1, 2014.
++  const meta =
++    e.id === "ibr" &&
++    e.forgivenessYears === IBR_OLDER_BORROWER_META.forgivenessYears
++      ? IBR_OLDER_BORROWER_META
++      : PLAN_META[e.id];
+   const [open, setOpen] = useState(false);
+   const panelId = `plan-${e.id}`;
+ 
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..9dd1f72 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -198,13 +198,37 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+     ],
+     cons: [
+       "Charges a percentage of your total income, not just income above the poverty floor",
+-      "Forgiveness takes 30 years, 10 longer than IBR",
++      "Forgiveness takes 30 years, longer than IBR",
+       "Forgiveness at 30 years counts as taxable income",
+       "You have to recertify your income every year",
+     ],
+   },
+ };
+ 
++/**
++ * The IBR card for a borrower who still owes a loan paid out before July 1,
++ * 2014, and so is not a new borrower under 34 CFR 685.209(b)(13)(ii): 15% of
++ * discretionary income under (f)(3)(i), forgiveness after 300 payments under
++ * (k)(1). calc.ts decides which applies (isIbrNewBorrower).
++ */
++export const IBR_OLDER_BORROWER_META: PlanMeta = {
++  ...PLAN_META.ibr,
++  summary:
++    "Caps your payment at 15% of discretionary income, meaning what you earn above 150% of the poverty line. That rate and forgiveness at 25 years apply because one of your loans was paid out before July 1, 2014. A low enough income means a $0 payment, and $0 still counts.",
++  forgivenessYears: 25,
++  pros: [
++    "A $0 payment is possible and still counts as a qualifying payment",
++    "Always earns Public Service Loan Forgiveness credit",
++    "Forgiveness at 25 years, 5 sooner than RAP",
++  ],
++  cons: [
++    "Unpaid interest is added to your balance, so the balance can grow",
++    "Forgiveness at 25 years counts as taxable income",
++    "You have to recertify your income every year",
++    "Closed to you if any loan was disbursed on or after July 1, 2026",
++  ],
++};
++
+ /** Plans open when every loan was disbursed before July 1, 2026. */
+ export const LEGACY_PLANS: PlanId[] = [
+   "standard",
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..1b24622 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -57,6 +57,18 @@ export function anyParentPlus(loans: Loan[]): boolean {
+   return loans.some((l) => l.kind === "parent_plus");
+ }
+ 
++/**
++ * True unless a listed loan was paid out before July 1, 2014. A loan from
++ * then that is still owed means the borrower is not a "new borrower" for IBR
++ * under 34 CFR 685.209(b)(13)(ii): IBR then charges 15% of discretionary
++ * income under (f)(3)(i) and forgives after 300 payments under (k)(1).
++ */
++export function isIbrNewBorrower(loans: Loan[]): boolean {
++  return !loans.some(
++    (l) => !!l.disbursementDate && l.disbursementDate < "2014-07-01"
++  );
++}
++
+ /** Standard amortised monthly payment. Handles the 0% edge case. */
+ export function amortizedPayment(
+   balance: number,
+@@ -191,12 +203,13 @@ function simulateIdr(
+   };
+ }
+ 
+-function ibrMonthly(profile: Profile): number {
++/** `share` is 0.1 for a new borrower, 0.15 otherwise. See isIbrNewBorrower. */
++function ibrMonthly(profile: Profile, share: number): number {
+   const discretionary = Math.max(
+     0,
+     profile.income - 1.5 * getPovertyLine(profile.householdSize)
+   );
+-  return (discretionary * 0.1) / 12;
++  return (discretionary * share) / 12;
+ }
+ 
+ function rapMonthly(profile: Profile): number {
+@@ -271,13 +284,16 @@ function pslfForFixedPlan(
+ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+   const { balance, rate, profile, postCutoff, hasIncome, pslfBenchmark } = ctx;
+   const available: PlanId[] = postCutoff ? POST_CUTOFF_PLANS : LEGACY_PLANS;
++  const ibrNew = isIbrNewBorrower(ctx.loans);
++  const ibrShare = ibrNew ? 0.1 : 0.15;
++  const ibrYears = ibrNew ? 20 : 25;
+ 
+   const build = (id: PlanId): PlanEstimate => {
+     const meta = PLAN_META[id];
+     const base = {
+       id,
+       name: meta.name,
+-      forgivenessYears: meta.forgivenessYears,
++      forgivenessYears: id === "ibr" ? ibrYears : meta.forgivenessYears,
+     };
+ 
+     if (!available.includes(id)) {
+@@ -424,7 +440,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+         monthlyPayment: null,
+         totalPaid: null,
+         totalInterest: null,
+-        years: id === "rap" ? 30 : 20,
++        years: id === "rap" ? 30 : ibrYears,
+         forgivenAmount: 0,
+         pslf: "counts",
+         pslfNote:
+@@ -434,8 +450,8 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+ 
+     if (id === "ibr") {
+       const cap = amortizedPayment(balance, rate, 10);
+-      const pay = Math.min(ibrMonthly(profile), cap);
+-      const sim = simulateIdr(balance, rate, pay, 20, {
++      const pay = Math.min(ibrMonthly(profile, ibrShare), cap);
++      const sim = simulateIdr(balance, rate, pay, ibrYears, {
+         waiveUnpaidInterest: false,
+         matchPrincipal: false,
+       });
+@@ -445,7 +461,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+         monthlyPayment: pay,
+         totalPaid: sim.totalPaid,
+         totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
+-        years: sim.paidOff ? sim.months / 12 : 20,
++        years: sim.paidOff ? sim.months / 12 : ibrYears,
+         forgivenAmount: sim.forgiven,
+         pslf: "counts",
+         pslfNote:

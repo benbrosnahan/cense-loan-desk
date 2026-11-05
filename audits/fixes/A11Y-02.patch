@@ -1,0 +1,102 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..c250816 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -254,7 +254,10 @@ export default function Page() {
+     if (editing?.id === id) setEditing(null);
+     say(`Removed ${gone?.nickname ?? "loan"}`, {
+       label: "Undo",
+-      run: () => setLoans(before),
++      run: () => {
++        setLoans(before);
++        say(`Restored ${gone?.nickname ?? "loan"}`);
++      },
+     });
+   };
+ 
+@@ -262,13 +265,25 @@ export default function Page() {
+     const before = loans;
+     setLoans([]);
+     setTab("loans");
+-    say("All loans cleared", { label: "Undo", run: () => setLoans(before) });
++    say("All loans cleared", {
++      label: "Undo",
++      run: () => {
++        setLoans(before);
++        say("Loans restored");
++      },
++    });
+   };
+ 
+   const clearSnapshots = () => {
+     const before = snapshots;
+     setSnapshots([]);
+-    say("Records cleared", { label: "Undo", run: () => setSnapshots(before) });
++    say("Records cleared", {
++      label: "Undo",
++      run: () => {
++        setSnapshots(before);
++        say("Records restored");
++      },
++    });
+   };
+ 
+   const saveSnapshot = () => {
+diff --git a/src/components/shared/ui.tsx b/src/components/shared/ui.tsx
+index 2315a07..4d3bed7 100644
+--- a/src/components/shared/ui.tsx
++++ b/src/components/shared/ui.tsx
+@@ -575,30 +575,35 @@ export function Toast({
+   toast: ToastState | null;
+   onDismiss: () => void;
+ }) {
+-  if (!toast) return null;
++  // The status region stays mounted and empty between toasts, so each
++  // message is written into a region screen readers already watch. NVDA,
++  // JAWS and VoiceOver in Chrome skip a region inserted with its text.
+   return (
+     <div
+       role="status"
+       aria-live="polite"
+       className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+     >
+-      <div
+-        className="rise pointer-events-auto flex items-center gap-1 rounded-full bg-slate-900 py-1.5 pl-5 pr-1.5 text-sm font-semibold text-white shadow-lift"
+-      >
+-        <span className="py-1.5 pr-3">{toast.message}</span>
+-        {toast.action && (
+-          <button
+-            type="button"
+-            onClick={() => {
+-              toast.action!.run();
+-              onDismiss();
+-            }}
+-            className="min-h-[40px] rounded-full bg-white px-4 text-sm font-bold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+-          >
+-            {toast.action.label}
+-          </button>
+-        )}
+-      </div>
++      {toast && (
++        <div
++          className="rise pointer-events-auto flex items-center gap-1 rounded-full bg-slate-900 py-1.5 pl-5 pr-1.5 text-sm font-semibold text-white shadow-lift"
++        >
++          <span className="py-1.5 pr-3">{toast.message}</span>
++          {toast.action && (
++            <button
++              type="button"
++              onClick={() => {
++                // Dismiss first, so a message the action says is not cleared.
++                onDismiss();
++                toast.action!.run();
++              }}
++              className="min-h-[40px] rounded-full bg-white px-4 text-sm font-bold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
++            >
++              {toast.action.label}
++            </button>
++          )}
++        </div>
++      )}
+     </div>
+   );
+ }

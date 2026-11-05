@@ -1,0 +1,353 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..5d45a6a 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -7,7 +7,7 @@
+ // That order came out of the student interviews, where the consistent ask was
+ // one next step rather than a dashboard.
+ 
+-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
++import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+ import {
+   DEFAULT_PROFILE,
+   EMPLOYMENT_HINTS,
+@@ -43,7 +43,8 @@ import {
+   profileStore,
+   snapshotStore,
+ } from "@/lib/storage";
+-import { exportLoans } from "@/lib/export";
++import { exportBackup, exportLoans } from "@/lib/export";
++import { parseBackup } from "@/lib/backup";
+ import { cn, formatWholeDollars, parseNumber, scrollBehavior } from "@/lib/utils";
+ import {
+   AffixInput,
+@@ -133,6 +134,7 @@ export default function Page() {
+   const [busyExport, setBusyExport] = useState(false);
+   const [hideAmounts, setHideAmounts] = useState(false);
+   const sectionRef = useRef<HTMLDivElement>(null);
++  const restoreRef = useRef<HTMLInputElement>(null);
+ 
+   // First run is deliberately empty. Someone arriving from the newsletter
+   // should see their own situation, not a demo they have to clear out first.
+@@ -285,6 +287,45 @@ export default function Page() {
+     }
+   };
+ 
++  // A file saved with "Save a backup file". Nothing is applied unless all of
++  // it checks out, and Undo puts back whatever was here before.
++  const restoreFromFile = async (e: ChangeEvent<HTMLInputElement>) => {
++    const file = e.target.files?.[0];
++    e.target.value = ""; // so picking the same file again still loads it
++    if (!file) return;
++    const text = file.size <= 5_000_000 ? await file.text().catch(() => "") : "";
++    const backup = parseBackup(text);
++    if (!backup) {
++      say("That file is not a Loan Desk backup. Nothing was changed.", {
++        label: "OK",
++        run: () => {},
++      });
++      return;
++    }
++    const before = { loans, profile, snapshots };
++    setLoans(backup.loans);
++    setProfile(backup.profile);
++    setSnapshots(backup.snapshots);
++    setAdding(false);
++    setEditing(null);
++    setTab("loans");
++    const n = backup.loans.length;
++    const m = backup.snapshots.length;
++    say(
++      `Restored ${n} loan${n === 1 ? "" : "s"}${
++        m ? ` and ${m} dated record${m === 1 ? "" : "s"}` : ""
++      }`,
++      {
++        label: "Undo",
++        run: () => {
++          setLoans(before.loans);
++          setProfile(before.profile);
++          setSnapshots(before.snapshots);
++        },
++      }
++    );
++  };
++
+   const startAdding = () => {
+     setEditing(null);
+     setFormKey((k) => k + 1);
+@@ -380,6 +421,18 @@ export default function Page() {
+                 </Button>
+               </div>
+             )}
++            {!adding && (
++              <p className="mt-4 text-sm leading-relaxed text-slate-700">
++                Been here before and your loans are gone?{" "}
++                <button
++                  type="button"
++                  onClick={() => restoreRef.current?.click()}
++                  className="min-h-[40px] rounded font-semibold text-navy underline underline-offset-2 hover:text-navy-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
++                >
++                  Load a backup file
++                </button>
++              </p>
++            )}
+ 
+             {adding ? (
+               <div className="mt-8">
+@@ -417,7 +470,9 @@ export default function Page() {
+                   <Eyebrow>What stays private</Eyebrow>
+                   <p className="mt-2 text-base leading-relaxed text-slate-800">
+                     All of it. There is no account and no server. What you type
+-                    is saved in this browser and goes nowhere else.
++                    is saved in this browser and goes nowhere else. Browsers can
++                    erase saved data for a site you have not opened in a while,
++                    so once your loans are in, save a backup file.
+                   </p>
+                   <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                     Nothing here is for sale, and nothing is trying to
+@@ -624,7 +679,7 @@ export default function Page() {
+ 
+                   <Card className="no-print p-5">
+                     <Eyebrow>Keep a copy</Eyebrow>
+-                    <div className="mt-3 flex flex-col gap-2 sm:flex-row">
++                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                       <Button
+                         size="sm"
+                         variant="secondary"
+@@ -640,7 +695,28 @@ export default function Page() {
+                       >
+                         Print one page
+                       </Button>
++                      <Button
++                        size="sm"
++                        variant="secondary"
++                        onClick={() => exportBackup({ loans, profile, snapshots })}
++                      >
++                        Save a backup file
++                      </Button>
++                      <Button
++                        size="sm"
++                        variant="secondary"
++                        onClick={() => restoreRef.current?.click()}
++                      >
++                        Load a backup file
++                      </Button>
+                     </div>
++                    <p className="mt-3 text-sm leading-relaxed text-slate-600">
++                      Browsers can erase saved data for a site you have not
++                      opened in a while, and a new phone starts empty. A backup
++                      file brings everything back, dated records included. It
++                      holds your balances and income, so keep it somewhere
++                      private.
++                    </p>
+                     <Disclosure summary="Clear my data" className="mt-2">
+                       <div className="flex flex-col gap-2 sm:flex-row">
+                         <Button size="sm" variant="danger" onClick={clearLoans}>
+@@ -859,6 +935,15 @@ export default function Page() {
+         </footer>
+       </div>
+ 
++      {/* Opened by the two "Load a backup file" buttons. Read on the device. */}
++      <input
++        ref={restoreRef}
++        type="file"
++        accept=".json,application/json"
++        aria-label="Backup file to load"
++        className="hidden"
++        onChange={restoreFromFile}
++      />
+       <Toast toast={toast} onDismiss={() => setToast(null)} />
+     </main>
+   );
+diff --git a/src/components/history/HistoryPanel.tsx b/src/components/history/HistoryPanel.tsx
+index 2dfda68..2aaa063 100644
+--- a/src/components/history/HistoryPanel.tsx
++++ b/src/components/history/HistoryPanel.tsx
+@@ -76,8 +76,11 @@ export default function HistoryPanel({
+             </Button>
+           </div>
+           <p className="mt-3 text-sm leading-relaxed text-slate-600">
+-            A snapshot stores every loan exactly as it stands right now, on this
+-            device. The spreadsheet is the copy you keep outside the browser.
++            A snapshot stores every loan exactly as it stands right now, in this
++            browser, which can erase saved data for a site you have not opened
++            in a while. The backup file, under Keep a copy on the Loans tab, is
++            the copy this page can load back. The spreadsheet is the copy you
++            can read anywhere.
+             {!sorted.length &&
+               " It becomes available once you have saved a snapshot."}
+           </p>
+diff --git a/src/lib/backup.ts b/src/lib/backup.ts
+new file mode 100644
+index 0000000..4f4f3fc
+--- /dev/null
++++ b/src/lib/backup.ts
+@@ -0,0 +1,120 @@
++// Cense Loan Desk — backup file. Created with Claude Code.
++//
++// The browser can drop this site's storage on its own (Safari after a spell
++// away, cleared site data, a new phone), and retyping cannot bring back a
++// dated record. A backup file is the copy the borrower keeps. It is written
++// and read on the device and never sent anywhere.
++
++import {
++  DEFAULT_PROFILE,
++  EMPLOYMENT_LABELS,
++  GOAL_LABELS,
++  LOAN_KIND_LABELS,
++  Loan,
++  Profile,
++  Snapshot,
++} from "@/types";
++import { PLAN_META } from "@/data/plans";
++
++const FORMAT = "cense-loan-desk-backup";
++
++export interface Backup {
++  loans: Loan[];
++  profile: Profile;
++  snapshots: Snapshot[];
++}
++
++type Obj = Record<string, unknown>;
++
++const obj = (v: unknown): v is Obj =>
++  typeof v === "object" && v !== null && !Array.isArray(v);
++const str = (v: unknown): v is string => typeof v === "string";
++const num = (v: unknown): v is number =>
++  typeof v === "number" && Number.isFinite(v) && v >= 0;
++/** Own keys only, so inherited names such as "constructor" never pass. */
++const oneOf = <K extends string>(v: unknown, options: Record<K, unknown>): v is K =>
++  str(v) && Object.keys(options).includes(v);
++
++// Everything the loan form can store, and nothing that would break a section
++// or skew a total.
++const isLoan = (l: unknown): l is Loan =>
++  obj(l) &&
++  str(l.id) &&
++  l.id !== "" &&
++  str(l.nickname) &&
++  str(l.servicer) &&
++  oneOf(l.kind, LOAN_KIND_LABELS) &&
++  (l.subsidy === "subsidized" || l.subsidy === "unsubsidized") &&
++  num(l.principal) &&
++  num(l.balance) &&
++  l.balance > 0 &&
++  num(l.rate) &&
++  l.rate <= 25 &&
++  num(l.minPayment) &&
++  str(l.disbursementDate) &&
++  // The date input can store a five- or six-digit year.
++  /^\d{4,6}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(l.disbursementDate);
++
++const isSnapshot = (s: unknown): s is Snapshot =>
++  obj(s) &&
++  str(s.takenAt) &&
++  !Number.isNaN(Date.parse(s.takenAt)) &&
++  Array.isArray(s.loans) &&
++  s.loans.every(isLoan) &&
++  num(s.totalBalance);
++
++function readProfile(v: unknown): Profile | null {
++  // Missing answers fall back to the defaults, as profileStore.load() does.
++  const p: Obj = { ...DEFAULT_PROFILE, ...(obj(v) ? v : {}) };
++  const { income, householdSize, employment, goal, extraPerMonth } = p;
++  const plan = p.selectedPlan;
++  if (
++    !num(income) ||
++    !num(extraPerMonth) ||
++    !num(householdSize) ||
++    !Number.isInteger(householdSize) ||
++    householdSize < 1 ||
++    householdSize > 8 ||
++    !oneOf(employment, EMPLOYMENT_LABELS) ||
++    !oneOf(goal, GOAL_LABELS) ||
++    !(plan === null || oneOf(plan, PLAN_META))
++  ) {
++    return null;
++  }
++  return {
++    income,
++    householdSize,
++    employment,
++    goal,
++    extraPerMonth,
++    selectedPlan: plan,
++  };
++}
++
++/** The file's text: everything this page stores, and nothing else. */
++export const backupText = (b: Backup) =>
++  JSON.stringify(
++    { format: FORMAT, version: 1, savedAt: new Date().toISOString(), ...b },
++    null,
++    2
++  );
++
++/**
++ * Null when the text is not a usable backup. All of it is checked before any
++ * of it is used, so a bad file changes nothing.
++ */
++export function parseBackup(text: string): Backup | null {
++  let d: unknown;
++  try {
++    d = JSON.parse(text);
++  } catch {
++    return null;
++  }
++  if (!obj(d) || d.format !== FORMAT || d.version !== 1) return null;
++  const { loans, snapshots } = d;
++  if (!Array.isArray(loans) || !loans.every(isLoan)) return null;
++  if (new Set(loans.map((l) => l.id)).size !== loans.length) return null;
++  if (!Array.isArray(snapshots) || !snapshots.every(isSnapshot)) return null;
++  const profile = readProfile(d.profile);
++  return profile ? { loans, profile, snapshots } : null;
++}
+diff --git a/src/lib/export.ts b/src/lib/export.ts
+index d0fca98..fcdded1 100644
+--- a/src/lib/export.ts
++++ b/src/lib/export.ts
+@@ -8,6 +8,7 @@
+ import { LOAN_KIND_LABELS, Loan, Snapshot } from "@/types";
+ import { isPostCutoff, totalBalance } from "./calc";
+ import { diffSnapshots } from "./storage";
++import { Backup, backupText } from "./backup";
+ 
+ function today(): string {
+   return new Date().toISOString().slice(0, 10);
+@@ -77,10 +78,12 @@ async function sheetjs() {
+   return XLSX;
+ }
+ 
+-function download(filename: string, data: ArrayBuffer) {
+-  const blob = new Blob([data], {
+-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+-  });
++function download(
++  filename: string,
++  data: BlobPart,
++  type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
++) {
++  const blob = new Blob([data], { type });
+   const url = URL.createObjectURL(blob);
+   const a = document.createElement("a");
+   a.href = url;
+@@ -91,6 +94,18 @@ function download(filename: string, data: ArrayBuffer) {
+   URL.revokeObjectURL(url);
+ }
+ 
++/**
++ * Everything the page stores, as a file the page can load back. The browser
++ * writes it on the device; nothing is sent anywhere.
++ */
++export function exportBackup(b: Backup): void {
++  download(
++    `cense-loan-desk-backup-${today()}.json`,
++    backupText(b),
++    "application/json"
++  );
++}
++
+ /** The current portfolio, one sheet. */
+ export async function exportLoans(loans: Loan[]): Promise<void> {
+   const XLSX = await sheetjs();

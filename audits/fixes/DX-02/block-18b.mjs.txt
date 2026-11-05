@@ -1,0 +1,52 @@
+// ============================================================ 18b. Graduated and the pick
+console.log("\n[18b] Graduated totals and goal routing, worked out independently");
+{
+  // Graduated: the start comes from the app, the growth is re-solved here so five 24-month steps
+  // clear at month 120. Holds before and after the 3x cap fix, which only moves the start.
+  const gradReplay = (bal0, rate, start) => {
+    const r = rate / 1200;
+    const run = (g) => {
+      let b = bal0, paid = 0;
+      for (let s = 0; s < 5; s++) for (let m = 0; m < 24 && b > 0; m++) {
+        const i = b * r, p = Math.min(start * g ** s, b + i);
+        b += i - p; paid += p;
+      }
+      return { b, paid };
+    };
+    let lo = 1, hi = 3;
+    for (let i = 0; i < 80; i++) { const g = (lo + hi) / 2; if (run(g).b > 0) lo = g; else hi = g; }
+    return run(hi).paid;
+  };
+  for (const [bal, rate] of [[27000, 5.5], [60000, 6.52], [12000, 4.99], [100000, 8.05], [2000, 6.53]]) {
+    const g = planOf([loan("l", bal, rate)], person(), "graduated");
+    const paid = gradReplay(bal, rate, g.monthlyPayment);
+    near(`Graduated $${bal} @${rate}%: total`, g.totalPaid, paid, 0.01);
+    near(`Graduated $${bal} @${rate}%: interest`, g.totalInterest, paid - bal, 0.01);
+    ok(`Graduated $${bal} @${rate}%: start covers interest or the $25 floor`,
+       g.monthlyPayment >= Math.max((bal * rate) / 1200, 25) - 0.005);
+  }
+  near("Graduated $2,000: the $25 floor is the start", planOf([loan("l", 2000, 6.53)], person(), "graduated").monthlyPayment, 25, 1e-9);
+
+  // The pick for each goal, from the estimates alone, and the order of the list.
+  const lowest = (xs, f) => xs.reduce((a, b) => (f(b) < f(a) ? b : a));
+  for (const emp of ["government", "private"]) {
+    for (const goal of ["lowest_payment", "least_total", "forgiveness", "unsure"]) {
+      const ctx = calc.buildContext([loan("l", 60000, 6.52)], person({ employment: emp, goal }));
+      const est = calc.estimatePlans(ctx);
+      const open = est.filter((e) => e.eligible && e.monthlyPayment !== null);
+      const counts = open.filter((e) => e.pslf === "counts");
+      const want = goal === "lowest_payment" ? lowest(open, (e) => e.monthlyPayment)
+        : goal === "forgiveness" || (goal === "unsure" && emp === "government") ? lowest(counts, (e) => e.monthlyPayment)
+        : lowest(open, (e) => e.totalInterest);
+      const { ranked } = calc.rankPlans(est, ctx);
+      ok(`${emp}/${goal}: pick is ${want.id}`, ranked[0].estimate.id === want.id, ranked[0].estimate.id);
+      const rest = ranked.slice(1);
+      const firstClosed = rest.findIndex((r) => !r.estimate.eligible);
+      ok(`${emp}/${goal}: open plans come before closed ones`,
+         firstClosed === -1 || rest.slice(firstClosed).every((r) => !r.estimate.eligible));
+      const openRest = rest.filter((r) => r.estimate.eligible).map((r) => r.estimate.totalPaid);
+      ok(`${emp}/${goal}: the rest run cheapest first`, openRest.every((v, i) => i === 0 || openRest[i - 1] <= v));
+    }
+  }
+}
+

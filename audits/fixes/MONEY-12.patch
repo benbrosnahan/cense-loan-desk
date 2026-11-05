@@ -1,0 +1,115 @@
+diff --git a/src/components/loans/LoanForm.tsx b/src/components/loans/LoanForm.tsx
+index 4a2cdd7..ca2241d 100644
+--- a/src/components/loans/LoanForm.tsx
++++ b/src/components/loans/LoanForm.tsx
+@@ -125,6 +125,10 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+     rate: false,
+   });
+   const [tried, setTried] = useState(false);
++  // True while they type in the date field. Typing 2026 into the year steps
++  // through 0002, 0020 and 0202, and a part being retyped reads as blank, so
++  // the date message waits for blur or Save rather than flashing per key.
++  const [typingDate, setTypingDate] = useState(false);
+ 
+   useEffect(() => {
+     const el = formRef.current;
+@@ -169,10 +173,21 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+   const balance = parseNumber(f.balance);
+   const rate = parseNumber(f.rate);
+ 
++  // A date input accepts any year from 0001, and 09/15/26 typed on a keyboard
++  // arrives as 0026-09-15, which sorts before CUTOFF. No federal student loan
++  // predates the Higher Education Act of 1965.
++  const year = (f.disbursementDate || "").split("-")[0];
++  const yearOff =
++    !/^\d{4}$/.test(year) ||
++    Number(year) < 1965 ||
++    Number(year) > new Date().getFullYear() + 2;
++
+   const errors: Record<FieldKey, string | null> = {
+-    disbursementDate: f.disbursementDate
+-      ? null
+-      : "Pick the school year, or enter the date below.",
++    disbursementDate: !f.disbursementDate
++      ? "Pick the school year, or enter the date below."
++      : yearOff
++      ? `Check this date. We read the year as ${year}. Type all four digits of the year, like 2026.`
++      : null,
+     balance: balance > 0 ? null : "Enter what you owe on this loan today.",
+     rate:
+       rate > 0 && rate <= 25
+@@ -180,6 +195,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+         : "Enter the interest rate, a number between 0 and 25.",
+   };
+   const show = (k: FieldKey) => (tried || touched[k] ? errors[k] : null);
++  const dateMsg = typingDate ? null : show("disbursementDate");
+   const valid = !errors.disbursementDate && !errors.balance && !errors.rate;
+ 
+   const isPost = f.disbursementDate && f.disbursementDate >= CUTOFF;
+@@ -189,6 +205,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+ 
+   const submit = (addAnother: boolean) => {
+     setTried(true);
++    setTypingDate(false);
+     if (!valid) {
+       // Send focus to the first problem rather than leaving them to hunt.
+       const first = (
+@@ -285,7 +302,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+             className="mt-3"
+             label="Date it was paid out"
+             htmlFor="disb"
+-            error={show("disbursementDate")}
++            error={dateMsg}
+             hint={
+               pickedYear
+                 ? "We used September 1. If studentaid.gov shows a different disbursement date, change it here."
+@@ -297,12 +314,16 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+               type="date"
+               className={inputClass}
+               value={f.disbursementDate}
+-              aria-invalid={!!show("disbursementDate")}
++              aria-invalid={!!dateMsg}
+               aria-describedby="disb-msg"
+-              onChange={(e) => setDate(e.target.value)}
+-              onBlur={() =>
+-                setTouched((t) => ({ ...t, disbursementDate: true }))
+-              }
++              onChange={(e) => {
++                setDate(e.target.value);
++                setTypingDate(true);
++              }}
++              onBlur={() => {
++                setTouched((t) => ({ ...t, disbursementDate: true }));
++                setTypingDate(false);
++              }}
+             />
+           </Field>
+         </fieldset>
+diff --git a/src/lib/storage.ts b/src/lib/storage.ts
+index e41444f..a8f179f 100644
+--- a/src/lib/storage.ts
++++ b/src/lib/storage.ts
+@@ -36,7 +36,22 @@ function write(key: string, value: unknown): void {
+ export const loanStore = {
+   load: (): Loan[] | null => {
+     const v = read<Loan[] | null>(LOANS_KEY, null);
+-    return Array.isArray(v) ? v : null;
++    if (!Array.isArray(v)) return null;
++    // The loan form used to save a typed two-digit year as 00YY (09/15/26
++    // became 0026-09-15), which sorts before CUTOFF. Read it as 20YY up to
++    // two years ahead, otherwise 19YY.
++    const pivot = (new Date().getFullYear() + 2) % 100;
++    return v.map((l) =>
++      typeof l?.disbursementDate === "string" &&
++      /^00\d\d-/.test(l.disbursementDate)
++        ? {
++            ...l,
++            disbursementDate:
++              (Number(l.disbursementDate.slice(2, 4)) <= pivot ? "20" : "19") +
++              l.disbursementDate.slice(2),
++          }
++        : l
++    );
+   },
+   save: (loans: Loan[]) => write(LOANS_KEY, loans),
+ };

@@ -1,0 +1,177 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..3da07c7 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -44,9 +44,8 @@ import {
+   snapshotStore,
+ } from "@/lib/storage";
+ import { exportLoans } from "@/lib/export";
+-import { cn, formatWholeDollars, parseNumber, scrollBehavior } from "@/lib/utils";
++import { cn, scrollBehavior } from "@/lib/utils";
+ import {
+-  AffixInput,
+   Button,
+   Card,
+   ChoiceGroup,
+@@ -59,6 +58,7 @@ import {
+   Notice,
+   Toast,
+   ToastState,
++  WholeDollarInput,
+   inputClass,
+ } from "@/components/shared/ui";
+ import LoanForm, { LoanDefaults } from "@/components/loans/LoanForm";
+@@ -725,25 +725,16 @@ export default function Page() {
+                           hint="Leave blank if you are not earning yet. We will skip the plans priced off income."
+                           htmlFor="income"
+                         >
+-                          <AffixInput
++                          <WholeDollarInput
+                             id="income"
+                             prefix="$"
+                             inputMode="numeric"
+                             autoComplete="off"
+                             aria-describedby="income-msg"
+-                            value={
+-                              profile.income
+-                                ? profile.income.toLocaleString("en-US")
+-                                : ""
+-                            }
++                            value={profile.income}
+                             placeholder="0"
+-                            onChange={(e) =>
+-                              setProfile((p) => ({
+-                                ...p,
+-                                income: parseNumber(
+-                                  formatWholeDollars(e.target.value)
+-                                ),
+-                              }))
++                            onValueChange={(income) =>
++                              setProfile((p) => ({ ...p, income }))
+                             }
+                           />
+                         </Field>
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..38bfa53 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -20,17 +20,14 @@ import { buildContext, estimatePlans } from "@/lib/calc";
+ import { compareStrategies, projectPayoff, rankLoans } from "@/lib/ranking";
+ import {
+   cn,
+-  formatWholeDollars,
+   money,
+   monthYearFromNow,
+   monthsInWords,
+   monthsLabel,
+-  parseNumber,
+   pct,
+   shortMonthYearFromNow,
+ } from "@/lib/utils";
+ import {
+-  AffixInput,
+   Badge,
+   Button,
+   Card,
+@@ -40,6 +37,7 @@ import {
+   FadeIn,
+   Money,
+   Notice,
++  WholeDollarInput,
+   inputClass,
+ } from "@/components/shared/ui";
+ import PayoffRunway from "@/components/charts/PayoffRunway";
+@@ -95,7 +93,11 @@ export default function RankingPanel({
+   const required =
+     selected && selected.eligible ? selected.monthlyPayment : null;
+ 
+-  const extra = Math.max(0, Math.min(EXTRA_MAX, profile.extraPerMonth || 0));
++  // Whole dollars, so an extra of 12.5 saved by the old field reads 12 everywhere.
++  const extra = Math.max(
++    0,
++    Math.min(EXTRA_MAX, Math.trunc(profile.extraPerMonth || 0))
++  );
+ 
+   const ranked = useMemo(() => rankLoans(loans, strategy), [loans, strategy]);
+   const comparison = useMemo(
+@@ -234,18 +236,15 @@ export default function RankingPanel({
+                       Extra each month
+                     </label>
+                     <div className="mt-1.5">
+-                      <AffixInput
++                      <WholeDollarInput
+                         id="extra"
+                         prefix="$"
+                         inputMode="numeric"
+                         autoComplete="off"
+-                        value={extra ? formatWholeDollars(String(extra)) : ""}
++                        value={extra}
++                        max={EXTRA_MAX}
+                         placeholder="0"
+-                        onChange={(e) =>
+-                          onExtraChange(
+-                            Math.min(EXTRA_MAX, parseNumber(e.target.value))
+-                          )
+-                        }
++                        onValueChange={onExtraChange}
+                       />
+                     </div>
+                   </div>
+diff --git a/src/components/shared/ui.tsx b/src/components/shared/ui.tsx
+index 2315a07..134d72d 100644
+--- a/src/components/shared/ui.tsx
++++ b/src/components/shared/ui.tsx
+@@ -6,7 +6,7 @@
+ // style choice: iOS Safari zooms the page on focus for anything smaller.
+ 
+ import { useId, useState } from "react";
+-import { cn, money } from "@/lib/utils";
++import { cn, formatDollarsInput, money, parseNumber } from "@/lib/utils";
+ 
+ export function Card({
+   className,
+@@ -339,6 +339,44 @@ export function AffixInput({
+   );
+ }
+ 
++/**
++ * A whole-dollar amount. A typed or pasted point reads as dollars and cents:
++ * the cents show while typing and are dropped, never appended as digits.
++ * The draft is shown only while it still means the stored number, so a cap,
++ * a preset or the slider always wins, and on blur the field shows the number
++ * the page uses.
++ */
++export function WholeDollarInput({
++  value,
++  onValueChange,
++  max = Infinity,
++  onBlur,
++  ...rest
++}: Omit<React.ComponentProps<typeof AffixInput>, "value" | "onChange" | "max"> & {
++  value: number;
++  onValueChange: (n: number) => void;
++  max?: number;
++}) {
++  const [draft, setDraft] = useState("");
++  const whole = (t: string) => Math.trunc(parseNumber(t));
++  const settled = value ? value.toLocaleString("en-US") : "";
++  return (
++    <AffixInput
++      {...rest}
++      value={draft && whole(draft) === value ? draft : settled}
++      onChange={(e) => {
++        const t = formatDollarsInput(e.target.value);
++        setDraft(t);
++        onValueChange(Math.min(max, whole(t)));
++      }}
++      onBlur={(e) => {
++        setDraft("");
++        onBlur?.(e);
++      }}
++    />
++  );
++}
++
+ /**
+  * A short list of choices, all visible at once. Used instead of a dropdown
+  * whenever there are five or fewer options, because a dropdown hides the

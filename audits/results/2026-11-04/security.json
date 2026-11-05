@@ -1,0 +1,110 @@
+{
+ "url": "http://localhost:3100/",
+ "lighthouseChecks": "included, from the median mobile Lighthouse run of the empty page",
+ "score": 35,
+ "categories": {
+  "https": 0,
+  "headers": 0,
+  "cookies": 100,
+  "content": 100,
+  "deps": null
+ },
+ "findings": [
+  {
+   "id": "not-https",
+   "category": "https",
+   "severity": "critical",
+   "title": "Page not served over HTTPS",
+   "description": "This page is served over HTTP, which means all data is transmitted unencrypted.",
+   "recommendation": "Configure your server to serve this page over HTTPS and redirect HTTP to HTTPS."
+  },
+  {
+   "id": "missing-content-security-policy",
+   "category": "headers",
+   "severity": "critical",
+   "title": "Missing Content-Security-Policy",
+   "description": "No CSP header. Add a Content-Security-Policy to prevent XSS and data injection attacks.",
+   "recommendation": "No CSP header. Add a Content-Security-Policy to prevent XSS and data injection attacks.",
+   "maxPoints": 10,
+   "pointsEarned": 0
+  },
+  {
+   "id": "missing-strict-transport-security",
+   "category": "headers",
+   "severity": "critical",
+   "title": "Missing Strict-Transport-Security",
+   "description": "No HSTS header. Add Strict-Transport-Security to enforce HTTPS.",
+   "recommendation": "No HSTS header. Add Strict-Transport-Security to enforce HTTPS.",
+   "maxPoints": 8,
+   "pointsEarned": 0
+  },
+  {
+   "id": "missing-x-content-type-options",
+   "category": "headers",
+   "severity": "warning",
+   "title": "Missing X-Content-Type-Options",
+   "description": "Missing X-Content-Type-Options header. Add \"nosniff\" to prevent MIME-type sniffing.",
+   "recommendation": "Missing X-Content-Type-Options header. Add \"nosniff\" to prevent MIME-type sniffing.",
+   "maxPoints": 4,
+   "pointsEarned": 0
+  },
+  {
+   "id": "missing-x-frame-options",
+   "category": "headers",
+   "severity": "warning",
+   "title": "Missing X-Frame-Options",
+   "description": "Missing X-Frame-Options. Add \"DENY\" or \"SAMEORIGIN\" to prevent clickjacking.",
+   "recommendation": "Missing X-Frame-Options. Add \"DENY\" or \"SAMEORIGIN\" to prevent clickjacking.",
+   "maxPoints": 4,
+   "pointsEarned": 0
+  },
+  {
+   "id": "missing-referrer-policy",
+   "category": "headers",
+   "severity": "info",
+   "title": "Missing Referrer-Policy",
+   "description": "No Referrer-Policy header. Consider adding one to control referrer information.",
+   "recommendation": "No Referrer-Policy header. Consider adding one to control referrer information.",
+   "maxPoints": 2,
+   "pointsEarned": 0
+  },
+  {
+   "id": "missing-permissions-policy",
+   "category": "headers",
+   "severity": "info",
+   "title": "Missing Permissions-Policy",
+   "description": "No Permissions-Policy header. Consider restricting browser features.",
+   "recommendation": "No Permissions-Policy header. Consider restricting browser features.",
+   "maxPoints": 2,
+   "pointsEarned": 0
+  },
+  {
+   "id": "vulnerable-libs-check-skipped",
+   "category": "deps",
+   "severity": "info",
+   "maxPoints": 0,
+   "pointsEarned": 0,
+   "title": "JavaScript dependency check not run",
+   "description": "The Lighthouse report contained no verdict for the dependency audit — Lighthouse removed `no-vulnerable-libraries` after v11 and the version in use does not ship it. Nothing about this page's JavaScript libraries was verified.",
+   "recommendation": "This category is reported as unmeasured and excluded from the overall score — it is NOT counted as passing."
+  }
+ ],
+ "scanData": {
+  "tls": {
+   "version": "none",
+   "cipher": "none",
+   "certIssuer": "none",
+   "certExpiry": "none",
+   "certValid": false
+  },
+  "headers": {
+   "content-security-policy": "",
+   "strict-transport-security": "",
+   "x-content-type-options": "",
+   "x-frame-options": "",
+   "referrer-policy": "",
+   "permissions-policy": ""
+  },
+  "cookies": []
+ }
+}

@@ -1,0 +1,93 @@
+name: Audit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Mondays: advisories and live headers change without a push.
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app-and-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          # Lighthouse 13 needs Node 22.19 or newer.
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            audits/package-lock.json
+      - run: npm ci
+      - name: Money logic
+        run: node verify.mjs
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run build
+      - name: Install audit kit
+        working-directory: audits
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Playwright suite
+        working-directory: audits
+        run: npm test
+      - name: Scan and budgets
+        # Reported, not enforced: shared runners make timings noisy, so a budget miss here
+        # marks this step but not the job. `npm run audit` on a quiet machine enforces them.
+        continue-on-error: true
+        working-directory: audits
+        run: node run.mjs --only lighthouse,flow,design,ux,responsive,inp,readable --runs 1
+      - name: Scan summary
+        if: ${{ !cancelled() }}
+        run: cat audits/results/latest/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: audit-results
+          path: |
+            audits/results/latest
+            audits/playwright-report
+          retention-days: 14
+
+  live-site:
+    # Only on a schedule or on demand: pull requests never touch production.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: audits/package-lock.json
+      - name: Install audit kit
+        working-directory: audits
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Live scan
+        working-directory: audits
+        run: node run.mjs --target live --only security,geo,tools
+      - name: Scan summary
+        if: ${{ !cancelled() }}
+        run: cat audits/results/latest/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: live-audit-results
+          path: audits/results/latest
+          retention-days: 30

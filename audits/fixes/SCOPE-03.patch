@@ -1,0 +1,57 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..99ee52c 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -722,7 +722,7 @@ export default function Page() {
+                       <div className="grid gap-5 sm:grid-cols-2">
+                         <Field
+                           label="Yearly income, before tax"
+-                          hint="Leave blank if you are not earning yet. We will skip the plans priced off income."
++                          hint="Use your adjusted gross income (AGI): your pay before tax, minus pre-tax 401(k), 403(b), health and HSA deductions. If your pay has not changed since you last filed, it is on your tax return. Leave blank if you are not earning yet. We will skip the plans priced off income."
+                           htmlFor="income"
+                         >
+                           <AffixInput
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..7892fe9 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -145,7 +145,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+     name: "IBR",
+     tagline: "Payment tied to your income",
+     summary:
+-      "Caps your payment at 10% of discretionary income, meaning what you earn above 150% of the poverty line. A low enough income means a $0 payment, and $0 still counts.",
++      "Caps your payment at 10% of discretionary income, meaning your adjusted gross income above 150% of the poverty line. A low enough income means a $0 payment, and $0 still counts.",
+     incomeDriven: true,
+     forgivenessYears: 20,
+     postCutoff: false,
+@@ -186,7 +186,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+     name: "RAP",
+     tagline: "Income-driven, and the balance always shrinks",
+     summary:
+-      "The Repayment Assistance Plan. Your payment is a slice of your total income, 1% to 10%, minus $50 per dependent, with a $10 monthly floor. Forgiveness after 30 years.",
++      "The Repayment Assistance Plan. Your payment is a slice of your adjusted gross income (AGI), 1% to 10%, minus $50 per dependent, with a $10 monthly floor. Forgiveness after 30 years.",
+     incomeDriven: true,
+     forgivenessYears: 30,
+     postCutoff: true,
+@@ -197,7 +197,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+       "Available even if you borrowed on or after July 1, 2026",
+     ],
+     cons: [
+-      "Charges a percentage of your total income, not just income above the poverty floor",
++      "Charges a percentage of your whole AGI, not just income above the poverty floor",
+       "Forgiveness takes 30 years, 10 longer than IBR",
+       "Forgiveness at 30 years counts as taxable income",
+       "You have to recertify your income every year",
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..221da63 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -108,7 +108,7 @@ export interface LoanDiffRow {
+ }
+ 
+ export interface Profile {
+-  /** Annual gross income. 0 = not supplied, which hides income-driven estimates. */
++  /** Annual adjusted gross income (AGI), the income IBR and RAP are priced on. 0 = not supplied, which hides income-driven estimates. */
+   income: number;
+   householdSize: number;
+   employment: Employment;

@@ -1,0 +1,361 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..a4d62da 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -465,7 +465,12 @@ export default function Page() {
+                   <>
+                     {" · "}
+                     <strong className="font-semibold text-slate-900">
+-                      <Money value={selectedEstimate.monthlyPayment} /> a month
++                      <Money value={selectedEstimate.monthlyPayment} />{" "}
++                      <span>
++                        {selectedEstimate.id === "graduated"
++                          ? "a month to start"
++                          : "a month"}
++                      </span>
+                     </strong>{" "}
+                     on {PLAN_META[selectedEstimate.id].name}
+                   </>
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..7954a2b 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -7,8 +7,8 @@
+ // two numbers that trade off against each other (what you pay a month, what
+ // you pay in total), then the detail for anyone who wants to check our work.
+ 
+-import { useState } from "react";
+-import { Loan, PlanId, Profile, RankedPlan } from "@/types";
++import { useState, type ReactNode } from "react";
++import { Loan, PlanEstimate, PlanId, Profile, RankedPlan } from "@/types";
+ import {
+   ASSUMPTIONS,
+   PARENT_PLUS_NOTE,
+@@ -44,6 +44,12 @@ function PslfBadge({ plan }: { plan: RankedPlan }) {
+   return <Badge tone="neutral">✕ No PSLF credit</Badge>;
+ }
+ 
++/** Graduated's last payment, when it reads higher than its first. */
++function peakOf(e: PlanEstimate): number | null {
++  const last = e.finalPayment ?? 0;
++  return last >= (e.monthlyPayment ?? 0) + 1 ? last : null;
++}
++
+ /**
+  * One measure, drawn as a bar against the largest value among the plans. The
+  * number sits beside the bar in text, so the bar is never the only way to
+@@ -60,7 +66,7 @@ function Measure({
+   value: number | null;
+   max: number;
+   emphasis: boolean;
+-  note?: string;
++  note?: ReactNode;
+ }) {
+   const ratio = value !== null && max > 0 ? Math.max(0.02, value / max) : 0;
+   return (
+@@ -70,9 +76,12 @@ function Measure({
+         <span className="text-base font-bold text-slate-900">
+           {value === null ? "—" : <Money value={value} />}
+           {note && (
+-            <span className="ml-1 text-xs font-normal text-slate-600">
+-              {note}
+-            </span>
++            <>
++              {" "}
++              <span className="text-xs font-normal text-slate-600">
++                {note}
++              </span>
++            </>
+           )}
+         </span>
+       </div>
+@@ -108,6 +117,7 @@ function PlanRow({
+   const meta = PLAN_META[e.id];
+   const [open, setOpen] = useState(false);
+   const panelId = `plan-${e.id}`;
++  const peak = peakOf(e);
+ 
+   return (
+     <Card
+@@ -154,6 +164,13 @@ function PlanRow({
+             value={e.monthlyPayment}
+             max={maxMonthly}
+             emphasis={selected || (isTopPick && !selected)}
++            note={
++              peak !== null && (
++                <>
++                  <span>rising to</span> <Money value={peak} />
++                </>
++              )
++            }
+           />
+           <Measure
+             label={`In total, over ${years(e.years)}`}
+@@ -308,6 +325,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+   const open = ranked.filter((r) => r.estimate.eligible);
+   const closed = ranked.filter((r) => !r.estimate.eligible);
+   const top = ranked.find((r) => r.isTopPick);
++  const topPeak = top ? peakOf(top.estimate) : null;
+   const rapOpen = open.some((r) => r.estimate.id === "rap");
+ 
+   const maxMonthly = Math.max(
+@@ -353,7 +371,21 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+                 <span className="amt figure text-3xl font-bold text-white">
+                   <Money value={top.estimate.monthlyPayment} tabular={false} />
+                 </span>{" "}
+-                a month{top.estimate.id === "graduated" && ", to start"}
++                {/* Every figure and every run of words sits in its own
++                    element, so a page translator never holds a text node
++                    that React later removes or rewrites. */}
++                <span>
++                  {top.estimate.id === "graduated"
++                    ? "a month, to start"
++                    : "a month"}
++                </span>
++                {topPeak !== null && (
++                  <>
++                    <span>{", rising to "}</span>
++                    <Money value={topPeak} tabular={false} />
++                    <span>{" by year 9"}</span>
++                  </>
++                )}
+               </p>
+             </div>
+             <p className="mt-4 text-base leading-relaxed text-white/95">
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..0ef0326 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -94,6 +94,10 @@ export default function RankingPanel({
+     : null;
+   const required =
+     selected && selected.eligible ? selected.monthlyPayment : null;
++  // Every projection here runs one level payment. Graduated steps up every
++  // two years, so a level run would invent its debt-free date and what extra
++  // money saves. Until Payoff runs the steps it shows neither for Graduated.
++  const stepped = selected?.id === "graduated";
+ 
+   const extra = Math.max(0, Math.min(EXTRA_MAX, profile.extraPerMonth || 0));
+ 
+@@ -125,6 +129,7 @@ export default function RankingPanel({
+   // dragging does not read out forty intermediate values.
+   const summary = useMemo(() => {
+     if (!main || !comparison) return "";
++    if (stepped) return "We can't project Graduated's rising payments yet.";
+     if (!main.paidOff)
+       return `At ${money(comparison.budget)} a month this balance does not reach zero.`;
+     if (extra > 0 && monthsSaved > 0)
+@@ -136,7 +141,7 @@ export default function RankingPanel({
+     return `Paying the required amount only, you are debt free in ${monthYearFromNow(
+       main.months
+     )}.`;
+-  }, [main, comparison, extra, monthsSaved, interestSaved]);
++  }, [main, comparison, stepped, extra, monthsSaved, interestSaved]);
+   const [announced, setAnnounced] = useState("");
+   useEffect(() => {
+     const t = setTimeout(() => setAnnounced(summary), 700);
+@@ -172,9 +177,16 @@ export default function RankingPanel({
+                 <Money value={comparison.requiredPayment} /> a month required
+               </Eyebrow>
+ 
+-              {/* The headline is the takeaway, not a label. */}
+-              <h2 className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl">
+-                {!main.paidOff ? (
++              {/* The headline is the takeaway, not a label. Keyed on stepped,
++                  so moving to or from Graduated replaces the element instead
++                  of editing text nodes a page translator may have swapped. */}
++              <h2
++                key={`headline-${stepped}`}
++                className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl"
++              >
++                {stepped ? (
++                  <>We can&apos;t project Graduated&apos;s rising payments yet</>
++                ) : !main.paidOff ? (
+                   <>This payment does not clear the balance</>
+                 ) : extra > 0 && monthsSaved > 0 ? (
+                   <>
+@@ -185,8 +197,19 @@ export default function RankingPanel({
+                   <>Debt free in {monthYearFromNow(main.months)}</>
+                 )}
+               </h2>
+-              <p className="mt-2 text-base leading-relaxed text-slate-700">
+-                {!main.paidOff ? (
++              <p
++                key={`story-${stepped}`}
++                className="mt-2 text-base leading-relaxed text-slate-700"
++              >
++                {stepped ? (
++                  <>
++                    Graduated raises your payment every two years and is paid
++                    off in 10 years. This page can only run one level payment,
++                    so it would get your debt-free date and the savings from
++                    paying extra wrong. It shows neither until it can run the
++                    steps.
++                  </>
++                ) : !main.paidOff ? (
+                   <>
+                     At <Money value={comparison.budget} /> a month these
+                     balances never reach zero. On an income-driven plan that is
+@@ -292,7 +315,7 @@ export default function RankingPanel({
+                 </div>
+               </div>
+ 
+-              {main.paidOff && (
++              {main.paidOff && !stepped && (
+                 <PayoffRunway
+                   className="mt-6"
+                   withExtra={main.balanceByMonth}
+@@ -301,7 +324,7 @@ export default function RankingPanel({
+                 />
+               )}
+ 
+-              {main.paidOff && (
++              {main.paidOff && !stepped && (
+                 <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-5">
+                   <div>
+                     <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+@@ -330,15 +353,15 @@ export default function RankingPanel({
+                 </dl>
+               )}
+ 
+-              <p className="mt-4 text-sm leading-relaxed text-slate-600">
+-                What this assumes: payments start this month, and your required
+-                payment stays at <Money value={comparison.requiredPayment} />{" "}
+-                the whole way.
+-                {selected!.id === "graduated" &&
+-                  " On Graduated it steps up every two years, so you would finish sooner than shown."}
+-                {PLAN_META[selected!.id].incomeDriven &&
+-                  " On an income-driven plan it moves with your income each year."}
+-              </p>
++              {!stepped && (
++                <p className="mt-4 text-sm leading-relaxed text-slate-600">
++                  What this assumes: payments start this month, and your required
++                  payment stays at <Money value={comparison.requiredPayment} />{" "}
++                  the whole way.
++                  {PLAN_META[selected!.id].incomeDriven &&
++                    " On an income-driven plan it moves with your income each year."}
++                </p>
++              )}
+ 
+               {/* Progressive disclosure: the plan switcher is hidden until
+                   someone actually wants to compare, per the W3C disclosure
+@@ -366,8 +389,9 @@ export default function RankingPanel({
+                     >
+                       {eligible.map((e) => (
+                         <option key={e.id} value={e.id}>
+-                          {PLAN_META[e.id].name}, {money(e.monthlyPayment!)} a
+-                          month
++                          {`${PLAN_META[e.id].name}, ${money(e.monthlyPayment!)} a month${
++                            e.id === "graduated" ? " to start" : ""
++                          }`}
+                         </option>
+                       ))}
+                     </select>
+@@ -408,7 +432,7 @@ export default function RankingPanel({
+             {STRATEGY_COPY[strategy].blurb}
+           </p>
+ 
+-          {comparison && !comparison.budgetTooLow && extra > 0 && (
++          {comparison && !comparison.budgetTooLow && extra > 0 && !stepped && (
+             <div className="mt-4">
+               {comparison.snowballCost < 1 ? (
+                 <Notice tone="good" title="Same either way">
+@@ -440,9 +464,10 @@ export default function RankingPanel({
+           <Eyebrow className="mt-6">Your order</Eyebrow>
+           <ol className="mt-2 divide-y divide-line overflow-hidden rounded-2xl border border-line">
+             {ranked.map(({ loan, rank, reason }) => {
+-              const gone = main?.paidOff
+-                ? main.payoffMonthById[loan.id]
+-                : undefined;
++              const gone =
++                main?.paidOff && !stepped
++                  ? main.payoffMonthById[loan.id]
++                  : undefined;
+               return (
+                 <li
+                   key={loan.id}
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..c5379d6 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -107,12 +107,12 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+     name: "Graduated",
+     tagline: "Starts low, steps up every 2 years",
+     summary:
+-      "Payments start at roughly half the Standard amount and rise every two years, still finishing in 10. More total interest than Standard.",
++      "Payments start at a little over half the Standard amount and rise every two years, still finishing in 10. More total interest than Standard.",
+     incomeDriven: false,
+     forgivenessYears: null,
+     postCutoff: false,
+     pros: [
+-      "Starts at roughly half the Standard payment",
++      "Starts at a little over half the Standard payment",
+       "Still finishes in 10 years on a predictable schedule",
+     ],
+     cons: [
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..bbe10f5 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -83,13 +83,17 @@ function fixedTotals(balance: number, ratePct: number, years: number) {
+ 
+ /**
+  * Graduated: starts low and steps up every 2 years over 10.
+- * Modelled as a starting payment near interest-only with five step-ups, with
+- * the growth factor solved numerically so the schedule actually amortises.
++ * Modelled as five levels, each 3^(1/4) times the last, so the last payment is
++ * three times the first, the most 34 CFR 685.208(b)(6)(iii) allows, with the
++ * start solved in closed form so the schedule repays in 120 months
++ * ((b)(6)(i)). Where that start would not cover the monthly interest, the
++ * start is the interest and a smaller step is solved numerically instead.
+  */
+ function graduatedTotals(balance: number, ratePct: number) {
+   const r = ratePct / 100 / 12;
+   const steps = 5;
+   const monthsPerStep = 24;
++  const maxGrowth = Math.pow(3, 1 / (steps - 1));
+ 
+   const remainingAfter = (base: number, g: number) => {
+     let bal = balance;
+@@ -103,9 +107,18 @@ function graduatedTotals(balance: number, ratePct: number) {
+     return bal;
+   };
+ 
+-  const base = Math.max(balance * r, 25);
++  // Present value of one dollar a month at the first level, stepping up by
++  // maxGrowth every 24 months: the start that repays exactly at month 120.
++  const level =
++    r > 0 ? (1 - Math.pow(1 + r, -monthsPerStep)) / r : monthsPerStep;
++  let perDollar = 0;
++  for (let s = 0; s < steps; s++) {
++    perDollar +=
++      Math.pow(maxGrowth, s) * level * Math.pow(1 + r, -monthsPerStep * s);
++  }
++  const base = Math.max(balance / perDollar, balance * r);
+   let lo = 1.0;
+-  let hi = 2.0;
++  let hi = maxGrowth;
+   for (let i = 0; i < 60; i++) {
+     const mid = (lo + hi) / 2;
+     if (remainingAfter(base, mid) > 0) lo = mid;
+@@ -361,6 +374,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+         years: 10,
+         forgivenAmount: 0,
+         monthlyPayment: t.monthlyPayment,
++        finalPayment: t.finalPayment,
+         totalPaid: t.totalPaid,
+         totalInterest: t.totalInterest,
+         pslf: endsAbove ? "partial" : "does_not_count",
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..7201a02 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -68,6 +68,8 @@ export interface PlanEstimate {
+   eligible: boolean;
+   /** Null when the plan needs income the borrower has not supplied. */
+   monthlyPayment: number | null;
++  /** Graduated only: the last step, where monthlyPayment is the first. */
++  finalPayment?: number;
+   totalPaid: number | null;
+   totalInterest: number | null;
+   years: number;

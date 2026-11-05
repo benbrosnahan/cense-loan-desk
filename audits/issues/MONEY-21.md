@@ -11,6 +11,8 @@ Households larger than 8 can only pick '8 people or more' and are priced as 8, s
 | Where | Repayment plans tab, the 'People in your household' select in the income card, at every width. The overstated payment shows on the RAP and IBR cards and in the 'Where we would start' pick, and once RAP or IBR is chosen also in the summary line under 'You owe' and on Payoff. Only the select stops at 8: getPovertyLine (plans.ts:26) and rapMonthly (calc.ts:204) take any size. |
 | Code | [`src/app/page.tsx:768`](../../src/app/page.tsx#L768), [`src/app/page.tsx:771`](../../src/app/page.tsx#L771), [`src/data/plans.ts:26`](../../src/data/plans.ts#L26), [`src/lib/calc.ts:197`](../../src/lib/calc.ts#L197), [`src/lib/calc.ts:204`](../../src/lib/calc.ts#L204) |
 | Test | `money-edges.spec.mjs`: "MONEY-21 a household of 10 can enter its size, and RAP is priced for 10 people" |
+| Fix proof | Validated: [`fixes/MONEY-21.patch`](../fixes/MONEY-21.patch). The 'People in your household' select now offers 1 to 20 people, with 'or more' on the last option, instead of stopping at '8 people or more'. Households of 9 and up are priced at their real size. The engine already took any size, so this changes the option list only. An independent review found it sound. |
+| Overlaps | Changes the same lines as [`fixes/RES-01.patch`](../fixes/RES-01.patch). Each patch was proven on its own, so after applying one, apply the next with `git apply --3way`, merge the conflicts by hand, and re-run both tests. |
 
 ## Measured
 

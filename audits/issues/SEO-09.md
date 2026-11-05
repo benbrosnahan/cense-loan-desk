@@ -11,6 +11,7 @@ The Plans tab links to the federal 'Loan Simulator', a tool now called 'Repaymen
 | Where | Plans tab ('Plans' on phones, 'Repayment plans' from 640px wide) whenever at least one loan is saved, any viewport (measured at 390 and 1280px): the note below the plan cards that opens with the ASSUMPTIONS text and ends 'The federal Loan Simulator is the authoritative model.' |
 | Code | [`src/components/plans/PlansPanel.tsx:483`](../../src/components/plans/PlansPanel.tsx#L483), [`src/components/plans/PlansPanel.tsx:487`](../../src/components/plans/PlansPanel.tsx#L487), [`src/data/plans.ts:279`](../../src/data/plans.ts#L279), [`src/lib/calc.ts:138-139`](../../src/lib/calc.ts#L138-L139), [`README.md:130`](../../README.md#L130) |
 | Test | `seo-agentic.spec.mjs`: "SEO-09 the Plans note links the federal Repayment Calculator by its current name and address" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

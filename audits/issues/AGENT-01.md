@@ -11,7 +11,7 @@ The app offers no read-only WebMCP tools, so a browser agent helping a borrower 
 | Where | Whole page, every state and viewport, local build and live deployment, but only in browsers that expose WebMCP: Chrome for Testing 150 with no flag; stable Chrome 156.0.8078.76 only with --enable-experimental-web-platform-features; Chrome 146 and 147 only behind a flag. Chrome 131 and a clean stable Chrome 156 have no API. Nothing in src registers tools; the registration effect would sit right after the hydration effect at src/app/page.tsx:139-149. |
 | Code | [`src/app/page.tsx:139-149`](../../src/app/page.tsx#L139-L149), [`src/components/plans/PlansPanel.tsx:153`](../../src/components/plans/PlansPanel.tsx#L153), [`src/lib/calc.ts:620-628`](../../src/lib/calc.ts#L620-L628), [`src/lib/ranking.ts:170`](../../src/lib/ranking.ts#L170), [`src/components/loans/LoanForm.tsx:221-226`](../../src/components/loans/LoanForm.tsx#L221-L226), [`README.md:154-158`](../../README.md#L154-L158) |
 | Test | `seo-agentic.spec.mjs`: "AGENT-01 a browser agent can list read-only Loan Desk tools for plan and payoff figures" |
-| Fix drafts | Draft materials for the fix are in [`fixes/AGENT-01/`](../fixes/AGENT-01/). |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. Draft materials for the fix are in [`fixes/AGENT-01/`](../fixes/AGENT-01/). |
 
 ## Measured
 

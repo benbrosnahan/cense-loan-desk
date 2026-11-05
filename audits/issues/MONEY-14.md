@@ -11,6 +11,7 @@ IBR skips the federal rule that turns a payment under $5 into $0 and one from $5
 | Where | Repayment plans tab: the IBR card's monthly figure and 20-year total, and the required payment Payoff uses once IBR is chosen. Any viewport, local build and live site. Pre-July-2026 portfolios with income $1 to $1,199 above 150% of the poverty line for the household size (household 1: $23,941 to $25,139; household 4: $49,501 to $50,699), plus small balances where the 10-year Standard cap puts the payment under $10. |
 | Code | [`src/lib/calc.ts:437`](../../src/lib/calc.ts#L437), [`src/lib/calc.ts:199`](../../src/lib/calc.ts#L199), [`verify.mjs:269`](../../verify.mjs#L269) |
 | Test | `money-edges.spec.mjs`: "MONEY-14 IBR applies the $5 and $10 rule: a calculated payment under $5 is $0 and one from $5 to $10 is $10" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

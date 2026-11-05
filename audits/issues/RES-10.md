@@ -11,6 +11,7 @@ Undo only covers the latest action, so a borrower who removes a second loan, cle
 | Where | Loans tab: Remove inside an expanded loan row, and Keep a copy > Clear my data (Clear saved records, Clear every loan), with the Undo toast at the bottom of the screen. Any width; measured at 412x823 and 375x812 on the local production build, and the live page chunk matches the local one. |
 | Code | [`src/app/page.tsx:172`](../../src/app/page.tsx#L172), [`src/app/page.tsx:176-180`](../../src/app/page.tsx#L176-L180), [`src/app/page.tsx:250-259`](../../src/app/page.tsx#L250-L259), [`src/app/page.tsx:261-272`](../../src/app/page.tsx#L261-L272), [`src/app/page.tsx:274-277`](../../src/app/page.tsx#L274-L277), [`src/app/page.tsx:783-786`](../../src/app/page.tsx#L783-L786), [`src/components/shared/ui.tsx:565-569`](../../src/components/shared/ui.tsx#L565-L569) |
 | Test | `resilience.spec.mjs`: "RES-10 one Undo brings back everything removed while it is offered" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

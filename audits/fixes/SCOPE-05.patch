@@ -1,0 +1,413 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..3c7eae9 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -30,6 +30,7 @@ import {
+   PRIVACY_NOTE,
+ } from "@/data/plans";
+ import {
++  anyInDefault,
+   anyParentPlus,
+   anyPostCutoff,
+   buildContext,
+@@ -183,6 +184,7 @@ export default function Page() {
+   const principal = useMemo(() => totalPrincipal(loans), [loans]);
+   const postCutoff = useMemo(() => anyPostCutoff(loans), [loans]);
+   const parentPlus = useMemo(() => anyParentPlus(loans), [loans]);
++  const inDefault = useMemo(() => anyInDefault(loans), [loans]);
+   const servicerCount = useMemo(
+     () =>
+       new Set(
+@@ -786,7 +788,7 @@ export default function Page() {
+                     }}
+                   />
+ 
+-                  {selectedEstimate ? (
++                  {selectedEstimate && !inDefault ? (
+                     <NextStep
+                       title="See your debt-free date"
+                       body="And what paying a little extra each month would change."
+@@ -795,7 +797,9 @@ export default function Page() {
+                     />
+                   ) : (
+                     <p className="rounded-3xl border border-dashed border-slate-300 px-5 py-4 text-center text-sm text-slate-700">
+-                      Choose a plan above and your debt-free date comes next.
++                      {inDefault
++                        ? "There is no debt-free date while a loan is in default, because collection charges come out of each payment first."
++                        : "Choose a plan above and your debt-free date comes next."}
+                     </p>
+                   )}
+                 </div>
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..f88d6a0 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -11,13 +11,21 @@ import { useState } from "react";
+ import { Loan, PlanId, Profile, RankedPlan } from "@/types";
+ import {
+   ASSUMPTIONS,
++  IN_DEFAULT_NOTE,
++  IN_DEFAULT_PARENT_PLUS_NOTE,
+   PARENT_PLUS_NOTE,
+   PLAN_META,
+   POST_CUTOFF_WARNING,
+   POST_CUTOFF_WARNING_PARENT_PLUS,
+   SAME_PLAN_RULE,
+ } from "@/data/plans";
+-import { buildContext, estimatePlans, isPostCutoff, rankPlans } from "@/lib/calc";
++import {
++  anyParentPlusInDefault,
++  buildContext,
++  estimatePlans,
++  isPostCutoff,
++  rankPlans,
++} from "@/lib/calc";
+ import { cn, years } from "@/lib/utils";
+ import {
+   Badge,
+@@ -318,7 +326,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+ 
+   return (
+     <div className="space-y-5">
+-      {(ctx.postCutoff || ctx.parentPlus) && (
++      {(ctx.postCutoff || ctx.parentPlus || ctx.inDefault) && (
+         <div className="space-y-3">
+           {ctx.postCutoff && (
+             <Notice tone="warn" title="One date decided this">
+@@ -336,6 +344,24 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+               {PARENT_PLUS_NOTE}
+             </Notice>
+           )}
++          {ctx.inDefault && (
++            <Notice tone="warn" title="A loan in default has fewer options">
++              {/* Each changing sentence is its element's only child, so a
++                  machine-translated page never keeps a stale one. */}
++              <span>
++                {open.length
++                  ? `While a loan is in default, only ${open
++                      .map((r) => PLAN_META[r.estimate.id].name)
++                      .join(" and ")} can repay it here (34 CFR 685.209(c)(1)).`
++                  : "No plan here can repay these loans while one is in default (34 CFR 685.209(c)(1))."}
++              </span>{" "}
++              <span>
++                {anyParentPlusInDefault(loans)
++                  ? IN_DEFAULT_PARENT_PLUS_NOTE
++                  : IN_DEFAULT_NOTE}
++              </span>
++            </Notice>
++          )}
+         </div>
+       )}
+ 
+@@ -385,9 +411,11 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+       <div>
+         <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+           <h2 className="font-display text-2xl font-bold text-slate-900">
+-            {open.length === 1
+-              ? "The one plan open to you"
+-              : `All ${open.length} plans open to you`}
++            {open.length === 0
++              ? "No plan open to you"
++              : open.length === 1
++                ? "The one plan open to you"
++                : `All ${open.length} plans open to you`}
+           </h2>
+           <p className="text-sm text-slate-600">
+             {open.length} of 6 federal plans
+@@ -459,7 +487,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+             <Notice tone="info" title="One plan covers all of them">
+               {SAME_PLAN_RULE}
+             </Notice>
+-            {!ctx.postCutoff && (
++            {!ctx.postCutoff && !ctx.inDefault && (
+               <Notice tone="good" title="All your loans predate the cutoff">
+                 Every loan you entered was disbursed before July 1, 2026, so the
+                 older {ctx.parentPlus ? "fixed plans are" : "plan menu is"} still
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..1b3f0ad 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -92,8 +92,13 @@ export default function RankingPanel({
+   const selected = profile.selectedPlan
+     ? estimates.find((e) => e.id === profile.selectedPlan) ?? null
+     : null;
++  // In default, collection charges come out of each payment before principal
++  // (34 CFR 685.211(a)(1)). This tool does not know them, so any date would be
++  // too early: none is shown.
+   const required =
+-    selected && selected.eligible ? selected.monthlyPayment : null;
++    selected && selected.eligible && !ctx.inDefault
++      ? selected.monthlyPayment
++      : null;
+ 
+   const extra = Math.max(0, Math.min(EXTRA_MAX, profile.extraPerMonth || 0));
+ 
+@@ -151,7 +156,23 @@ export default function RankingPanel({
+     <div className="space-y-5">
+       <FadeIn>
+         <Card className="p-5 sm:p-7">
+-          {required === null || !main || !comparison ? (
++          {ctx.inDefault ? (
++            <>
++              <h2 className="font-display text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
++                No debt-free date while a loan is in default
++              </h2>
++              <p className="mt-2 text-base leading-relaxed text-slate-700">
++                In default, collection charges come out of each payment before
++                any of it reaches the balance (34 CFR 685.211(a)(1)). We do not
++                know those charges, so any date we showed would be too early.
++                Once the loan is out of default, pick a plan and the date comes
++                back.
++              </p>
++              <div className="mt-4">
++                <Button onClick={onGoToPlans}>See your options</Button>
++              </div>
++            </>
++          ) : required === null || !main || !comparison ? (
+             <>
+               <h2 className="font-display text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
+                 Pick a repayment plan to see your debt-free date
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..15db822 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -248,6 +248,32 @@ export const POST_CUTOFF_PLANS: PlanId[] = ["tiered_standard", "rap"];
+  */
+ export const PARENT_PLUS_EXCLUDED_PLANS: PlanId[] = ["ibr", "rap"];
+ 
++/**
++ * Plans that can repay a loan in default. 34 CFR 685.209(c)(1) keeps defaulted
++ * loans out of every income-driven plan except IBR ((d)(2)) and RAP ((d)(4)),
++ * and on default the whole balance is due at once (685.211(d)(1)), so there is
++ * no fixed schedule to choose. Rehabilitation (685.211(f)) brings the choice
++ * back. Checked after the permanent closures, so those keep their own reasons.
++ */
++export const IN_DEFAULT_PLANS: PlanId[] = ["ibr", "rap"];
++
++export const IN_DEFAULT_REASON =
++  "Closed while a loan is in default, because the whole balance is due at once (34 CFR 685.211(d)(1)). Rehabilitating the loan reopens it.";
++
++export const IN_DEFAULT_NOTE =
++  "In default the whole balance is due at once, and collection charges are added and taken out of each payment before principal (34 CFR 685.211(a)(1), (d)). To get out of default, rehabilitate the loan with 9 on-time payments within 10 months, starting at your income-driven amount (at least $5 a month, or $10 from July 1, 2027); consolidate it, which counts as a new loan and leaves only RAP and Tiered Standard; or ask whether a $0 income-driven payment covers the date you defaulted. Rehabilitation brings back the choice of plan. Loans that are not in default can stay on a plan of their own: remove the Default Resolution Group loans to see their figures.";
++
++/**
++ * IN_DEFAULT_NOTE for a Parent PLUS loan in default. A consolidation loan made
++ * now that repays a Parent PLUS loan can never use RAP (685.209(b)(6)(i),
++ * (d)(4), and the 91 FR 23768 preamble quoted above PARENT_PLUS_EXCLUDED_PLANS)
++ * and is too new for IBR ((d)(5)); it gets Tiered Standard, plus ICR until
++ * June 30, 2028 ((c)(5)(iii)(A)). No income-driven plan can hold the Parent
++ * PLUS loan itself, so the $0 income-driven route does not apply.
++ */
++export const IN_DEFAULT_PARENT_PLUS_NOTE =
++  "In default the whole balance is due at once, and collection charges are added and taken out of each payment before principal (34 CFR 685.211(a)(1), (d)). To get out of default, rehabilitate the loan with 9 on-time payments within 10 months, starting at an amount set from your income (at least $5 a month, or $10 from July 1, 2027), or consolidate it. Consolidating a Parent PLUS loan now makes a new loan that can never use RAP: it gets Tiered Standard, plus ICR until June 30, 2028. Rehabilitation brings back the choice of plan. Loans that are not in default can stay on a plan of their own: remove the Default Resolution Group loans to see their figures.";
++
+ export const PARENT_PLUS_INELIGIBLE_REASON =
+   "Not open to Parent PLUS loans (34 CFR 685.209(d))";
+ 
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..1ee99f5 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -2,6 +2,7 @@
+ 
+ import {
+   CUTOFF,
++  DEFAULT_SERVICER,
+   Loan,
+   PlanEstimate,
+   PlanId,
+@@ -11,6 +12,8 @@ import {
+ } from "@/types";
+ import {
+   EXTENDED_MIN_BALANCE,
++  IN_DEFAULT_PLANS,
++  IN_DEFAULT_REASON,
+   LEGACY_PLANS,
+   PARENT_PLUS_EXCLUDED_PLANS,
+   PARENT_PLUS_INELIGIBLE_REASON,
+@@ -57,6 +60,22 @@ export function anyParentPlus(loans: Loan[]): boolean {
+   return loans.some((l) => l.kind === "parent_plus");
+ }
+ 
++/**
++ * True when any loan is with the Default Resolution Group, which services
++ * loans in default. That closes every plan but IBR and RAP; see
++ * IN_DEFAULT_PLANS.
++ */
++export function anyInDefault(loans: Loan[]): boolean {
++  return loans.some((l) => l.servicer === DEFAULT_SERVICER);
++}
++
++/** True when a Parent PLUS loan is among the loans in default. */
++export function anyParentPlusInDefault(loans: Loan[]): boolean {
++  return loans.some(
++    (l) => l.servicer === DEFAULT_SERVICER && l.kind === "parent_plus"
++  );
++}
++
+ /** Standard amortised monthly payment. Handles the 0% edge case. */
+ export function amortizedPayment(
+   balance: number,
+@@ -212,6 +231,8 @@ export interface PlanContext {
+   postCutoff: boolean;
+   /** Any Parent PLUS loan in the portfolio. Closes IBR and RAP. */
+   parentPlus: boolean;
++  /** Any loan in default. Leaves only IBR and RAP, and no debt-free date. */
++  inDefault: boolean;
+   balance: number;
+   rate: number;
+   /** The 10-year Standard payment. The statutory yardstick for PSLF credit. */
+@@ -228,6 +249,7 @@ export function buildContext(loans: Loan[], profile: Profile): PlanContext {
+     hasIncome: profile.income > 0,
+     postCutoff: anyPostCutoff(loans),
+     parentPlus: anyParentPlus(loans),
++    inDefault: anyInDefault(loans),
+     balance,
+     rate,
+     pslfBenchmark: amortizedPayment(balance, rate, 10),
+@@ -296,7 +318,12 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+           : // 685.208(b)(8) and (c)(1) both require a loan made on or after
+             // July 1, 2026. The old wording ("only available once...") read
+             // like a plan to wait for, and hid that the cutoff is one-way.
+-            "Only for borrowers with a loan paid out on or after July 1, 2026. Every loan you entered is older, so you keep the original Standard plan instead.",
++            `Only for borrowers with a loan paid out on or after July 1, 2026. Every loan you entered is older${
++              // In default the original Standard plan is closed too.
++              ctx.inDefault
++                ? "."
++                : ", so you keep the original Standard plan instead."
++            }`,
+       };
+     }
+ 
+@@ -335,6 +362,23 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       };
+     }
+ 
++    // Default closes everything but IBR and RAP. Checked after the permanent
++    // closures above, so a plan closed for good keeps its own reason.
++    if (ctx.inDefault && !IN_DEFAULT_PLANS.includes(id)) {
++      return {
++        ...base,
++        eligible: false,
++        monthlyPayment: null,
++        totalPaid: null,
++        totalInterest: null,
++        years: 0,
++        forgivenAmount: 0,
++        pslf: "does_not_count",
++        pslfNote: "",
++        ineligibleReason: IN_DEFAULT_REASON,
++      };
++    }
++
+     // ---- Fixed plans -------------------------------------------------
+     if (id === "standard") {
+       const t = fixedTotals(balance, rate, 10);
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..94667a4 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -176,13 +176,19 @@ export const GOAL_HINTS: Record<Goal, string> = {
+ /** Shown when the borrower has not looked up who services a loan yet. */
+ export const SERVICER_UNKNOWN = "Not sure yet";
+ 
++/**
++ * Services federal loans that are in default. A loan here cannot be on
++ * Standard, Graduated or Extended; see IN_DEFAULT_PLANS.
++ */
++export const DEFAULT_SERVICER = "Default Resolution Group";
++
+ export const SERVICERS = [
+   "Nelnet",
+   "MOHELA",
+   "Aidvantage",
+   "EdFinancial",
+   "ECSI",
+-  "Default Resolution Group",
++  DEFAULT_SERVICER,
+   "Other",
+   SERVICER_UNKNOWN,
+ ] as const;
+diff --git a/verify.mjs b/verify.mjs
+index 70a71a4..b362231 100644
+--- a/verify.mjs
++++ b/verify.mjs
+@@ -623,6 +623,78 @@ console.log("\n[17] Parent PLUS eligibility — 685.209(d)(2), (d)(4), 685.210(a
+      direct === "extended,graduated,ibr,rap,standard", direct);
+ }
+ 
++// ============================================================ default
++console.log("\n[18] Loans in default — 685.209(c)(1), (d)(2), (d)(4), 685.211(d)(1)");
++{
++  const DRG = "Default Resolution Group";
++  const L = (kind, bal, date, servicer = DRG) => ({ id: kind + date + bal, nickname: kind,
++    servicer, kind, subsidy: kind === "direct_sub" ? "subsidized" : "unsubsidized",
++    principal: bal, balance: bal, rate: 6.53, disbursementDate: date, minPayment: 0 });
++  const prof = { income: 52000, householdSize: 1, employment: "private",
++    goal: "lowest_payment", extraPerMonth: 0, selectedPlan: null };
++  const run = (loans, p = prof) => calc.estimatePlans(calc.buildContext(loans, p));
++  const open = (loans) => run(loans).filter((e) => e.eligible).map((e) => e.id).sort().join(",");
++
++  // Only IBR and RAP repay a defaulted loan; IBR also needs every loan to
++  // predate July 1, 2026 (685.209(d)(5)); neither takes Parent PLUS.
++  ok("legacy Direct loans in default: IBR and RAP only",
++     open([L("direct_sub", 20000, "2022-08-15"), L("direct_unsub", 15000, "2023-08-15")]) === "ibr,rap");
++  ok("a loan from July 2026 on, in default: RAP only",
++     open([L("direct_unsub", 20000, "2022-08-15"), L("direct_unsub", 5000, "2026-08-15")]) === "rap");
++  ok("Parent PLUS in default: no plan open", open([L("parent_plus", 40000, "2023-08-15")]) === "");
++  // A consolidation made now that repays a Parent PLUS loan never gets RAP
++  // (685.209(b)(6)(i), (d)(4)), so its borrowers get their own note.
++  const ppDefault = calc.anyParentPlusInDefault([L("parent_plus", 40000, "2023-08-15")]);
++  const ownDefault = calc.anyParentPlusInDefault([L("parent_plus", 40000, "2023-08-15", "Nelnet"),
++                                                  L("direct_unsub", 9000, "2023-08-15")]);
++  ok("Parent PLUS in default gets the note that never offers RAP",
++     ppDefault && !ownDefault && !/RAP and Tiered Standard/.test(plans.IN_DEFAULT_PARENT_PLUS_NOTE),
++     JSON.stringify({ ppDefault, ownDefault }));
++  // Permanent closures keep their own reason: Extended under $30,000, and
++  // Tiered Standard on a portfolio that is all older loans.
++  const small = run([L("direct_unsub", 12000, "2023-08-15")]);
++  const ext = small.find((e) => e.id === "extended");
++  ok("Extended under $30k keeps its floor reason in default",
++     !ext.eligible && ext.ineligibleReason !== plans.IN_DEFAULT_REASON, ext.ineligibleReason);
++  const tiered = small.find((e) => e.id === "tiered_standard");
++  ok("Tiered Standard in default does not promise the original Standard plan",
++     !/original Standard plan/.test(tiered.ineligibleReason || ""), tiered.ineligibleReason);
++  // The lowest open payment is an income-driven one, never Graduated.
++  const ctx = calc.buildContext([L("direct_unsub", 28000, "2021-08-15")], prof);
++  const pick = calc.rankPlans(calc.estimatePlans(ctx), ctx).ranked.find((r) => r.isTopPick);
++  ok("lowest-payment pick in default is IBR or RAP", ["ibr", "rap"].includes(pick?.estimate.id),
++     pick?.estimate.id);
++
++  // Sweep: default only closes plans. Each plan still open matches the same
++  // loans at another servicer, and the default reason sits only on plans that
++  // would otherwise be open.
++  let bad = [];
++  let seed = 7;
++  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
++  const kinds = ["direct_sub", "direct_unsub", "grad_plus", "parent_plus"];
++  for (let t = 0; t < 300; t++) {
++    const n = 1 + Math.floor(rnd() * 4);
++    const post = rnd() < 0.3;
++    const spec = Array.from({ length: n }, (_, i) => [kinds[Math.floor(rnd() * 4)],
++      Math.round(500 + rnd() * 40000), post && i === 0 ? "2026-09-01" : "2019-09-01"]);
++    const p = { ...prof, income: Math.round(rnd() * 120000), householdSize: 1 + Math.floor(rnd() * 4),
++      goal: ["lowest_payment", "least_total", "forgiveness", "unsure"][Math.floor(rnd() * 4)] };
++    const inDefault = run(spec.map(([k, b, d]) => L(k, b, d)), p);
++    const current = run(spec.map(([k, b, d]) => L(k, b, d, "Nelnet")), p);
++    for (const e of inDefault) {
++      const c = current.find((x) => x.id === e.id);
++      if (e.eligible && !["ibr", "rap"].includes(e.id)) bad.push(`t${t} ${e.id} open in default`);
++      if (e.eligible && e.monthlyPayment !== c.monthlyPayment) bad.push(`t${t} ${e.id} payment changed`);
++      if (e.ineligibleReason === plans.IN_DEFAULT_REASON && !c.eligible)
++        bad.push(`t${t} ${e.id} default reason on a plan closed anyway`);
++      if (!c.eligible && e.ineligibleReason !== c.ineligibleReason && e.id !== "tiered_standard")
++        bad.push(`t${t} ${e.id} lost its own reason`);
++    }
++  }
++  ok("300 randomised defaulted portfolios: only IBR or RAP open, every other reason kept",
++     bad.length === 0, bad.slice(0, 6).join(" | "));
++}
++
+ // ============================================================ report
+ console.log("\n" + "=".repeat(78));
+ console.log(`PASS ${pass}   FAIL ${fail}`);

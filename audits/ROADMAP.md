@@ -23,6 +23,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 - Drop the cents after a decimal point instead of keeping them as digits, in the income and extra-payment fields.
 - Treat a $0 IBR payment as a chosen plan in Payoff.
 
+**Patches:** [`fixes/SCOPE-03.patch`](fixes/SCOPE-03.patch), [`fixes/MONEY-08.patch`](fixes/MONEY-08.patch), [`fixes/MONEY-09.patch`](fixes/MONEY-09.patch), [`fixes/MONEY-11.patch`](fixes/MONEY-11.patch)
+
 **Done when:** the tests for SCOPE-03, MONEY-08, MONEY-09, MONEY-11 and MONEY-10 pass with their `knownIssue()` lines removed.
 
 **Priority 2: Compare plans on what the borrower actually pays** (Category: Money, Impact: High)
@@ -34,6 +36,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Do:** In `simulateIdr`, track the interest the borrower actually pays, and rank plans on what they pay plus a stated tax on any forgiven balance. Name any forgiven balance and the assumed tax in the reasons for the recommendation and in the assumptions note. Make each "pays $X more in total" the difference of the two totals on screen, and reword the plan-card claims that are not always true.
 
+**Patches:** [`fixes/MONEY-01.patch`](fixes/MONEY-01.patch)
+
 **Done when:** the tests for MONEY-01 and MONEY-16 pass with their `knownIssue()` lines removed.
 
 **Priority 3: Fix Graduated's step schedule** (Category: Money, Impact: High)
@@ -43,6 +47,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 **Why:** Graduated's starting payment is up to 56% too low, because its step schedule breaks the rule that no payment may be more than three times another. The card never shows how high the payment climbs. Borrowers who choose on the monthly number, as the app invites, choose on a wrong one.
 
 **Do:** Solve the starting payment from a five-step schedule within the 3x cap. Show the last step's payment on the card beside the first. Ship this with priority 4's Payoff change, or hide Graduated's Payoff date until then.
+
+**Patches:** [`fixes/MONEY-04.patch`](fixes/MONEY-04.patch)
 
 **Done when:** the MONEY-04 test passes with its `knownIssue()` line removed.
 
@@ -58,6 +64,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Do:** Pass the chosen plan's payment schedule and term into the payoff engine, in the same change as MONEY-05 and with MONEY-04. Price the fixed plans loan by loan in Plans, and split Payoff's payment by each loan's own installment, so both tabs show the same figure. Make the note about the first payment match the dates it explains.
 
+**Patches:** [`fixes/MONEY-06.patch`](fixes/MONEY-06.patch), [`fixes/MONEY-07.patch`](fixes/MONEY-07.patch)
+
 **Done when:** the tests for MONEY-06, MONEY-07 and MONEY-20 pass with their `knownIssue()` lines removed.
 
 **Priority 5: Start from where the borrower already is** (Category: Money, Impact: High)
@@ -69,6 +77,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 **Why:** Every repayment term restarts this month, and no qualifying payments already made are counted. A borrower four years into Standard sees $372 instead of their $555 bill, and a debt-free date four years late. A borrower with 120 months of IBR credit is told forgiveness is ten years further away than it is. Loans from before July 2014 also get the wrong IBR terms.
 
 **Do:** Today, say in the assumptions note and in Payoff that every plan starts this month, and add a notice on the Standard card when the typed bill is higher than its estimate. Then ask whether the borrower is repaying on Standard now, and work out the months already used from their bill. Ask how many qualifying payments already count, and price only the payments still owed. Decide whether IBR uses 10% over 20 years or 15% over 25 from the loan dates.
+
+**Patches:** [`fixes/SCOPE-06.patch`](fixes/SCOPE-06.patch), [`fixes/SCOPE-07.patch`](fixes/SCOPE-07.patch) (first step), [`fixes/MONEY-13.patch`](fixes/MONEY-13.patch)
 
 **Done when:** the tests for SCOPE-06, SCOPE-07 and MONEY-13 pass with their `knownIssue()` lines removed.
 
@@ -91,6 +101,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 - Warn while saves are failing.
 - Make Clear erase everything it says it does.
 
+**Patches:** [`fixes/RES-01.patch`](fixes/RES-01.patch), [`fixes/RES-03.patch`](fixes/RES-03.patch), [`fixes/RES-04.patch`](fixes/RES-04.patch)
+
 **Done when:** the tests for RES-01, RES-02, RES-03 and RES-04 pass with their `knownIssue()` lines removed.
 
 **Priority 7: Catch misread dates and numbers in the loan form** (Category: Money, Impact: Medium)
@@ -107,6 +119,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 - The error messages point the wrong way and quote a rate range the check does not use.
 
 **Do:** Reject years no loan can have. Flag implausible rates and balances with a hint that never blocks saving. Expose the % and $ units and the required fields to screen readers. Make every error message match its check.
+
+**Patches:** [`fixes/MONEY-12.patch`](fixes/MONEY-12.patch)
 
 **Done when:** the tests for MONEY-12, A11Y-14, RES-14, UX-16 and MONEY-22 pass with their `knownIssue()` lines removed.
 
@@ -129,6 +143,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Do:** Make one change per rule, each with its own test. The changes are in `calc.ts`, `plans.ts`, `seed.ts`, `verify.mjs` and the household-size select. Each issue file cites the regulation or official table behind its rule.
 
+**Patches:** [`fixes/MONEY-03.patch`](fixes/MONEY-03.patch), [`fixes/MONEY-05.patch`](fixes/MONEY-05.patch), [`fixes/MONEY-21.patch`](fixes/MONEY-21.patch)
+
 **Done when:** the tests for MONEY-03, MONEY-05, MONEY-21, MONEY-14, MONEY-15 and MONEY-17 pass with their `knownIssue()` lines removed.
 
 **Priority 9: Price Public Service Loan Forgiveness honestly** (Category: Money, Impact: Medium)
@@ -139,6 +155,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 **Why:** The 120-payment path is never priced, so public-service borrowers compare 20- and 30-year totals that can be tens of thousands of dollars off. Part-time workers are promised cancellation they cannot get, because the 30-hour full-time rule is never mentioned.
 
 **Do:** For public-service borrowers, price IBR and RAP over the next 120 payments, and build the PSLF sentences on that figure. This builds on priority 2, so land the two together. Add the full-time rule everywhere PSLF is promised.
+
+**Patches:** [`fixes/MONEY-02.patch`](fixes/MONEY-02.patch), [`fixes/SCOPE-01.patch`](fixes/SCOPE-01.patch)
 
 **Done when:** the tests for MONEY-02 and SCOPE-01 pass with their `knownIssue()` lines removed.
 
@@ -160,6 +178,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 - Name PAYE and ICR and the date they end.
 - Add a dated "rules last checked" line that links to the regulations.
 
+**Patches:** [`fixes/SCOPE-04.patch`](fixes/SCOPE-04.patch) (first step), [`fixes/MONEY-23.patch`](fixes/MONEY-23.patch)
+
 **Done when:** the tests for SCOPE-04, MONEY-23, MONEY-24 and UX-20 pass with their `knownIssue()` lines removed.
 
 **Priority 11: Price married and defaulted borrowers correctly** (Category: Eligibility, Impact: Medium)
@@ -170,6 +190,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 **Why:** Married borrowers who file jointly cannot be priced correctly: IBR or RAP is off by up to $71 a month, or by far more when both spouses borrowed, and the recommended plan can flip. Borrowers in default are steered to Standard, Graduated or Extended, plans they cannot use until the loan is out of default.
 
 **Do:** Add a joint-filing answer and the spouse's federal loan balance. Count the spouse in IBR family size, split IBR and RAP by the borrower's share of the couple's loans, and ask for combined AGI. When the servicer is the Default Resolution Group, close every plan but IBR and RAP, and explain rehabilitation.
+
+**Patches:** [`fixes/SCOPE-02.patch`](fixes/SCOPE-02.patch), [`fixes/SCOPE-05.patch`](fixes/SCOPE-05.patch)
 
 **Done when:** the tests for SCOPE-02 and SCOPE-05 pass with their `knownIssue()` lines removed.
 
@@ -188,6 +210,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Do:** Add a backup file that the browser writes and reads on the device, with no server involved. Say on the start screen that loans stay in the browser they were entered in. Show a message when an export fails. Name exported files by the local date.
 
+**Patches:** [`fixes/RES-05.patch`](fixes/RES-05.patch)
+
 **Done when:** the tests for RES-05, RES-06, RES-08 and RES-09 pass with their `knownIssue()` lines removed.
 
 **Priority 13: Keep the app working when it is translated or its data is damaged** (Category: Data safety, Impact: Medium)
@@ -202,6 +226,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 - A failed script load leaves pulsing gray bars on screen forever.
 
 **Do:** Render changing text as whole elements that React replaces, rather than text it edits in place. Check saved data when it loads. Add an error page with a way back. Show a reload hint when loading stalls.
+
+**Patches:** [`fixes/RES-12.patch`](fixes/RES-12.patch)
 
 **Done when:** the tests for RES-12, RES-07 and RES-13 pass with their `knownIssue()` lines removed.
 
@@ -221,6 +247,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 - A loan name with about 36 or more characters and no space can push it off screen.
 
 **Do:** Let the header wrap below 360 px, and take 2 px off its gap so it fits at 360. Keep the status region on the page, empty between messages. Give Undo no deadline and a close button, and let one Undo restore every removal since the toast opened. Make the two Clear buttons ask first instead of offering Undo.
+
+**Patches:** [`fixes/A11Y-01.patch`](fixes/A11Y-01.patch), [`fixes/A11Y-02.patch`](fixes/A11Y-02.patch)
 
 **Done when:** the tests for A11Y-01, A11Y-02, A11Y-04, A11Y-13, RES-10 and RES-15 pass with their `knownIssue()` lines removed.
 
@@ -277,6 +305,8 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 - Add the share image, a canonical URL, a small JSON-LD block and PNG icons.
 - Add a branded 404 page.
 - Load only the bold weight of the headline font.
+
+**Patches:** [`fixes/SEO-01.patch`](fixes/SEO-01.patch) (first step)
 
 **Done when:** the tests for SEO-01, SEO-02, SEO-05, SEO-06, SEO-07 and PERF-01 pass with their `knownIssue()` lines removed.
 

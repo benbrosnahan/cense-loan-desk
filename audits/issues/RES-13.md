@@ -11,6 +11,7 @@ If any of the app's script files fails to load, the page shows two pulsing grey 
 | Where | Before the app's first render, at any width (measured at 375x812), whenever one of the six script chunks under /_next/static/chunks/ fails to arrive. Local build and live deployment. JavaScript turned off is covered by the noscript message; a chunk that fails is not. |
 | Code | [`src/app/page.tsx:294-303`](../../src/app/page.tsx#L294-L303), [`src/app/page.tsx:139-149`](../../src/app/page.tsx#L139-L149), [`src/app/layout.tsx:48-53`](../../src/app/layout.tsx#L48-L53), [`src/app/globals.css:38-67`](../../src/app/globals.css#L38-L67), [`src/app/globals.css:140-149`](../../src/app/globals.css#L140-L149) |
 | Test | `resilience.spec.mjs`: "RES-13 when the app cannot start, the borrower is told to reload" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

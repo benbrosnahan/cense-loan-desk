@@ -11,6 +11,7 @@ Two build-time packages, the postcss copy pinned inside Next 14 and source-map-j
 | Where | No screen in the app: build toolchain only. package.json (next pinned at 14.2.35, no overrides block) and package-lock.json (next's exact pin of postcss 8.4.31, the nested copy it installs, and source-map-js 1.2.1), as reported by npm audit --omit=dev. |
 | Code | [`package.json:14`](../../package.json#L14), [`package-lock.json:4303`](../../package-lock.json#L4303), [`package-lock.json:4342`](../../package-lock.json#L4342), [`package-lock.json:5440`](../../package-lock.json#L5440) |
 | Test | `security-privacy.spec.mjs`: "SEC-05 the production install has no copy of postcss or source-map-js inside their advisory ranges" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

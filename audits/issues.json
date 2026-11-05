@@ -28,8 +28,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-01 every \"more overall\" figure is the gap between the totals on screen, and no plan shows more interest than it collects"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-01.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-01.md"
   },
@@ -62,8 +62,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-04 Graduated starts where a schedule within the 3x cap must start, and shows how high it climbs"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-04.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-04.md"
   },
@@ -98,8 +98,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-06 Payoff runs the chosen plan: Graduated ends within its 10 years and IBR never runs past forgiveness"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-06.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-06.md"
   },
@@ -135,8 +135,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-08 with income blank, the pick and its badges never claim a minimum over IBR and RAP, which are open but unpriced"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-08.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-08.md"
   },
@@ -162,8 +162,8 @@
    "tests": [
     "scope.spec.mjs > SCOPE-03 the income question asks for adjusted gross income, the figure IBR and RAP are priced on"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/SCOPE-03.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/SCOPE-03.md"
   },
@@ -207,8 +207,8 @@
    "tests": [
     "scope.spec.mjs > SCOPE-06 a borrower four years into Standard sees their $555 bill and a November 2032 end date, and a year later is told the balances are old"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/SCOPE-06.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/SCOPE-06.md"
   },
@@ -230,8 +230,8 @@
    "tests": [
     "a11y.spec.mjs > A11Y-01 from 320 to 360 CSS px wide every section fits the screen and the hide-amounts button stays in view"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/A11Y-01.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/A11Y-01.md"
   },
@@ -255,8 +255,8 @@
    "tests": [
     "a11y.spec.mjs > A11Y-02 removing a loan and pressing Undo are each announced through a live region already on the page"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/A11Y-02.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/A11Y-02.md"
   },
@@ -285,8 +285,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-02 a public-service borrower sees what 120 qualifying payments cost and what is left to cancel"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-02.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-02.md"
   },
@@ -316,8 +316,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-03 Standard and Tiered Standard bill at least $50 a month and total what that payment really costs"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-03.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-03.md"
   },
@@ -343,8 +343,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-05 IBR leaves the balance that uncompounded unpaid interest gives after 20 years"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-05.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-05.md"
   },
@@ -379,8 +379,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-07 a fixed plan shows one payment, one end date and one interest total on Plans and on Payoff"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-07.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-07.md"
   },
@@ -406,8 +406,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-09 typing 0 as income prices IBR at $0 and RAP at $10, and the 0 stays visible after a reload"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-09.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-09.md"
   },
@@ -432,8 +432,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-11 a decimal point in income or extra is read as cents, never as more digits"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-11.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-11.md"
   },
@@ -457,8 +457,8 @@
    "tests": [
     "money-core.spec.mjs > MONEY-12 a date typed with a two-digit year is never saved as year 0026"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-12.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-12.md"
   },
@@ -488,8 +488,8 @@
    "tests": [
     "money-edges.spec.mjs > MONEY-13 IBR charges 15% of discretionary income and forgives at 25 years when a loan was paid out before July 1, 2014"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-13.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-13.md"
   },
@@ -510,8 +510,8 @@
    "tests": [
     "money-edges.spec.mjs > MONEY-21 a household of 10 can enter its size, and RAP is priced for 10 people"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-21.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-21.md"
   },
@@ -538,8 +538,8 @@
    "tests": [
     "money-edges.spec.mjs > MONEY-23 the plan count does not present the compared plans as all federal plans, and PAYE and ICR are named"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/MONEY-23.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/MONEY-23.md"
   },
@@ -563,8 +563,8 @@
    "tests": [
     "data-safety.spec.mjs > RES-01 edits typed over the example loans are still there after adding a loan of your own"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/RES-01.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/RES-01.md"
   },
@@ -587,7 +587,7 @@
     "data-safety.spec.mjs > RES-02 a loan saved in one tab survives a change made in another tab that was already open"
    ],
    "patch": null,
-   "patchStatus": null,
+   "patchStatus": "failed",
    "drafts": null,
    "details": "issues/RES-02.md"
   },
@@ -612,8 +612,8 @@
    "tests": [
     "data-safety.spec.mjs > RES-03 when the browser refuses to save, the page never says \"Saved\" and keeps a warning on screen"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/RES-03.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/RES-03.md"
   },
@@ -644,8 +644,8 @@
    "tests": [
     "data-safety.spec.mjs > RES-04 after \"Clear my data\" nothing of the borrower is left for the next person on that browser"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/RES-04.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/RES-04.md"
   },
@@ -678,8 +678,8 @@
    "tests": [
     "data-safety.spec.mjs > RES-05 after the browser drops its data, the start screen loads it back from a file the app saved"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/RES-05.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/RES-05.md"
   },
@@ -713,8 +713,8 @@
    "tests": [
     "resilience.spec.mjs > RES-12 a translated page shows the same figures as the untranslated one and never crashes"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/RES-12.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/RES-12.md"
   },
@@ -745,8 +745,8 @@
    "tests": [
     "scope.spec.mjs > SCOPE-01 a part-time public-service worker is told only full-time months earn PSLF wherever forgiveness is promised"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/SCOPE-01.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/SCOPE-01.md"
   },
@@ -776,8 +776,8 @@
    "tests": [
     "scope.spec.mjs > SCOPE-02 a married couple filing jointly can be priced by the rule: IBR $163 with RAP $217, and the spouse's own loans count"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/SCOPE-02.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/SCOPE-02.md"
   },
@@ -820,8 +820,8 @@
    "tests": [
     "scope.spec.mjs > SCOPE-04 the loan form and the plan answer say they cover federal Direct Loans, not FFEL, Perkins, consolidation or private loans"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/SCOPE-04.patch",
+   "patchStatus": "partial",
    "drafts": null,
    "details": "issues/SCOPE-04.md"
   },
@@ -858,8 +858,8 @@
    "tests": [
     "scope.spec.mjs > SCOPE-05 a borrower in default is offered only IBR or RAP and gets no debt-free date on a plan default closes"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/SCOPE-05.patch",
+   "patchStatus": "validated",
    "drafts": null,
    "details": "issues/SCOPE-05.md"
   },
@@ -891,8 +891,8 @@
    "tests": [
     "scope.spec.mjs > SCOPE-07 a borrower with 120 months of IBR credit can enter it and sees forgiveness after 120 more payments, not 240"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/SCOPE-07.patch",
+   "patchStatus": "partial",
    "drafts": null,
    "details": "issues/SCOPE-07.md"
   },
@@ -925,8 +925,8 @@
    "tests": [
     "seo-agentic.spec.mjs > SEO-01 a reader that runs no JavaScript gets the first-run screen and can follow links to the repayment rules"
    ],
-   "patch": null,
-   "patchStatus": null,
+   "patch": "fixes/SEO-01.patch",
+   "patchStatus": "partial",
    "drafts": null,
    "details": "issues/SEO-01.md"
   },

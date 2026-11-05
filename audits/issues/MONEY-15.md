@@ -11,6 +11,7 @@ Extended shows as open when the loans total exactly $30,000, though the rule and
 | Where | Repayment plans tab: the 'All 5 plans open to you' heading, the Extended card and its 'Use Extended as my plan' button; then the summary line and the Payoff tab if the borrower picks Extended. Any viewport, local build and live site. Pre-July-2026 portfolios whose balances total exactly $30,000.00, as one loan, whole-dollar splits, or multi-loan totals with cents whose floating-point sum lands just above 30000. |
 | Code | [`src/lib/calc.ts:323`](../../src/lib/calc.ts#L323), [`src/lib/calc.ts:334`](../../src/lib/calc.ts#L334), [`src/lib/calc.ts:29`](../../src/lib/calc.ts#L29), [`src/data/plans.ts:69`](../../src/data/plans.ts#L69), [`src/data/plans.ts:129`](../../src/data/plans.ts#L129), [`src/data/plans.ts:140`](../../src/data/plans.ts#L140), [`verify.mjs:520`](../../verify.mjs#L520) |
 | Test | `money-edges.spec.mjs`: "MONEY-15 Extended is closed at exactly $30,000 however the cents are split across loans, and open from $30,000.01" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

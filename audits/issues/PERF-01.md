@@ -11,6 +11,7 @@ The headline font downloads every weight from 200 to 800 although the app only e
 | Where | Every cold (uncached) load of the one route, at every viewport, on localhost:3100 and the live site. The display font is preloaded, so on a slow link its extra bytes compete with the JavaScript for bandwidth. Repeat visits load it from cache. The font is configured at src/app/layout.tsx:8. |
 | Code | [`src/app/layout.tsx:8`](../../src/app/layout.tsx#L8) |
 | Test | `perf.spec.mjs`: "PERF-01 a first visit downloads only the font weights the page draws" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

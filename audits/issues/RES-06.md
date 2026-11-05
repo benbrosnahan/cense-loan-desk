@@ -11,6 +11,7 @@ The header says 'On your device', but each browser, in-app browser and iOS 26 Ho
 | Where | Header pill in every state ('On your device' below 640 px, 'Stays on this device' from 640 px), the first-run 'What stays private' card and footer, and the Records caption. It matters on the newsletter entry path (page.tsx:137 names it) when the link opens in an in-app browser, and for iPhone users on iOS 26 or later who use Share > Add to Home Screen. Simulated with two Chromium storage contexts at 390 px; no iOS device or simulator was available. |
 | Code | [`src/app/page.tsx:337`](../../src/app/page.tsx#L337), [`src/app/page.tsx:338`](../../src/app/page.tsx#L338), [`src/components/history/HistoryPanel.tsx:79`](../../src/components/history/HistoryPanel.tsx#L79), [`src/app/page.tsx:420`](../../src/app/page.tsx#L420), [`src/app/page.tsx:659`](../../src/app/page.tsx#L659), [`src/data/plans.ts:285`](../../src/data/plans.ts#L285), [`src/lib/storage.ts:3`](../../src/lib/storage.ts#L3), [`src/app/page.tsx:416`](../../src/app/page.tsx#L416) |
 | Test | `data-safety.spec.mjs`: "RES-06 the page says loans are kept in this browser, and the start screen says they may be in another one" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

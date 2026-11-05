@@ -11,6 +11,7 @@ The Cense newsletter's site-wide Resources menu links the older Loan Lab quiz an
 | Where | cense.beehiiv.com, the Resources menu in the site-wide header (desktop and mobile copies, any viewport), on all 11 sampled pages of the 108 sitemap URLs and on the 4 more pages with a menu that were checked, plus the body of /t/student-loans and of /p/choosing-your-student-loan-repayment-plan-shouldn-t-be-hard. Off-repo: nothing in this repository changes. In the repo, README.md:8-10 records that Loan Desk supersedes both older tools, src/types/index.ts:5-6 limits Loan Desk to four federal loan kinds, and the footer already links back to the newsletter (src/app/page.tsx:849). |
 | Code | [`README.md:8-10`](../../README.md#L8-L10), [`src/types/index.ts:5-6`](../../src/types/index.ts#L5-L6), [`src/app/page.tsx:849`](../../src/app/page.tsx#L849) |
 | Test | None: see the issue notes. |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

@@ -527,8 +527,19 @@ test('the app source makes no network calls and loads no analytics or third-part
 
 test('the app source has no HTML injection or string-to-code sinks', () => {
   requireRepo();
+  // One shape is allowed: a server component (no "use client") that inlines a constant declared at the top level of the
+  // same file, such as JSON-LD (SEO-05) or a script that runs before hydration (SEO-01). Stored data lives only in the
+  // browser, so it cannot reach that HTML. Any other sink, and any sink in a client file, still fails.
+  const serverConstant = hit => {
+    if (hit.match !== 'dangerouslySetInnerHTML') return false;
+    const text = stripComments(read(hit.file));
+    if (/^\s*['"]use client['"]/m.test(text)) return false;
+    const name = /dangerouslySetInnerHTML=\{\{\s*__html:\s*([A-Z][A-Z0-9_]*)\s*\}\}/.exec(text.split('\n')[hit.line - 1] || '')?.[1];
+    return !!name && new RegExp(`^(?:export\\s+)?const\\s+${name}\\b`, 'm').test(text);
+  };
   const sinks = findInFiles(filesUnder('src'),
     /dangerouslySetInnerHTML|\.(?:inner|outer)HTML\s*=|insertAdjacentHTML|\beval\s*\(|\bnew\s+Function\s*\(|document\.write|\bsrcdoc\b|\bset(?:Timeout|Interval)\s*\(\s*["'`]/g)
+    .filter(h => !serverConstant(h))
     .map(h => `${at(h)} ${h.match}`);
   expect(sinks, 'A stored nickname or servicer could now reach the DOM as HTML or run as code').toEqual([]);
 });

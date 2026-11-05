@@ -11,6 +11,7 @@ Every move of the extra-payment slider builds dozens of new number and date form
 | Where | Payoff tab with a repayment plan chosen, while dragging or arrow-keying the slider beside 'Extra each month', at every viewport; the cost grows with the number of loans. On each move money(), monthYearFromNow() and shortMonthYearFromNow() build a new formatter per call (utils.ts:12, :89, :99), and RankingPanel recomputes main and base (RankingPanel.tsx:105, :110) although compareStrategies has just run the same simulation that main needs (ranking.ts:204-205 vs :171) and base only changes when extra crosses $0. |
 | Code | [`src/lib/utils.ts:12`](../../src/lib/utils.ts#L12), [`src/lib/utils.ts:88`](../../src/lib/utils.ts#L88), [`src/lib/utils.ts:89`](../../src/lib/utils.ts#L89), [`src/lib/utils.ts:98`](../../src/lib/utils.ts#L98), [`src/lib/utils.ts:99`](../../src/lib/utils.ts#L99), [`src/components/ranking/RankingPanel.tsx:105`](../../src/components/ranking/RankingPanel.tsx#L105), [`src/components/ranking/RankingPanel.tsx:110`](../../src/components/ranking/RankingPanel.tsx#L110), [`src/lib/ranking.ts:171`](../../src/lib/ranking.ts#L171) |
 | Test | `perf.spec.mjs`: "PERF-02 with 60 loans on a slow phone, each move of the extra-payment slider fits in one frame and shows the same figures as a fresh page" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

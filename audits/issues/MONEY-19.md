@@ -11,6 +11,7 @@ Records shows balance changes in whole dollars, so a 30-cent change reads '$2,25
 | Where | Records tab, the 'Changed since …' list on any snapshot card that has an older snapshot below it, at every width (measured at 1280x1000 on localhost:3100). Balance rows render through Money, which formats with money() at zero decimals (utils.ts:10), while diffSnapshots flags any balance move over half a cent (storage.ts:91). |
 | Code | [`src/components/history/HistoryPanel.tsx:161`](../../src/components/history/HistoryPanel.tsx#L161), [`src/lib/storage.ts:91`](../../src/lib/storage.ts#L91), [`src/components/shared/ui.tsx:53`](../../src/components/shared/ui.tsx#L53), [`src/lib/utils.ts:10`](../../src/lib/utils.ts#L10), [`src/lib/utils.ts:19`](../../src/lib/utils.ts#L19) |
 | Test | `money-edges.spec.mjs`: "MONEY-19 a balance change in Records shows the cents that changed, and Hide dollar amounts still blurs them" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

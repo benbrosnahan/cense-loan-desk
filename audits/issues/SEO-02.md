@@ -11,7 +11,7 @@ The page asks for a large-image link preview but provides no image and no og:url
 | Where | Every share surface that reads Open Graph or X card tags, from the <head> of / on http://localhost:3100 and https://cense-loan-desk.vercel.app, at every viewport. The metadata block is src/app/layout.tsx:19-34; its openGraph and twitter parts are lines 23-33. |
 | Code | [`src/app/layout.tsx:19`](../../src/app/layout.tsx#L19), [`src/app/layout.tsx:23-33`](../../src/app/layout.tsx#L23-L33) |
 | Test | `seo-agentic.spec.mjs`: "SEO-02 a shared link shows a preview image and names its own address" |
-| Fix drafts | Draft materials for the fix are in [`fixes/SEO-02/`](../fixes/SEO-02/). |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. Draft materials for the fix are in [`fixes/SEO-02/`](../fixes/SEO-02/). |
 
 ## Measured
 

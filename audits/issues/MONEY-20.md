@@ -11,6 +11,7 @@ The Payoff note says payments start this month, but the dates assume the first p
 | Where | Payoff tab with a plan selected, at every width (measured at 1280x1000 on localhost:3100 on 2 November 2026): the 'What this assumes' line under the Done, Interest and Monthly figures, read against the headline date, the 'You would finish in' sentence, the Done figure and the chart legend. |
 | Code | [`src/components/ranking/RankingPanel.tsx:334`](../../src/components/ranking/RankingPanel.tsx#L334), [`src/lib/ranking.ts:103`](../../src/lib/ranking.ts#L103), [`src/lib/utils.ts:88`](../../src/lib/utils.ts#L88) |
 | Test | `money-edges.spec.mjs`: "MONEY-20 the Payoff note\'s first-payment month agrees with the debt-free date it shows" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

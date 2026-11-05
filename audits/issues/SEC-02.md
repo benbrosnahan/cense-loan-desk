@@ -11,6 +11,7 @@ The site runs on Next.js 14.2.35, which no longer gets security fixes, so a futu
 | Where | package.json:14 (next 14.2.35) and package.json:15-16 (React 18); next.config.mjs, whose empty config makes Vercel deploy 6 Next functions for a page that needs none. Every visitor, every viewport. |
 | Code | [`package.json:14`](../../package.json#L14), [`package.json:15-16`](../../package.json#L15-L16), [`package.json:8`](../../package.json#L8), [`package.json:9`](../../package.json#L9), [`next.config.mjs:2`](../../next.config.mjs#L2), [`src/app/page.tsx:140`](../../src/app/page.tsx#L140) |
 | Test | `security-privacy.spec.mjs`: "SEC-02 the site runs on a Next.js release line that still gets security fixes" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

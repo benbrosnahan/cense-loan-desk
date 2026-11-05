@@ -11,6 +11,7 @@ The interest rate field rejects 0% while its error says "a number between 0 and 
 | Where | Loans tab: the add-loan form ('Add my first loan' or 'Add a loan') and the Edit form, 'Interest rate' field. Same at every width. |
 | Code | [`src/components/loans/LoanForm.tsx:180`](../../src/components/loans/LoanForm.tsx#L180), [`src/components/loans/LoanForm.tsx:178`](../../src/components/loans/LoanForm.tsx#L178), [`src/components/loans/LoanForm.tsx:95`](../../src/components/loans/LoanForm.tsx#L95), [`src/lib/utils.ts:129`](../../src/lib/utils.ts#L129), [`README.md:145`](../../README.md#L145) |
 | Test | `money-edges.spec.mjs`: "MONEY-22 a 0% rate is either saved as 0% or refused with a message that says why" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

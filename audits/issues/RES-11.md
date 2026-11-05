@@ -11,6 +11,7 @@ A half-filled loan form disappears without warning when the borrower taps anothe
 | Where | Loans tab: the Add a loan form, the Edit form and the first-run form, at any width (measured at 412x823 and 375x812) on the local production build; the live page chunk matches. The section-bar path needs at least one saved loan, because first run has no section bar. |
 | Code | [`src/app/page.tsx:205-208`](../../src/app/page.tsx#L205-L208), [`src/app/page.tsx:605-608`](../../src/app/page.tsx#L605-L608), [`src/app/page.tsx:126-127`](../../src/app/page.tsx#L126-L127), [`src/app/page.tsx:139-149`](../../src/app/page.tsx#L139-L149), [`src/app/page.tsx:384-393`](../../src/app/page.tsx#L384-L393), [`src/app/page.tsx:568-579`](../../src/app/page.tsx#L568-L579), [`src/components/loans/LoanForm.tsx:83-115`](../../src/components/loans/LoanForm.tsx#L83-L115), [`src/components/loans/LoanForm.tsx:119-121`](../../src/components/loans/LoanForm.tsx#L119-L121) |
 | Test | `resilience.spec.mjs`: "RES-11 a half-filled loan survives a section switch, a reload and Edit on another loan" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

@@ -11,6 +11,7 @@ With no check on saved data and no error boundary, a malformed stored loan or sn
 | Where | App load and the Records tab, at every width (measured at 412x823 and 375x812 in Chromium and WebKit, and once on the live site), whenever cense.loandesk.loans.v1, cense.loandesk.snapshots.v1 or cense.loandesk.profile.v2 holds a shape the app does not write itself. The erasing happens in the save effects that run right after load. src/app holds only globals.css, icon.svg, layout.tsx and page.tsx, so with no error.tsx any render error, whatever its cause, replaces the whole page with Next's default 'Application error' text. |
 | Code | [`src/lib/storage.ts:15-25`](../../src/lib/storage.ts#L15-L25), [`src/app/page.tsx:151-159`](../../src/app/page.tsx#L151-L159), [`src/lib/storage.ts:37-40`](../../src/lib/storage.ts#L37-L40), [`src/lib/storage.ts:53`](../../src/lib/storage.ts#L53), [`src/lib/storage.ts:45-48`](../../src/lib/storage.ts#L45-L48), [`src/lib/calc.ts:29`](../../src/lib/calc.ts#L29), [`src/app/page.tsx:182`](../../src/app/page.tsx#L182), [`src/app/page.tsx:82`](../../src/app/page.tsx#L82) |
 | Test | `data-safety.spec.mjs`: "RES-07 one unreadable saved loan does not lock the borrower out of the loans that are fine" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

@@ -11,6 +11,7 @@ When IBR prices at exactly $0, Payoff treats the chosen plan as no plan and tell
 | Where | Payoff tab at every width (320 to 1440) and on the live site, once IBR is chosen at a $0 payment: typed income above $0 and at or under 150% of the poverty line, all loans paid out before July 1, 2026, no Parent PLUS loan. Reached from the Plans tab's 'See your debt-free date' card, or from Payoff's own 'Try a different repayment plan' switcher by choosing 'IBR, $0 a month'. |
 | Code | [`src/lib/ranking.ts:170`](../../src/lib/ranking.ts#L170), [`src/lib/ranking.ts:199`](../../src/lib/ranking.ts#L199), [`src/components/ranking/RankingPanel.tsx:101-109`](../../src/components/ranking/RankingPanel.tsx#L101-L109), [`src/components/ranking/RankingPanel.tsx:136`](../../src/components/ranking/RankingPanel.tsx#L136), [`src/components/ranking/RankingPanel.tsx:139`](../../src/components/ranking/RankingPanel.tsx#L139), [`src/components/ranking/RankingPanel.tsx:154`](../../src/components/ranking/RankingPanel.tsx#L154), [`src/components/ranking/RankingPanel.tsx:157`](../../src/components/ranking/RankingPanel.tsx#L157), [`src/components/ranking/RankingPanel.tsx:189-195`](../../src/components/ranking/RankingPanel.tsx#L189-L195) |
 | Test | `money-core.spec.mjs`: "MONEY-10 a $0 IBR payment is a real plan: Payoff projects it and offers the extra-payment control" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

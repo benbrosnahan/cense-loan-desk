@@ -11,6 +11,7 @@ A loan name containing one long unbroken run of characters (about 36 or more at 
 | Where | Phone widths 320 to 430px (measured at 320x640, 375 and 412). The toast after Remove on Loans; Payoff (the 'Your order' list and the 'One thing that undoes all of this' notice); Plans (the 'One date decided this' notice, only when the loan is dated on or after July 1, 2026); Records (the 'Changed since' list when a snapshot names the loan). |
 | Code | [`src/components/shared/ui.tsx:585-588`](../../src/components/shared/ui.tsx#L585-L588), [`src/app/page.tsx:250-259`](../../src/app/page.tsx#L250-L259), [`src/components/loans/LoanForm.tsx:446-453`](../../src/components/loans/LoanForm.tsx#L446-L453), [`src/components/ranking/RankingPanel.tsx:467`](../../src/components/ranking/RankingPanel.tsx#L467), [`src/components/ranking/RankingPanel.tsx:502`](../../src/components/ranking/RankingPanel.tsx#L502), [`src/components/plans/PlansPanel.tsx:328-331`](../../src/components/plans/PlansPanel.tsx#L328-L331), [`src/components/history/HistoryPanel.tsx:138-140`](../../src/components/history/HistoryPanel.tsx#L138-L140) |
 | Test | `resilience.spec.mjs`: "RES-15 a long loan name keeps Undo on screen and does not widen the page" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

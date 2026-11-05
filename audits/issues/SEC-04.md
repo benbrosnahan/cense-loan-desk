@@ -11,7 +11,7 @@ The xlsx package is stuck at 0.18.5 on npm with two high advisories that can nev
 | Where | The two 'Download as a spreadsheet' buttons, on the Loans tab ('Keep a copy' card) and the Records tab, are the only paths that load xlsx; same at every width. In the repo: package.json, package-lock.json and the production npm audit. |
 | Code | [`package.json:18`](../../package.json#L18), [`package-lock.json:6467`](../../package-lock.json#L6467), [`src/lib/export.ts:76`](../../src/lib/export.ts#L76), [`src/lib/export.ts:113`](../../src/lib/export.ts#L113), [`src/lib/export.ts:300`](../../src/lib/export.ts#L300), [`README.md:79`](../../README.md#L79), [`.eslintrc.json:1`](../../.eslintrc.json#L1) |
 | Test | `security-privacy.spec.mjs`: "SEC-04 the spreadsheet library can still be patched, or the repo records why xlsx 0.18.5 is safe and nothing reads a spreadsheet" |
-| Fix drafts | Draft materials for the fix are in [`fixes/SEC-04/`](../fixes/SEC-04/). |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. Draft materials for the fix are in [`fixes/SEC-04/`](../fixes/SEC-04/). |
 
 ## Measured
 

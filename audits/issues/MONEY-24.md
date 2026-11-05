@@ -11,6 +11,7 @@ The app never mentions that SAVE has ended or that PAYE and ICR end by July 1, 2
 | Where | Every state, every tab, every width: measured at 375px and 1440px with every aria-expanded disclosure opened on Loans, Plans, Payoff and Records and with the add-loan form open. The warning belongs at the top of the Plans tab, before 'Where we would start'. |
 | Code | [`src/components/plans/PlansPanel.tsx:321`](../../src/components/plans/PlansPanel.tsx#L321), [`src/app/page.tsx:550`](../../src/app/page.tsx#L550), [`src/data/plans.ts:170`](../../src/data/plans.ts#L170), [`src/data/plans.ts:182`](../../src/data/plans.ts#L182), [`src/data/plans.ts:242`](../../src/data/plans.ts#L242), [`src/data/plans.ts:255`](../../src/data/plans.ts#L255), [`src/components/loans/LoanForm.tsx:511`](../../src/components/loans/LoanForm.tsx#L511), [`src/lib/calc.ts:299`](../../src/lib/calc.ts#L299) |
 | Test | `money-edges.spec.mjs`: "MONEY-24 the Plans tab says SAVE has ended, about the 90-day window, the default plan and the 2028 end of PAYE and ICR" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

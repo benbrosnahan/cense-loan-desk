@@ -11,7 +11,7 @@ Loan Desk's only icon is an SVG, a format Google's favicon guide does not list, 
 | Where | The <head> of / in every state and at every viewport, local and live. The surfaces are the favicon beside a Google result on mobile and the icon of an iOS Home Screen shortcut. Code: src/app/icon.svg is the only icon file; Next links it automatically, and the repo has no public/ folder, favicon.ico or apple-icon file. |
 | Code | [`src/app/icon.svg:1`](../../src/app/icon.svg#L1) |
 | Test | `seo-agentic.spec.mjs`: "SEO-06 search results and iPhone home screens get a raster Cense icon" |
-| Fix drafts | Draft materials for the fix are in [`fixes/SEO-06/`](../fixes/SEO-06/). |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. Draft materials for the fix are in [`fixes/SEO-06/`](../fixes/SEO-06/). |
 
 ## Measured
 

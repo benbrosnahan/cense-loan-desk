@@ -11,6 +11,7 @@ Responses carry none of the baseline security headers (frame, MIME-sniffing, ref
 | Where | Every response from https://cense-loan-desk.vercel.app/ (/, the 8 linked JS and CSS assets, /icon.svg), in every state and at every viewport. |
 | Code | [`next.config.mjs:2`](../../next.config.mjs#L2), [`src/app/page.tsx:404`](../../src/app/page.tsx#L404), [`src/app/page.tsx:851`](../../src/app/page.tsx#L851), [`src/components/loans/LoanForm.tsx:244`](../../src/components/loans/LoanForm.tsx#L244), [`src/components/plans/PlansPanel.tsx:485`](../../src/components/plans/PlansPanel.tsx#L485) |
 | Test | `security-privacy.spec.mjs`: "SEC-03 another site cannot frame the app, and its responses refuse MIME sniffing, referrers and unused device features" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

@@ -11,6 +11,7 @@ When the spreadsheet code cannot load (offline, blocked, a 404, or after a 2-min
 | Where | Loans tab, 'Keep a copy' card, 'Download as a spreadsheet'; Records tab, 'Download as a spreadsheet'. Any viewport (measured at 320, 375, 390, 412 and 1280 wide). Only when the xlsx chunk (chunk 425, 2170a4aa.319f5df2f1849a13.js, 413,745 bytes, about 139 KB gzipped, plus 919.07c6b8536b715587.js) is not already in memory or the HTTP cache and its request fails. The chunk is fetched only on click (export.ts:76 is the only dynamic import in src), so Download is the only action in the app that needs the network. |
 | Code | [`src/app/page.tsx:279-286`](../../src/app/page.tsx#L279-L286), [`src/app/page.tsx:631`](../../src/app/page.tsx#L631), [`src/app/page.tsx:643`](../../src/app/page.tsx#L643), [`src/components/history/HistoryPanel.tsx:42-49`](../../src/components/history/HistoryPanel.tsx#L42-L49), [`src/components/history/HistoryPanel.tsx:72`](../../src/components/history/HistoryPanel.tsx#L72), [`src/components/history/HistoryPanel.tsx:77`](../../src/components/history/HistoryPanel.tsx#L77), [`src/components/history/HistoryPanel.tsx:79-80`](../../src/components/history/HistoryPanel.tsx#L79-L80), [`src/lib/export.ts:75-78`](../../src/lib/export.ts#L75-L78) |
 | Test | `data-safety.spec.mjs`: "RES-08 when a spreadsheet cannot be prepared, the borrower is told beside the button until they try again" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

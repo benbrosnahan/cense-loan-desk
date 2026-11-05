@@ -11,6 +11,7 @@ Each older snapshot on the Records tab waits another 0.03s to fade in, so with 5
 | Where | Records tab with 50 or more snapshots, measured at 412x823, in the first seconds after the tab opens, when the borrower jumps to the end of the list. HistoryPanel.tsx:104 passes delay={0.03 * i} to FadeIn, which sets it as animation-delay (ui.tsx:497); .rise uses fill-mode both (globals.css:53), so each card sits at opacity 0 until its delay ends. The reduced-motion block shortens duration only (globals.css:144), so the delay applies there too. |
 | Code | [`src/components/history/HistoryPanel.tsx:104`](../../src/components/history/HistoryPanel.tsx#L104), [`src/components/shared/ui.tsx:497`](../../src/components/shared/ui.tsx#L497), [`src/app/globals.css:53`](../../src/app/globals.css#L53), [`src/app/globals.css:144`](../../src/app/globals.css#L144) |
 | Test | `perf.spec.mjs`: "PERF-03 every saved record is fully visible within a second of opening Records, however many there are" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

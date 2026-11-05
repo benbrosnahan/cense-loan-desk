@@ -11,6 +11,7 @@ The loan form fills in 6.52% and calls it the published rate for any payout date
 | Where | Loans tab, the 'Add my first loan' / 'Add a loan' form: 'Date it was paid out' and the 'Interest rate' field and its hint. Subsidized and Unsubsidized only; Grad PLUS and Parent PLUS stay blank. Any width; measured at 1280x1000 and 1280x900 on the local build, plus one live load. |
 | Code | [`src/data/seed.ts:136`](../../src/data/seed.ts#L136), [`src/data/seed.ts:128`](../../src/data/seed.ts#L128), [`src/data/seed.ts:146`](../../src/data/seed.ts#L146), [`src/components/loans/LoanForm.tsx:296`](../../src/components/loans/LoanForm.tsx#L296), [`src/components/loans/LoanForm.tsx:357`](../../src/components/loans/LoanForm.tsx#L357), [`src/components/loans/LoanForm.tsx:362`](../../src/components/loans/LoanForm.tsx#L362) |
 | Test | `money-edges.spec.mjs`: "MONEY-17 the loan form never calls a filled-in rate published for an award year that has no published rate" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

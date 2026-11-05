@@ -72,7 +72,7 @@ The repo's `.claude/commands/` folder has three commands:
 | [ROADMAP.md](ROADMAP.md) | Top priorities in order, then the rest of the backlog |
 | [issues/](issues/) | One file per issue: measurements, steps to reproduce, the fix, its test and how it was verified |
 | [issues.json](issues.json) | The same index, machine-readable |
-| [fixes/](fixes/) | Draft material for six fixes: new files, images, `verify.mjs` additions, a Tailwind token patch and an export edit script. None is applied to this repo or proven with its test yet; some fixes were tried on a scratch copy during verification, as their records say. Each issue's Fix section says what to change |
+| [fixes/](fixes/) | `<ID>.patch` for 29 of the 30 P0 and P1 issues: 26 validated and 3 partial (a first step). RES-02's patch failed its review and is left out. Each was applied to a copy of the repo, built, run against the full suite and its issue's test, and checked by an independent reviewer. None is applied to this repo. Each issue's page links its patch and says what to check before applying it and which other patches change the same lines. The six folders hold draft material for other fixes, which was not proven: new files, images, `verify.mjs` additions, a Tailwind token patch and an export edit script |
 | [tests/](tests/) | The Playwright suite; `helpers.mjs` holds the fixtures and `knownIssue()` |
 | `run.mjs`, [probes/](probes/), [engines/](engines/) | The scans. The engines are adapted from PerfMaster (see [engines/NOTICE.md](engines/NOTICE.md)) |
 | [budgets.json](budgets.json) | Limits the scans must meet. Floors are today's scores, so a drop below one is a regression. `readableFirstMs` is a ceiling instead, set well above the 2.86 s measured on 2026-11-02 because timings are noisy. Targets are where scores should get to, and never fail a run |
@@ -87,6 +87,6 @@ The workflow only checks. Vercel still deploys whatever reaches `main`. To keep 
 
 ## Notes
 
-- The fixes in the issue files and `fixes/` were written against `main` at `0fa60b6`. None has been applied to this repo or proven with its test yet; some were tried on a scratch copy during verification, as their records say. Several touch the same files, so make one change at a time and re-run the tests after each.
+- The fixes in the issue files and `fixes/` were written against `main` at `0fa60b6`. Each patch in `fixes/` was proven on its own against that commit, so check that it still fits, and apply it with `git apply --3way`. Many change the same lines, so apply one at a time, merge any conflicts by hand, and re-run the tests after each. The draft folders in `fixes/` were not proven.
 - Raise a floor in `budgets.json` when its score improves, so the gain is locked in.
 - The baselines in `results/` are trimmed: no raw Lighthouse reports (`--keep-raw` keeps them for a run), and `.gitignore` leaves out their screenshots. Every run writes fresh screenshots to its own folder, `results/latest/` by default.

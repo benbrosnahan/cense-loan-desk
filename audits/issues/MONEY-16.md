@@ -11,6 +11,7 @@ Plan-card and recommendation sentences contradict the figures beside them, such 
 | Where | Plans tab: the 'How this plan works' detail on Standard and RAP, the top-pick reason, the 'Not picked because' line on the other cards, and the goal and employer hints in 'Four questions'. Payoff tab: the body text and screen-reader summary under the headline, and the reasons in 'Your order'. All widths; measured at 1280x1000 and 375x812, with spot checks on the live site. |
 | Code | [`src/data/plans.ts:91`](../../src/data/plans.ts#L91), [`src/data/plans.ts:96`](../../src/data/plans.ts#L96), [`src/data/plans.ts:101`](../../src/data/plans.ts#L101), [`src/data/plans.ts:103`](../../src/data/plans.ts#L103), [`src/data/plans.ts:195`](../../src/data/plans.ts#L195), [`src/types/index.ts:159`](../../src/types/index.ts#L159), [`src/types/index.ts:173`](../../src/types/index.ts#L173), [`src/lib/calc.ts:529`](../../src/lib/calc.ts#L529) |
 | Test | `money-edges.spec.mjs`: "MONEY-16 every plan and payoff sentence agrees with the figures shown beside it" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

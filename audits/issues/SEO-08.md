@@ -11,6 +11,7 @@ Loan Desk lives on a rented vercel.app address with no recorded plan for it, and
 | Where | Every route's public address, https://cense-loan-desk.vercel.app, which the repo names only at README.md:3. Saved data sits in four localStorage keys bound to that origin: cense.loandesk.loans.v1, cense.loandesk.profile.v2 and cense.loandesk.snapshots.v1 (src/lib/storage.ts:9-13) and cense.loandesk.hideAmounts.v1 (src/app/page.tsx:79). The only way data leaves the app is the spreadsheet export (src/lib/export.ts:95 and :128, 'Download as a spreadsheet' on the Loans and Records tabs), and nothing reads it back. Any viewport. |
 | Code | [`README.md:3`](../../README.md#L3), [`src/lib/storage.ts:9-13`](../../src/lib/storage.ts#L9-L13), [`src/app/page.tsx:79`](../../src/app/page.tsx#L79), [`src/lib/export.ts:95`](../../src/lib/export.ts#L95), [`src/lib/export.ts:128`](../../src/lib/export.ts#L128) |
 | Test | `seo-agentic.spec.mjs`: "SEO-08 a borrower can carry saved loans to a new address before the app moves" |
+| Fix proof | This issue's test passes with [`fixes/RES-05.patch`](../fixes/RES-05.patch) applied. That patch was written for RES-05, so check the Fix below for anything the test does not cover. |
 
 ## Measured
 

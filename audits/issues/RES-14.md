@@ -11,6 +11,7 @@ The loan form saves misread or implausible numbers without asking the borrower t
 | Where | Add a loan and Edit this loan form: 'What you owe on it today' and 'Interest rate', any width (measured at 320x640, typed and pasted). The saved values then drive the header total, Plans and Payoff. |
 | Code | [`src/components/loans/LoanForm.tsx:169-181`](../../src/components/loans/LoanForm.tsx#L169-L181), [`src/components/loans/LoanForm.tsx:328-348`](../../src/components/loans/LoanForm.tsx#L328-L348), [`src/components/loans/LoanForm.tsx:350-395`](../../src/components/loans/LoanForm.tsx#L350-L395), [`src/lib/utils.ts:120-127`](../../src/lib/utils.ts#L120-L127), [`src/lib/utils.ts:129-132`](../../src/lib/utils.ts#L129-L132), [`src/data/seed.ts:122-138`](../../src/data/seed.ts#L122-L138), [`src/components/shared/ui.tsx:266-284`](../../src/components/shared/ui.tsx#L266-L284) |
 | Test | `resilience.spec.mjs`: "RES-14 the loan form asks the borrower to check implausible numbers and states the real rate rule" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

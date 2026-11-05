@@ -11,6 +11,7 @@ A mistyped or guessed Loan Desk address shows Next.js's bare default 404 page, w
 | Where | Any unknown path, local and live (measured /plans and /this-page-does-not-exist), at 390px in light and dark color schemes, in raw HTML and the rendered DOM. The default page inherits the root metadata at src/app/layout.tsx:19-34; src/app/not-found.tsx does not exist. |
 | Code | [`src/app/layout.tsx:19-34`](../../src/app/layout.tsx#L19-L34) |
 | Test | `seo-agentic.spec.mjs`: "SEO-07 a mistyped address shows a Loan Desk page with a way back and word that saved loans are safe" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

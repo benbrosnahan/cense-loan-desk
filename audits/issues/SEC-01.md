@@ -11,6 +11,7 @@ Nothing enforces the "Stays on this device" promise: the site sends no Content-S
 | Where | Every response from https://cense-loan-desk.vercel.app/ (the document, the 404, /icon.svg and the script chunks), in every state and at every viewport; and the test harness, which compiles only the calc, ranking, plans and types modules (verify.mjs:49-54) and so never reads layout.tsx, page.tsx or storage.ts. |
 | Code | [`next.config.mjs:2`](../../next.config.mjs#L2), [`src/data/plans.ts:284-285`](../../src/data/plans.ts#L284-L285), [`src/app/page.tsx:337-338`](../../src/app/page.tsx#L337-L338), [`src/app/page.tsx:841`](../../src/app/page.tsx#L841), [`src/lib/storage.ts:30`](../../src/lib/storage.ts#L30), [`verify.mjs:49-54`](../../verify.mjs#L49-L54), [`verify.mjs:626`](../../verify.mjs#L626), [`package.json:11-19`](../../package.json#L11-L19) |
 | Test | `security-privacy.spec.mjs`: "SEC-01 no page on this site can send a borrower's saved loans to another site" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

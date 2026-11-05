@@ -1,0 +1,243 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..e41fcfd 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -44,7 +44,13 @@ import {
+   snapshotStore,
+ } from "@/lib/storage";
+ import { exportLoans } from "@/lib/export";
+-import { cn, formatWholeDollars, parseNumber, scrollBehavior } from "@/lib/utils";
++import {
++  cn,
++  formatDollarsInput,
++  formatWholeDollars,
++  parseNumber,
++  scrollBehavior,
++} from "@/lib/utils";
+ import {
+   AffixInput,
+   Button,
+@@ -118,6 +124,38 @@ function LockIcon() {
+   );
+ }
+ 
++/**
++ * A dollar amount that may have cents. It keeps the text as typed, so
++ * "28,101.37" can be entered a key at a time, and reports the number.
++ */
++function DollarsInput({
++  value,
++  onValue,
++  ...rest
++}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & {
++  value: number;
++  onValue: (n: number) => void;
++}) {
++  const [text, setText] = useState(() =>
++    value ? formatDollarsInput(String(value)) : ""
++  );
++  return (
++    <AffixInput
++      prefix="$"
++      inputMode="decimal"
++      autoComplete="off"
++      placeholder="0"
++      {...rest}
++      value={text}
++      onChange={(e) => {
++        const next = formatDollarsInput(e.target.value);
++        setText(next);
++        onValue(parseNumber(next));
++      }}
++    />
++  );
++}
++
+ export default function Page() {
+   const [loans, setLoans] = useState<Loan[]>([]);
+   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
+@@ -721,8 +759,16 @@ export default function Page() {
+ 
+                       <div className="grid gap-5 sm:grid-cols-2">
+                         <Field
+-                          label="Yearly income, before tax"
+-                          hint="Leave blank if you are not earning yet. We will skip the plans priced off income."
++                          label={
++                            profile.filesJointly
++                              ? "Combined income on your joint return"
++                              : "Yearly income, before tax"
++                          }
++                          hint={
++                            profile.filesJointly
++                              ? "Yours and your spouse's together: the adjusted gross income on your joint tax return."
++                              : "Leave blank if you are not earning yet. We will skip the plans priced off income."
++                          }
+                           htmlFor="income"
+                         >
+                           <AffixInput
+@@ -750,7 +796,7 @@ export default function Page() {
+ 
+                         <Field
+                           label="People in your household"
+-                          hint="You, plus anyone you claim as a dependent."
++                          hint="You, plus anyone you claim as a dependent. Not your spouse: tick the box below if you file jointly."
+                           htmlFor="household"
+                         >
+                           <select
+@@ -774,6 +820,51 @@ export default function Page() {
+                           </select>
+                         </Field>
+                       </div>
++
++                      <div>
++                        <label className="flex min-h-[48px] cursor-pointer items-center gap-3 text-sm font-bold text-slate-900">
++                          <input
++                            type="checkbox"
++                            className="h-6 w-6 flex-shrink-0 cursor-pointer accent-navy"
++                            checked={profile.filesJointly}
++                            aria-describedby="joint-msg"
++                            onChange={(e) =>
++                              setProfile((p) => ({
++                                ...p,
++                                filesJointly: e.target.checked,
++                              }))
++                            }
++                          />
++                          I am married and we file taxes jointly
++                        </label>
++                        <p id="joint-msg" className="text-sm leading-snug text-slate-600">
++                          IBR then counts your spouse in your family size, and
++                          both income-driven plans use your combined income.
++                          Filing separately? Leave this unticked.
++                        </p>
++                        {profile.filesJointly && (
++                          <div className="mt-4 grid gap-5 sm:grid-cols-2">
++                            <Field
++                              label="What your spouse owes in federal student loans"
++                              hint="Their own Direct and FFEL loans, not Parent PLUS loans taken out for a child. You are charged your share of what the two of you owe."
++                              htmlFor="spouseloans"
++                              optional
++                            >
++                              <DollarsInput
++                                id="spouseloans"
++                                aria-describedby="spouseloans-msg"
++                                value={profile.spouseLoanBalance}
++                                onValue={(n) =>
++                                  setProfile((p) => ({
++                                    ...p,
++                                    spouseLoanBalance: n,
++                                  }))
++                                }
++                              />
++                            </Field>
++                          </div>
++                        )}
++                      </div>
+                     </div>
+                   </Card>
+ 
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..3810387 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -192,19 +192,37 @@ function simulateIdr(
+ }
+ 
+ function ibrMonthly(profile: Profile): number {
++  // IBR's family size counts the spouse of a borrower filing jointly
++  // (34 CFR 685.209(b)(9)(i)(B)). householdSize is you plus your dependents.
++  const familySize =
++    (profile.householdSize || 1) + (profile.filesJointly ? 1 : 0);
+   const discretionary = Math.max(
+     0,
+-    profile.income - 1.5 * getPovertyLine(profile.householdSize)
++    profile.income - 1.5 * getPovertyLine(familySize)
+   );
+   return (discretionary * 0.1) / 12;
+ }
+ 
+ function rapMonthly(profile: Profile): number {
+   const base = rapAnnualBasePayment(profile.income) / 12;
++  // Tax dependents only (685.209(b)(3)). A spouse is never one, so a joint
++  // filer's spouse takes nothing off here.
+   const dependents = Math.max(0, (profile.householdSize || 1) - 1);
+   return Math.max(RAP_MIN_MONTHLY, base - dependents * RAP_DEPENDENT_CREDIT);
+ }
+ 
++/**
++ * This borrower's share of the couple's eligible loans. On a joint return the
++ * payment is priced on combined income, so 34 CFR 685.209(g)(1)(i) (IBR) and
++ * (g)(3)(i)(A) (RAP) multiply it by this share. 1 when the spouse owes nothing.
++ */
++function jointShare(balance: number, profile: Profile): number {
++  const spouse = profile.filesJointly
++    ? Math.max(0, profile.spouseLoanBalance || 0)
++    : 0;
++  return spouse > 0 && balance > 0 ? balance / (balance + spouse) : 1;
++}
++
+ export interface PlanContext {
+   loans: Loan[];
+   profile: Profile;
+@@ -434,7 +452,12 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+ 
+     if (id === "ibr") {
+       const cap = amortizedPayment(balance, rate, 10);
+-      const pay = Math.min(ibrMonthly(profile), cap);
++      // The share comes before the cap: never lower than the literal
++      // cap-then-share reading, and equal to it whenever the cap does not bind.
++      const pay = Math.min(
++        ibrMonthly(profile) * jointShare(balance, profile),
++        cap
++      );
+       const sim = simulateIdr(balance, rate, pay, 20, {
+         waiveUnpaidInterest: false,
+         matchPrincipal: false,
+@@ -453,7 +476,11 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       };
+     }
+ 
+-    const pay = rapMonthly(profile);
++    // The $10 floor applies after the spouse share (685.209(g)(3)(i)(B)).
++    const pay = Math.max(
++      RAP_MIN_MONTHLY,
++      rapMonthly(profile) * jointShare(balance, profile)
++    );
+     const sim = simulateIdr(balance, rate, pay, 30, {
+       waiveUnpaidInterest: true,
+       matchPrincipal: true,
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..5b8c2d0 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -110,7 +110,21 @@ export interface LoanDiffRow {
+ export interface Profile {
+   /** Annual gross income. 0 = not supplied, which hides income-driven estimates. */
+   income: number;
++  /** You plus your tax dependents. A spouse is never counted here. */
+   householdSize: number;
++  /**
++   * Married and filing a joint federal tax return. Then `income` is the
++   * couple's combined income, and the spouse counts in IBR's family size only
++   * (34 CFR 685.209(b)(9)(i)(B)); RAP counts tax dependents, which a spouse
++   * never is ((b)(3)).
++   */
++  filesJointly: boolean;
++  /**
++   * The spouse's own eligible federal student loans, used only while
++   * filesJointly. 0 = none. IBR and RAP are scaled by this borrower's share of
++   * the couple's balance (685.209(g)(1)(i), (g)(3)(i)).
++   */
++  spouseLoanBalance: number;
+   employment: Employment;
+   goal: Goal;
+   /** Extra dollars per month above the required payment. */
+@@ -122,6 +136,8 @@ export interface Profile {
+ export const DEFAULT_PROFILE: Profile = {
+   income: 0,
+   householdSize: 1,
++  filesJointly: false,
++  spouseLoanBalance: 0,
+   employment: "unsure",
+   goal: "unsure",
+   // Starts at zero on purpose. A pre-filled amount anchors what people pay.

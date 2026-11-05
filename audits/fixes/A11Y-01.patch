@@ -1,0 +1,26 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..20aec54 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -320,7 +320,11 @@ export default function Page() {
+         Skip to content
+       </a>
+ 
+-      <header className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-5 sm:px-6 sm:pt-7">
++      {/* With loans, brand + badge + hide toggle end at x 359 (16px padding +
++          343px), so with gap-2.5 one row fits from 360 up. Narrower, the badge
++          and toggle wrap to a second row, kept right by ml-auto, so nothing
++          scrolls sideways at 320 (WCAG 1.4.10 Reflow). */}
++      <header className="mx-auto flex max-w-3xl items-center justify-between gap-2.5 px-4 pt-5 max-[359px]:flex-wrap sm:px-6 sm:pt-7">
+         <div className="flex flex-shrink-0 items-baseline gap-1.5 whitespace-nowrap">
+           {/* accent-hover, not accent: #C1652E on the page is under the 4.5:1
+               AA minimum at this size. #A8531F clears it. */}
+@@ -331,7 +335,7 @@ export default function Page() {
+             Loan Desk
+           </h1>
+         </div>
+-        <div className="flex flex-shrink-0 items-center gap-1">
++        <div className="ml-auto flex flex-shrink-0 items-center gap-1">
+           <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-light px-3 py-1.5 text-xs font-semibold text-slate-800">
+             <LockIcon />
+             <span className="sm:hidden">On your device</span>

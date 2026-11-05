@@ -11,6 +11,7 @@ Spreadsheet file names use the UTC date, so a US borrower who downloads in the e
 | Where | Both 'Download as a spreadsheet' buttons: the Loans tab 'Keep a copy' card (export.ts:114) and the Records tab (export.ts:301), at any viewport. Only the file name is wrong. In New York it is wrong from 7 PM EST or 8 PM EDT until midnight, in Los Angeles from 4 PM PST or 5 PM PDT, in Honolulu from 2 PM all year. East of UTC it is wrong in the morning instead (Tokyo before 9 AM gets the previous day). |
 | Code | [`src/lib/export.ts:12-14`](../../src/lib/export.ts#L12-L14), [`src/lib/export.ts:114`](../../src/lib/export.ts#L114), [`src/lib/export.ts:301`](../../src/lib/export.ts#L301), [`src/lib/export.ts:16-24`](../../src/lib/export.ts#L16-L24), [`src/lib/export.ts:101`](../../src/lib/export.ts#L101), [`src/lib/export.ts:103`](../../src/lib/export.ts#L103) |
 | Test | `resilience.spec.mjs`: "RES-09 spreadsheet file names carry the borrower's local date" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

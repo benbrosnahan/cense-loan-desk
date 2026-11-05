@@ -1,0 +1,200 @@
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..2dfb71d 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -164,6 +164,37 @@ function PlanRow({
+         </div>
+         )}
+ 
++        {/* The Public Service Loan Forgiveness path, priced, whenever something
++            would be left to cancel. IBR's leftover is not shown as a figure:
++            the simulation compounds its unpaid interest, which overstates it. */}
++        {publicService &&
++          e.pslf === "counts" &&
++          e.pslfPaid !== undefined &&
++          (e.pslfCancelled ?? 0) >= 1 && (
++            <div className="mt-3.5 rounded-2xl bg-slate-50 p-4 text-sm">
++              <p className="leading-relaxed text-slate-800">
++                If you work full time in public service for 120 more qualifying
++                payments, what is left after them is cancelled, tax free.
++              </p>
++              <dl className="mt-2 grid grid-cols-2 gap-3">
++                <div>
++                  <dt className="text-slate-600">Paid over those payments</dt>
++                  <dd className="text-base font-bold text-slate-900">
++                    <Money value={e.pslfPaid} />
++                  </dd>
++                </div>
++                {e.id !== "ibr" && (
++                  <div>
++                    <dt className="text-slate-600">Left to cancel, tax free</dt>
++                    <dd className="text-base font-bold text-slate-900">
++                      <Money value={e.pslfCancelled} />
++                    </dd>
++                  </div>
++                )}
++              </dl>
++            </div>
++          )}
++
+         {(isLowestPayment || isLowestInterest) && e.monthlyPayment !== null && (
+           <div className="mt-3.5 flex flex-wrap gap-1.5">
+             {/* Graduated's figure is a STARTING payment that steps up every two
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..de35d58 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -432,13 +432,15 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       };
+     }
+ 
++    // The Public Service Loan Forgiveness path runs the same simulation for
++    // 120 payments: 685.219(c)(1)(iii) asks for 120 qualifying payments, and
++    // 685.219(d) cancels the principal and interest still owed after them.
+     if (id === "ibr") {
+       const cap = amortizedPayment(balance, rate, 10);
+       const pay = Math.min(ibrMonthly(profile), cap);
+-      const sim = simulateIdr(balance, rate, pay, 20, {
+-        waiveUnpaidInterest: false,
+-        matchPrincipal: false,
+-      });
++      const opts = { waiveUnpaidInterest: false, matchPrincipal: false };
++      const sim = simulateIdr(balance, rate, pay, 20, opts);
++      const at120 = simulateIdr(balance, rate, pay, 10, opts);
+       return {
+         ...base,
+         eligible: true,
+@@ -447,6 +449,8 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+         totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
+         years: sim.paidOff ? sim.months / 12 : 20,
+         forgivenAmount: sim.forgiven,
++        pslfPaid: at120.totalPaid,
++        pslfCancelled: at120.forgiven,
+         pslf: "counts",
+         pslfNote:
+           "IBR always counts toward Public Service Loan Forgiveness, even a $0 payment.",
+@@ -454,10 +458,9 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     const pay = rapMonthly(profile);
+-    const sim = simulateIdr(balance, rate, pay, 30, {
+-      waiveUnpaidInterest: true,
+-      matchPrincipal: true,
+-    });
++    const opts = { waiveUnpaidInterest: true, matchPrincipal: true };
++    const sim = simulateIdr(balance, rate, pay, 30, opts);
++    const at120 = simulateIdr(balance, rate, pay, 10, opts);
+     return {
+       ...base,
+       eligible: true,
+@@ -466,6 +469,8 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
+       years: sim.paidOff ? sim.months / 12 : 30,
+       forgivenAmount: sim.forgiven,
++      pslfPaid: at120.totalPaid,
++      pslfCancelled: at120.forgiven,
+       pslf: "counts",
+       pslfNote:
+         "RAP always counts toward Public Service Loan Forgiveness, even at the $10 minimum.",
+@@ -522,6 +527,11 @@ export function rankPlans(
+ 
+   const { goal } = ctx.profile;
+   const pslfOk = (e: PlanEstimate) => e.pslf === "counts";
++  // On the PSLF path IBR and RAP cost their next 120 payments, and what is
++  // left then is cancelled. Every other plan costs its full total.
++  const pathCost = (e: PlanEstimate) => e.pslfPaid ?? e.totalPaid ?? 0;
++  const cancels = (e: PlanEstimate) =>
++    ctx.publicService && pslfOk(e) && (e.pslfCancelled ?? 0) >= 1;
+ 
+   let top: PlanEstimate;
+   let reason: string;
+@@ -533,7 +543,10 @@ export function rankPlans(
+         (a.monthlyPayment ?? Infinity) <= (b.monthlyPayment ?? Infinity) ? a : b
+       );
+       reason = ctx.publicService
+-        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
++        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit." +
++          (cancels(top)
++            ? " After 120 qualifying payments the rest is cancelled, tax free."
++            : " At this payment the balance reaches zero by payment 120, so there would be nothing left to cancel.")
+         : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
+     } else {
+       top = lowestInterest;
+@@ -555,6 +568,25 @@ export function rankPlans(
+         : "You want to pay the least overall, and this plan costs you the least in total interest.";
+   }
+ 
++  // Asked to pay the least, a public-service borrower also needs to hear when
++  // 120 qualifying payments on another plan would cost less.
++  if (goal === "least_total" && ctx.publicService) {
++    const cheaper = eligible.filter(
++      (e) => cancels(e) && pathCost(e) < pathCost(top) - 1
++    );
++    if (cheaper.length) {
++      const best = cheaper.reduce((a, b) => (pathCost(b) < pathCost(a) ? b : a));
++      reason += ` That is without Public Service Loan Forgiveness. With 120 qualifying payments while working full time for a qualifying employer, ${best.name} would cost less, and the rest would be cancelled tax free. Its card shows the figures.`;
++    }
++  }
++
++  // Going for PSLF with a pick that earns credit: plans that also earn credit
++  // are compared on what their next 120 payments cost.
++  const goingForPslf =
++    ctx.publicService &&
++    (goal === "forgiveness" || goal === "unsure") &&
++    pslfOk(top);
++
+   const whyNotFor = (e: PlanEstimate): string => {
+     if (e.id === top.id) return "";
+     if (!e.eligible) return "";
+@@ -579,9 +611,19 @@ export function rankPlans(
+           : `costs ${money(dMonthly)} more a month`
+       );
+     }
+-    if (dInterest > 1) parts.push(`costs ${money(dInterest)} more overall`);
+-    if (dMonthly < -1 && dInterest > 1) {
+-      parts.push("buys a smaller payment now by charging you more in the end");
++    const cheaperOnPath = cancels(e) && pathCost(e) < pathCost(top) - 1;
++    if (goingForPslf && pslfOk(e)) {
++      const gap = pathCost(e) - pathCost(top);
++      if (gap > 1) parts.push(`costs ${money(gap)} more over 120 qualifying payments`);
++    } else {
++      if (dInterest > 1) {
++        parts.push(
++          `costs ${money(dInterest)} more overall${cheaperOnPath ? " without Public Service Loan Forgiveness" : ""}`
++        );
++      }
++      if (dMonthly < -1 && dInterest > 1 && !cheaperOnPath) {
++        parts.push("buys a smaller payment now by charging you more in the end");
++      }
+     }
+ 
+     if (!parts.length) {
+@@ -600,7 +642,10 @@ export function rankPlans(
+       estimate: e,
+       isTopPick: e.id === top.id,
+       isLowestPayment: e.id === lowestPayment.id,
+-      isLowestInterest: e.id === lowestInterest.id,
++      // Not on a plan whose 120 qualifying payments cost more than the pick's.
++      isLowestInterest:
++        e.id === lowestInterest.id &&
++        !(goingForPslf && pathCost(e) > pathCost(top) + 1),
+       whyNot: whyNotFor(e),
+     }))
+     .sort((a, b) => {
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..c9c163e 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -77,6 +77,12 @@ export interface PlanEstimate {
+   forgivenessYears: number | null;
+   /** Balance written off at the end of an income-driven term. 0 for fixed plans. */
+   forgivenAmount: number;
++  /**
++   * IBR and RAP only: what the next 120 payments cost, and what would be left
++   * then for Public Service Loan Forgiveness to cancel. Unset on fixed plans.
++   */
++  pslfPaid?: number;
++  pslfCancelled?: number;
+   /** Set when ineligible, explaining exactly why. */
+   ineligibleReason?: string;
+ }

@@ -11,6 +11,7 @@
 | Where | Loans tab: the 'You owe' summary bar ('Borrowed' and 'Interest added so far') and an opened loan row ('First borrowed' and 'Interest added so far'); 'Download as a spreadsheet' ('Original principal' column and TOTAL row). Measured at 1280x1000 and 375x812 on the local build and on the live site. |
 | Code | [`src/app/page.tsx:307`](../../src/app/page.tsx#L307), [`src/app/page.tsx:482`](../../src/app/page.tsx#L482), [`src/app/page.tsx:491`](../../src/app/page.tsx#L491), [`src/components/loans/LoanList.tsx:22`](../../src/components/loans/LoanList.tsx#L22), [`src/components/loans/LoanList.tsx:92`](../../src/components/loans/LoanList.tsx#L92), [`src/components/loans/LoanList.tsx:98`](../../src/components/loans/LoanList.tsx#L98), [`src/components/loans/LoanForm.tsx:202`](../../src/components/loans/LoanForm.tsx#L202), [`src/components/loans/LoanForm.tsx:428`](../../src/components/loans/LoanForm.tsx#L428) |
 | Test | `money-edges.spec.mjs`: "MONEY-18 the summary\'s interest added equals the loan rows, and a principal nobody entered is never shown as borrowed" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

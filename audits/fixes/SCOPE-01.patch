@@ -1,0 +1,116 @@
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..364feed 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -95,7 +95,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+     pros: [
+       "Least total interest of any plan",
+       "Fixed payment, no annual income paperwork",
+-      "Always earns Public Service Loan Forgiveness credit",
++      "Earns Public Service Loan Forgiveness credit while you work full time in public service",
+     ],
+     cons: [
+       "Highest monthly payment of the plans open to you",
+@@ -152,7 +152,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+     pros: [
+       "Usually the lowest monthly payment",
+       "A $0 payment is possible and still counts as a qualifying payment",
+-      "Always earns Public Service Loan Forgiveness credit",
++      "Earns Public Service Loan Forgiveness credit while you work full time in public service",
+       "Forgiveness at 20 years, 10 sooner than RAP",
+     ],
+     cons: [
+@@ -193,7 +193,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+     pros: [
+       "Unpaid interest is waived instead of added to your balance",
+       "At least $50 a month goes to principal, so the balance always shrinks",
+-      "Always earns Public Service Loan Forgiveness credit",
++      "Earns Public Service Loan Forgiveness credit while you work full time in public service",
+       "Available even if you borrowed on or after July 1, 2026",
+     ],
+     cons: [
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..02dc6d1 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -259,7 +259,7 @@ function pslfForFixedPlan(
+   if (monthly >= benchmark - 1) {
+     return {
+       status: "counts",
+-      note: `Your payment here is at least the 10-year Standard amount, so these months count toward Public Service Loan Forgiveness.`,
++      note: `Your payment here is at least the 10-year Standard amount, so these months count toward Public Service Loan Forgiveness while you work full time for a qualifying employer.`,
+     };
+   }
+   return {
+@@ -345,7 +345,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+         forgivenAmount: 0,
+         pslf: "counts",
+         pslfNote:
+-          "The 10-year Standard plan always counts toward Public Service Loan Forgiveness.",
++          "The 10-year Standard plan counts toward Public Service Loan Forgiveness in any month you work full time for a qualifying employer.",
+         ...t,
+       };
+     }
+@@ -428,7 +428,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+         forgivenAmount: 0,
+         pslf: "counts",
+         pslfNote:
+-          "Income-driven plans always count toward Public Service Loan Forgiveness, even a $0 payment.",
++          "Income-driven plans count toward Public Service Loan Forgiveness in any month you work full time for a qualifying employer, even a $0 payment.",
+       };
+     }
+ 
+@@ -449,7 +449,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+         forgivenAmount: sim.forgiven,
+         pslf: "counts",
+         pslfNote:
+-          "IBR always counts toward Public Service Loan Forgiveness, even a $0 payment.",
++          "IBR counts toward Public Service Loan Forgiveness in any month you work full time for a qualifying employer, even a $0 payment.",
+       };
+     }
+ 
+@@ -468,7 +468,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       forgivenAmount: sim.forgiven,
+       pslf: "counts",
+       pslfNote:
+-        "RAP always counts toward Public Service Loan Forgiveness, even at the $10 minimum.",
++        "RAP counts toward Public Service Loan Forgiveness in any month you work full time for a qualifying employer, even at the $10 minimum.",
+     };
+   };
+ 
+@@ -533,7 +533,7 @@ export function rankPlans(
+         (a.monthlyPayment ?? Infinity) <= (b.monthlyPayment ?? Infinity) ? a : b
+       );
+       reason = ctx.publicService
+-        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
++        ? "If you work full time in public service, this is the lowest payment among the plans that earn Public Service Loan Forgiveness credit. Only months when you work full time for a qualifying employer count, meaning an average of at least 30 hours a week across your qualifying jobs, and your employer usually certifies that on the PSLF form. After 120 of those payments the rest is cancelled, tax free."
+         : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
+     } else {
+       top = lowestInterest;
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..beac312 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -152,9 +152,20 @@ export const EMPLOYMENT_LABELS: Record<Employment, string> = {
+   unsure: "Not sure",
+ };
+ 
++/**
++ * 34 CFR 685.219(c)(2)(vi) credits only months of full-time qualifying
++ * employment, and (b)(11)(i) defines full time: an average of 30 hours a week
++ * across qualifying jobs, with a 30-hour contract of at least 8 months, such
++ * as a teacher's school year, deemed full time for the whole year.
++ */
++const PSLF_FULL_TIME =
++  " PSLF also needs full-time work: an average of at least 30 hours a week across your qualifying jobs. Teachers on a full-time school-year contract count all year.";
++
+ export const EMPLOYMENT_HINTS: Record<Employment, string> = {
+-  government: "Federal, state, local, or Tribal, including the military.",
+-  nonprofit: "A 501(c)(3), or a nonprofit doing qualifying public service.",
++  government:
++    "Federal, state, local, or Tribal, including the military." + PSLF_FULL_TIME,
++  nonprofit:
++    "A 501(c)(3), or a nonprofit doing qualifying public service." + PSLF_FULL_TIME,
+   private: "A company organized to make a profit.",
+   unsure: "We will leave forgiveness out of the recommendation.",
+ };

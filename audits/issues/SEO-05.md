@@ -11,6 +11,7 @@ The page declares no canonical URL and no structured data, so search engines mus
 | Where | The single <head> shared by every state and viewport: raw HTML of / on http://localhost:3100 and live, and of tagged variants such as /?utm_source=beehiiv&utm_medium=email. Code: the metadata object in src/app/layout.tsx:19-34 has no metadataBase, alternates or openGraph.url. page.tsx is a client component with two <main> returns: the pre-hydration skeleton (the hydrated gate at src/app/page.tsx:294, <main> at :296), which is the only one in server HTML, and the app (src/app/page.tsx:310-315). |
 | Code | [`src/app/layout.tsx:19-34`](../../src/app/layout.tsx#L19-L34), [`src/app/page.tsx:294`](../../src/app/page.tsx#L294), [`src/app/page.tsx:296`](../../src/app/page.tsx#L296), [`src/app/page.tsx:310-315`](../../src/app/page.tsx#L310-L315) |
 | Test | `seo-agentic.spec.mjs`: "SEO-05 a tagged link to / declares one canonical address, and the server HTML describes Loan Desk as structured data" |
+| Fix proof | Not attempted: fix proofs were run for P0 and P1 only. |
 
 ## Measured
 

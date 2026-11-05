@@ -1,5 +1,5 @@
 diff --git a/src/app/page.tsx b/src/app/page.tsx
-index 27df1da..2799b9b 100644
+index 27df1da..75e9919 100644
 --- a/src/app/page.tsx
 +++ b/src/app/page.tsx
 @@ -258,13 +258,43 @@ export default function Page() {
@@ -46,21 +46,22 @@ index 27df1da..2799b9b 100644
    const clearSnapshots = () => {
      const before = snapshots;
      setSnapshots([]);
-@@ -305,6 +335,13 @@ export default function Page() {
+@@ -305,6 +335,14 @@ export default function Page() {
    const empty = loans.length === 0;
    const example = isExample(loans);
    const interest = Math.max(0, balance - principal);
 +  // Records or answers still stored with no loans: left by removing loans
-+  // one by one or with Clear every loan, here or by someone earlier.
++  // one by one or with Clear every loan, here or by someone earlier. Records
++  // stored as anything but a list count as none, as the first-run screen does.
 +  const leftovers =
-+    snapshots.length > 0 ||
++    (Array.isArray(snapshots) && snapshots.length > 0) ||
 +    (Object.keys(DEFAULT_PROFILE) as (keyof Profile)[]).some(
 +      (k) => profile[k] !== DEFAULT_PROFILE[k]
 +    );
  
    return (
      <main
-@@ -381,6 +418,20 @@ export default function Page() {
+@@ -381,6 +419,20 @@ export default function Page() {
                </div>
              )}
  
@@ -81,7 +82,7 @@ index 27df1da..2799b9b 100644
              {adding ? (
                <div className="mt-8">
                  <LoanForm
-@@ -643,7 +694,10 @@ export default function Page() {
+@@ -643,7 +695,10 @@ export default function Page() {
                      </div>
                      <Disclosure summary="Clear my data" className="mt-2">
                        <div className="flex flex-col gap-2 sm:flex-row">
@@ -93,7 +94,7 @@ index 27df1da..2799b9b 100644
                            Clear every loan
                          </Button>
                          <Button
-@@ -656,8 +710,11 @@ export default function Page() {
+@@ -656,8 +711,11 @@ export default function Page() {
                          </Button>
                        </div>
                        <p className="mt-2 text-sm text-slate-600">

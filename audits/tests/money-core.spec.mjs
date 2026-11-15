@@ -173,7 +173,6 @@ test('MONEY-04 Graduated starts where a schedule within the 3x cap must start, a
 });
 
 test('MONEY-05 IBR leaves the balance that uncompounded unpaid interest gives after 20 years', async ({ page }) => {
-  knownIssue('MONEY-05');
   await openPlans(page, [loan('2024–25 unsubsidized', 60000, 6.53, '2024-09-01')]);
   await typeInto(page, incomeField(page), '50000');
   const card = planCard(page, 'IBR');

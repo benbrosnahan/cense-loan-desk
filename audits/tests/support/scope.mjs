@@ -23,6 +23,28 @@ export function monthsToClear(balance, annualPct, payment) {
   return r ? -Math.log(1 - (balance * r) / payment) / Math.log(1 + r) : balance / payment;
 }
 
+/**
+ * The balance after `payments` level payments of `bill` on `principal` at `annualPct`, plus `partMonth` of a
+ * month's interest when the balance is read between payments, to the cent. Month by month, the way a servicer
+ * posts it, so it does not lean on monthsToClear.
+ */
+export function balanceAfter(principal, annualPct, bill, payments, partMonth = 0) {
+  const r = annualPct / 1200;
+  let balance = principal;
+  for (let i = 0; i < payments; i++) balance = balance * (1 + r) - bill;
+  return Math.round((balance * (1 + r * partMonth)) * 100) / 100;
+}
+
+/**
+ * Cases where the payments left are easy to misread from a bill (SCOPE-06 review). Each borrower entered
+ * repayment on a fresh 10-year Standard bill and has made `made` payments, so 120 - made are left whatever the
+ * leftover fraction of a month says.
+ */
+export const PAYMENTS_LEFT_CASES = [
+  { what: '$2,113.12 at 5.5% on a $22.93 bill, one payment made', principal: 2113.12, rate: 5.5, bill: 22.93, made: 1, partMonth: 0 },
+  { what: '$50,000 at 6% on a $555.10 bill, 48 payments made, balance typed half a month after the last one', principal: 50000, rate: 6, bill: 555.1, made: 48, partMonth: 0.5 },
+];
+
 export const totalOwed = loans => loans.reduce((sum, l) => sum + l.balance, 0);
 export const blendedRate = loans => loans.reduce((sum, l) => sum + l.balance * l.rate, 0) / totalOwed(loans);
 

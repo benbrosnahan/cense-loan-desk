@@ -23,6 +23,12 @@ interface Props {
   /** Same, paying only the required amount. Null when there is no extra. */
   requiredOnly: number[] | null;
   extra: number;
+  /**
+   * What the first row is called. "Today" unless the balances were typed on
+   * an earlier day, when it is that date, so an old balance never reads as
+   * today's.
+   */
+  startLabel?: string;
   className?: string;
 }
 
@@ -71,6 +77,7 @@ export default function PayoffRunway({
   withExtra,
   requiredOnly,
   extra,
+  startLabel = "Today",
   className,
 }: Props) {
   const [wrapRef, width] = useWidth<HTMLDivElement>();
@@ -335,7 +342,7 @@ export default function PayoffRunway({
               {rows.map((m) => (
                 <tr key={m}>
                   <th scope="row" className="tnum px-3.5 py-2.5 font-normal text-slate-800">
-                    {m === 0 ? "Today" : shortMonthYearFromNow(m, now)}
+                    {m === 0 ? startLabel : shortMonthYearFromNow(m, now)}
                   </th>
                   <td className="px-3.5 py-2.5 text-right font-semibold text-slate-900">
                     <Money value={at(withExtra, m)} />

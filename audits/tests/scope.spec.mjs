@@ -4,7 +4,7 @@
 // guidelines; nothing here imports the app's code.
 import { test, expect, openApp, goTo, knownIssue, LOANS, PROFILE, PHONE } from './helpers.mjs';
 import {
-  FIXED_PLANS, addLoan, amortized, choose, enterForgivenessCredit, fieldText, ibrMonthly, incomeField, monthAfter,
+  FIXED_PLANS, PAYMENTS_LEFT_CASES, addLoan, amortized, balanceAfter, choose, enterForgivenessCredit, fieldText, ibrMonthly, incomeField, monthAfter,
   monthsToClear, monthsUntil, near, openPlanDetails, openPlans, planDetails, preTaxDeductionField, rapMonthly,
   readPick, readPlan, sayMarriedFilingJointly, sayOnStandardSince, sentence, setHousehold, spouseLoanField,
   tenYearPayment, textAbovePlanList, totalOwed, typeIncome, usd,
@@ -173,8 +173,28 @@ test('SCOPE-05 a borrower in default is offered only IBR or RAP and gets no debt
   expect(problems, `SCOPE-05: every loan is with Default Resolution Group, where only IBR and RAP can repay a defaulted loan, yet ${problems.join('; ')}`).toEqual([]);
 });
 
+for (const c of PAYMENTS_LEFT_CASES) {
+  test(`SCOPE-06 the payments left round to the nearest payment: ${c.what}`, async ({ page }) => {
+    const owe = balanceAfter(c.principal, c.rate, c.bill, c.made, c.partMonth);
+    const left = 120 - c.made;
+    await openApp(page, { seeded: false });
+    await page.getByRole('button', { name: 'Add my first loan' }).click();
+    await addLoan(page, {
+      paidOut: '2016-09-01', type: /Unsubsidized/, owe: owe.toFixed(2), rate: String(c.rate),
+      detail: { 'Amount you first borrowed': String(c.principal), 'Minimum monthly payment': c.bill.toFixed(2) },
+    });
+    await goTo(page, 'plans');
+    await choose(page, 'Pay the least overall');
+    await choose(page, 'Private sector');
+    await typeIncome(page, 45000);
+    await sayOnStandardSince(page, { began: '2016-11-01', paymentsMade: c.made });
+    const text = await page.locator('#main').innerText();
+    const shown = Number(text.match(/(\d+) more payments/)?.[1] ?? NaN);
+    expect(shown, `${c.what}: owes $${owe.toFixed(2)}, so ${left} payments of $${c.bill.toFixed(2)} are left; the page says ${Number.isNaN(shown) ? 'no count' : shown}`).toBe(left);
+  });
+}
+
 test('SCOPE-06 a borrower four years into Standard sees their $555 bill and a November 2032 end date, and a year later is told the balances are old', async ({ page }) => {
-  knownIssue('SCOPE-06');
   await page.clock.setFixedTime(TODAY);
   await openApp(page, { seeded: false });
   // Entered repayment owing $50,000 at 6%, has paid 48 bills of $555.10, and now owes $33,494.75. Standard keeps

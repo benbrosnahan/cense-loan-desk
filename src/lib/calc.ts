@@ -30,6 +30,15 @@ export function totalBalance(loans: Loan[]): number {
   return loans.reduce((s, l) => s + (l.balance || 0), 0);
 }
 
+/**
+ * The date the oldest balance was typed, which is how current the figures
+ * are. Null when any loan has no date, rather than claim one we do not know.
+ */
+export function balancesAsOf(loans: Loan[]): string | null {
+  if (!loans.length || loans.some((l) => !l.balanceAsOf)) return null;
+  return loans.map((l) => l.balanceAsOf!).sort()[0];
+}
+
 export function totalPrincipal(loans: Loan[]): number {
   return loans.reduce((s, l) => s + (l.principal || 0), 0);
 }
@@ -241,6 +250,79 @@ export function idrMonth(
 }
 
 /**
+ * Graduated for a borrower partway through the 10 years that began when the
+ * loans entered repayment, which switching plans does not restart (34 CFR
+ * 685.210(b)(2)(ii)(A)). MONEY-04's closed form for the 120-month schedule,
+ * generalised to the months left: ceil(months / 24) payment levels split
+ * evenly over what is left, so a step at least every two years, each level
+ * 3^(1/(levels - 1)) times the one before, so the last payment is three times
+ * the first, the most 685.208(b)(6)(iii) allows. The start is solved in
+ * closed form to repay on time ((b)(6)(i)), or is the month's interest with a
+ * smaller step when that is higher. With one level left there is no step, so
+ * it is Standard's level payment for the months left.
+ */
+export function graduatedLeft(balance: number, ratePct: number, months: number) {
+  const levels = Math.ceil(months / 24);
+  if (levels <= 1) {
+    const t = fixedTotals(balance, ratePct, months / 12);
+    return {
+      ...t,
+      finalPayment: t.monthlyPayment,
+      levels: 1,
+      termMonths: months,
+      paymentAt: () => t.monthlyPayment,
+    };
+  }
+  const r = ratePct / 100 / 12;
+  const levelAt = (m: number) => Math.floor((m * levels) / months);
+  const maxGrowth = Math.pow(3, 1 / (levels - 1));
+
+  // Present value of a dollar a month at the first level, rising by
+  // maxGrowth each level: the start that repays exactly in `months`.
+  let perDollar = 0;
+  for (let m = 0; m < months; m++) {
+    perDollar += Math.pow(maxGrowth, levelAt(m)) / Math.pow(1 + r, m + 1);
+  }
+  const start = Math.max(balance / perDollar, balance * r);
+  let growth = maxGrowth;
+  if (start > balance / perDollar) {
+    const remainingAfter = (g: number) => {
+      let bal = balance;
+      for (let m = 0; m < months; m++) bal = bal * (1 + r) - start * Math.pow(g, levelAt(m));
+      return bal;
+    };
+    let lo = 1;
+    let hi = maxGrowth;
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      if (remainingAfter(mid) > 0) lo = mid;
+      else hi = mid;
+    }
+    growth = hi;
+  }
+
+  let bal = balance;
+  let totalPaid = 0;
+  for (let m = 0; m < months && bal > 0; m++) {
+    const interest = bal * r;
+    const applied = Math.min(start * Math.pow(growth, levelAt(m)), bal + interest);
+    bal = bal + interest - applied;
+    totalPaid += applied;
+  }
+  return {
+    monthlyPayment: start,
+    finalPayment: start * Math.pow(growth, levels - 1),
+    totalPaid,
+    totalInterest: Math.max(0, totalPaid - balance),
+    levels,
+    termMonths: months,
+    /** The payment due in month `m` of the months left, counting from 0. */
+    paymentAt: (m: number) =>
+      start * Math.pow(growth, levelAt(Math.min(months - 1, m))),
+  };
+}
+
+/**
  * Simulate an income-driven plan at a flat income.
  *
  * Deliberately conservative: income is held constant, the same assumption the
@@ -320,23 +402,71 @@ export interface PlanContext {
   /** The 10-year Standard payment. The statutory yardstick for PSLF credit. */
   pslfBenchmark: number;
   publicService: boolean;
+  /** The monthly bills typed on every loan, added up. 0 if any loan has none. */
+  bill: number;
+  /**
+   * Payments already used of a term that began when the loans entered
+   * repayment. Read from the Standard bill, and 0 unless the borrower says
+   * they are repaying on Standard now and the bill can be a Standard one.
+   */
+  monthsUsed: number;
 }
 
 export function buildContext(loans: Loan[], profile: Profile): PlanContext {
   const balance = totalBalance(loans);
   const rate = weightedRate(loans);
+  const postCutoff = anyPostCutoff(loans);
+  const bill =
+    loans.length && loans.every((l) => l.minPayment > 0)
+      ? loans.reduce((sum, l) => sum + l.minPayment, 0)
+      : 0;
+  const monthsUsed =
+    profile.onStandardNow && !postCutoff
+      ? standardMonthsUsed(balance, rate, bill)
+      : 0;
   return {
     loans,
     profile,
     hasIncome: profile.income > 0 || profile.incomeKnown === true,
-    postCutoff: anyPostCutoff(loans),
+    postCutoff,
     parentPlus: anyParentPlus(loans),
     balance,
     rate,
-    pslfBenchmark: amortizedPayment(balance, rate, 10),
+    // The Standard payment set when the loans entered repayment, which is
+    // the bill itself for someone already repaying on it.
+    pslfBenchmark: amortizedPayment(balance, rate, (120 - monthsUsed) / 12),
     publicService:
       profile.employment === "government" || profile.employment === "nonprofit",
+    bill,
+    monthsUsed,
   };
+}
+
+/**
+ * How many of Standard's 120 payments are behind a borrower, read from the
+ * bill they pay now. Standard runs ten years from the day the loan entered
+ * repayment, not counting deferment or forbearance (34 CFR
+ * 685.208(b)(1)(i) and (iv)), and the servicer's bill already reflects both,
+ * so the payments left are the ones that bill takes to clear today's balance.
+ *
+ * Trusted only when it can be a Standard bill: one is never below a fresh
+ * 10-year payment on today's balance, and always above the month's interest.
+ * Anything else, such as an income-driven bill, leaves the term whole.
+ */
+export function standardMonthsUsed(
+  balance: number,
+  ratePct: number,
+  bill: number
+): number {
+  const r = ratePct / 1200;
+  if (balance <= 0 || bill < amortizedPayment(balance, ratePct, 10) - 1) return 0;
+  if (bill <= balance * r) return 0;
+  const left =
+    r > 0 ? -Math.log(1 - (balance * r) / bill) / Math.log(1 + r) : balance / bill;
+  // Round to the nearest payment: a bill rounded to the cent leaves a sliver
+  // of a month, and a balance typed mid-cycle carries part of a month's
+  // interest, and neither is a payment.
+  return 120 - Math.min(120, Math.max(1, Math.round(left)));
 }
 
 /**
@@ -374,6 +504,11 @@ function pslfForFixedPlan(
 export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
   const { balance, rate, profile, postCutoff, hasIncome, pslfBenchmark } = ctx;
   const available: PlanId[] = postCutoff ? POST_CUTOFF_PLANS : LEGACY_PLANS;
+  // Standard and Graduated run 10 years and Extended 25 from the day the loans
+  // entered repayment (685.208(b)(1)(i), (b)(6)(i) and (b)(4)(i)), and
+  // switching between them keeps the time used (685.210(b)(2)(ii)(A)).
+  const tenYearLeft = 120 - ctx.monthsUsed;
+  const extendedLeft = 300 - ctx.monthsUsed;
 
   const build = (id: PlanId): PlanEstimate => {
     const meta = PLAN_META[id];
@@ -442,11 +577,11 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
 
     // ---- Fixed plans -------------------------------------------------
     if (id === "standard") {
-      const t = fixedTotals(balance, rate, 10);
+      const t = fixedTotals(balance, rate, tenYearLeft / 12);
       return {
         ...base,
         eligible: true,
-        years: 10,
+        years: tenYearLeft / 12,
         forgivenAmount: 0,
         pslf: "counts",
         pslfNote:
@@ -456,19 +591,33 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
     }
 
     if (id === "graduated") {
-      const t = graduatedTotals(balance, rate);
-      // Payments start below the benchmark and rise past it, so credit is
-      // genuinely partial rather than all-or-nothing.
-      const endsAbove = t.finalPayment >= pslfBenchmark - 1;
-      return {
+      // Partway through the 10 years, only the levels left are priced.
+      const t =
+        ctx.monthsUsed > 0
+          ? graduatedLeft(balance, rate, tenYearLeft)
+          : { ...graduatedTotals(balance, rate), levels: 5 };
+      const priced = {
         ...base,
         eligible: true,
-        years: 10,
+        years: tenYearLeft / 12,
         forgivenAmount: 0,
         monthlyPayment: t.monthlyPayment,
         finalPayment: t.finalPayment,
         totalPaid: t.totalPaid,
         totalInterest: t.totalInterest,
+        ...(ctx.monthsUsed > 0 ? { stepsLeft: t.levels } : {}),
+      };
+      // With no level left to step up to, it is Standard's payment and
+      // counts like it.
+      if (t.levels === 1) {
+        const p = pslfForFixedPlan(t.monthlyPayment, pslfBenchmark, "Graduated");
+        return { ...priced, pslf: p.status, pslfNote: p.note };
+      }
+      // Payments start below the benchmark and rise past it, so credit is
+      // genuinely partial rather than all-or-nothing.
+      const endsAbove = t.finalPayment >= pslfBenchmark - 1;
+      return {
+        ...priced,
         pslf: endsAbove ? "partial" : "does_not_count",
         pslfNote: endsAbove
           ? "Graduated starts below the 10-year Standard payment and steps above it later. Only the later, larger payments count toward forgiveness."
@@ -477,12 +626,12 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
     }
 
     if (id === "extended") {
-      const t = fixedTotals(balance, rate, 25);
+      const t = fixedTotals(balance, rate, extendedLeft / 12);
       const p = pslfForFixedPlan(t.monthlyPayment, pslfBenchmark, "Extended");
       return {
         ...base,
         eligible: true,
-        years: 25,
+        years: extendedLeft / 12,
         forgivenAmount: 0,
         pslf: p.status,
         pslfNote: p.note,
@@ -782,7 +931,12 @@ export function planSchedule(
 ): PlanSchedule | null {
   if (!e.eligible || e.monthlyPayment === null) return null;
   if (e.id === "graduated") {
-    const g = graduatedSchedule(ctx.balance, ctx.rate);
+    // Partway through the 10 years (SCOPE-06), Plans prices only the months
+    // left, so Payoff runs that same schedule.
+    const g =
+      ctx.monthsUsed > 0
+        ? graduatedLeft(ctx.balance, ctx.rate, 120 - ctx.monthsUsed)
+        : graduatedSchedule(ctx.balance, ctx.rate);
     return {
       paymentAt: g.paymentAt,
       termMonths: g.termMonths,

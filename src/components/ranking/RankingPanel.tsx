@@ -16,7 +16,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loan, PlanId, Profile, Strategy } from "@/types";
 import { PLAN_META } from "@/data/plans";
-import { buildContext, estimatePlans, planSchedule } from "@/lib/calc";
+import { balancesAsOf, buildContext, estimatePlans, planSchedule } from "@/lib/calc";
 import { compareStrategies, projectPayoff, rankLoans } from "@/lib/ranking";
 import {
   cn,
@@ -24,8 +24,11 @@ import {
   monthYearFromNow,
   monthsInWords,
   monthsLabel,
+  niceDate,
+  parseNumber,
   pct,
   shortMonthYearFromNow,
+  todayIso,
 } from "@/lib/utils";
 import {
   Badge,
@@ -49,6 +52,9 @@ interface Props {
   onSelectPlan: (id: PlanId) => void;
   onGoToPlans: () => void;
 }
+
+/** Plans whose term runs from the day the loans entered repayment. */
+const KEEPS_TERM: PlanId[] = ["standard", "graduated", "extended"];
 
 const STRATEGY_COPY: Record<Strategy, { name: string; sub: string; blurb: string }> = {
   avalanche: {
@@ -83,6 +89,7 @@ export default function RankingPanel({
 
   const ctx = useMemo(() => buildContext(loans, profile), [loans, profile]);
   const estimates = useMemo(() => estimatePlans(ctx), [ctx]);
+  const asOf = useMemo(() => balancesAsOf(loans), [loans]);
   const eligible = estimates.filter(
     (e) => e.eligible && e.monthlyPayment !== null
   );
@@ -459,6 +466,7 @@ export default function RankingPanel({
                   withExtra={main.balanceByMonth}
                   requiredOnly={base && base.paidOff ? base.balanceByMonth : null}
                   extra={extra}
+                  startLabel={asOf && asOf !== todayIso() ? niceDate(asOf) : undefined}
                 />
               )}
 
@@ -491,17 +499,19 @@ export default function RankingPanel({
                 </dl>
               )}
 
+              {/* Keyed on everything its sentences depend on, so a change
+                  replaces the paragraph whole: a page translator's copies
+                  are never left holding text React edits or removes. */}
               <p
-                key={`assume-${selected!.id}-${comparison.requiredPayment}`}
+                key={`assume-${selected!.id}-${selected!.stepsLeft}-${ctx.monthsUsed > 0}-${profile.onStandardNow}-${comparison.requiredPayment}`}
                 className="mt-4 text-sm leading-relaxed text-slate-600"
               >
                 What this assumes: payments start this month, and your required
                 payment{" "}
-                {graduated ? (
+                {graduated && selected!.stepsLeft !== 1 ? (
                   <>
                     starts at <Money value={comparison.requiredPayment} /> and
-                    steps up every two years, on the same schedule as the
-                    Repayment plans tab.
+                    steps up, on the same schedule as the Repayment plans tab.
                   </>
                 ) : (
                   <>
@@ -511,6 +521,12 @@ export default function RankingPanel({
                 )}
                 {PLAN_META[selected!.id].incomeDriven &&
                   " On an income-driven plan it moves with your income each year."}
+                {KEEPS_TERM.includes(selected!.id) &&
+                  (ctx.monthsUsed > 0
+                    ? " It counts only the payments left of the term that began when you entered repayment."
+                    : " If you are already repaying, Standard, Graduated and Extended keep the term that began when you entered repayment, so your servicer's bill and end date are the real ones.")}
+                {!profile.onStandardNow &&
+                  " If you are in school or your six-month grace period, nothing is due until grace ends, so payments start later than this."}
               </p>
 
               {/* Progressive disclosure: the plan switcher is hidden until

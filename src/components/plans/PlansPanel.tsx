@@ -12,13 +12,14 @@ import { Loan, PlanEstimate, PlanId, Profile, RankedPlan } from "@/types";
 import {
   ASSUMPTIONS,
   PARENT_PLUS_NOTE,
+  GRADUATED_PARTWAY,
   PLAN_META,
   POST_CUTOFF_WARNING,
   POST_CUTOFF_WARNING_PARENT_PLUS,
   SAME_PLAN_RULE,
 } from "@/data/plans";
 import { buildContext, estimatePlans, isPostCutoff, rankPlans } from "@/lib/calc";
-import { cn, years } from "@/lib/utils";
+import { cn, money, years } from "@/lib/utils";
 import {
   Badge,
   Button,
@@ -112,6 +113,7 @@ function PlanRow({
   publicService,
   selected,
   onSelect,
+  billNote,
 }: {
   plan: RankedPlan;
   maxMonthly: number;
@@ -119,9 +121,16 @@ function PlanRow({
   publicService: boolean;
   selected: boolean;
   onSelect: () => void;
+  /** On Standard only: the bill typed is above this estimate. */
+  billNote?: string;
 }) {
   const { estimate: e, isTopPick, isLowestPayment, isLowestInterest } = plan;
   const meta = PLAN_META[e.id];
+  // Partway through the 10 years, Graduated's card describes what is left.
+  const copy =
+    e.stepsLeft === undefined
+      ? meta
+      : GRADUATED_PARTWAY[e.stepsLeft === 1 ? "level" : "steps"];
   const [open, setOpen] = useState(false);
   const panelId = `plan-${e.id}`;
   const peak = peakOf(e);
@@ -141,7 +150,7 @@ function PlanRow({
           {selected && <Badge tone="brand">✓ Your plan</Badge>}
           {isTopPick && !selected && <Badge tone="accent">Our pick</Badge>}
         </div>
-        <p className="mt-0.5 text-sm text-slate-700">{meta.tagline}</p>
+        <p className="mt-0.5 text-sm text-slate-700">{copy.tagline}</p>
 
         {e.monthlyPayment === null && (
           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
@@ -164,7 +173,11 @@ function PlanRow({
         {e.monthlyPayment !== null && (
         <div className="mt-4 grid gap-3.5 sm:grid-cols-2 sm:gap-6">
           <Measure
-            label={e.id === "graduated" ? "Per month, to start" : "Per month"}
+            label={
+              e.id === "graduated" && e.stepsLeft !== 1
+                ? "Per month, to start"
+                : "Per month"
+            }
             value={e.monthlyPayment}
             max={maxMonthly}
             emphasis={selected || (isTopPick && !selected)}
@@ -190,6 +203,12 @@ function PlanRow({
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
             An estimate: your servicer may step the payments differently.
           </p>
+        )}
+
+        {billNote && e.monthlyPayment !== null && (
+          <Notice tone="info" className="mt-3.5">
+            {billNote}
+          </Notice>
         )}
 
         {(isLowestPayment || isLowestInterest) && e.monthlyPayment !== null && (
@@ -255,7 +274,7 @@ function PlanRow({
         {open && (
           <div id={panelId} className="mt-4 space-y-4">
             <p className="text-base leading-relaxed text-slate-800">
-              {meta.summary}
+              {copy.summary}
             </p>
 
             <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
@@ -298,7 +317,7 @@ function PlanRow({
               <div>
                 <Eyebrow className="text-emerald-800">Good</Eyebrow>
                 <ul className="mt-1.5 space-y-1.5">
-                  {meta.pros.map((p) => (
+                  {copy.pros.map((p) => (
                     <li
                       key={p}
                       className="flex gap-2 text-sm leading-snug text-slate-800"
@@ -312,7 +331,7 @@ function PlanRow({
               <div>
                 <Eyebrow className="text-amber-800">Bad</Eyebrow>
                 <ul className="mt-1.5 space-y-1.5">
-                  {meta.cons.map((c) => (
+                  {copy.cons.map((c) => (
                     <li
                       key={c}
                       className="flex gap-2 text-sm leading-snug text-slate-800"
@@ -349,6 +368,17 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
     ...open.map((r) => r.estimate.monthlyPayment ?? 0)
   );
   const maxTotal = Math.max(1, ...open.map((r) => r.estimate.totalPaid ?? 0));
+
+  // A bill well above a fresh 10-year payment is most likely Standard partway
+  // through its term, which this card prices from today unless told.
+  const standard = estimates.find((e) => e.id === "standard");
+  const billNote =
+    ctx.monthsUsed === 0 &&
+    standard?.eligible &&
+    standard.monthlyPayment !== null &&
+    ctx.bill > standard.monthlyPayment + Math.max(10, ctx.bill * 0.05)
+      ? `You entered ${money(ctx.bill)} a month. If that is your Standard bill, it is the real figure: fewer than 10 years are left and the total is lower than shown. Say so under "Already repaying on the Standard plan?" above to see the payments you have left.`
+      : undefined;
 
   return (
     <div className="space-y-5">
@@ -480,6 +510,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                 publicService={ctx.publicService}
                 selected={profile.selectedPlan === p.estimate.id}
                 onSelect={() => onSelectPlan(p.estimate.id)}
+                billNote={p.estimate.id === "standard" ? billNote : undefined}
               />
             </FadeIn>
           ))}

@@ -38,6 +38,11 @@ export interface Loan {
   disbursementDate: string;
   /** Minimum monthly payment, if known. 0 = unknown. */
   minPayment: number;
+  /**
+   * Local yyyy-mm-dd the balance was last typed. Absent on loans saved before
+   * this was recorded, and on the example loans.
+   */
+  balanceAsOf?: string;
 }
 
 export type Strategy = "avalanche" | "snowball";
@@ -81,6 +86,11 @@ export interface PlanEstimate {
   forgivenAmount: number;
   /** Set when ineligible, explaining exactly why. */
   ineligibleReason?: string;
+  /**
+   * Graduated only, for a borrower partway through the 10 years: the payment
+   * levels left. 1 means no step is left, so it is Standard's level payment.
+   */
+  stepsLeft?: number;
 }
 
 /**
@@ -157,6 +167,11 @@ export interface Profile {
   extraPerMonth: number;
   /** The plan the borrower has chosen or is modelling. Null until they pick. */
   selectedPlan: PlanId | null;
+  /**
+   * Repaying on the 10-year Standard plan now. Its term runs from the day the
+   * loan entered repayment, so the bill they typed sets the payments left.
+   */
+  onStandardNow: boolean;
 }
 
 export const DEFAULT_PROFILE: Profile = {
@@ -169,6 +184,7 @@ export const DEFAULT_PROFILE: Profile = {
   // Starts at zero on purpose. A pre-filled amount anchors what people pay.
   extraPerMonth: 0,
   selectedPlan: null,
+  onStandardNow: false,
 };
 
 export const LOAN_KIND_LABELS: Record<LoanKind, string> = {

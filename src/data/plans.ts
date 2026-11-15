@@ -206,6 +206,42 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
 };
 
 /** Plans open when every loan was disbursed before July 1, 2026. */
+/**
+ * Graduated's card for a borrower partway through the 10 years that began
+ * when the loans entered repayment, where PLAN_META's copy describes the
+ * whole 10. "level" is for two years or less left, when no step is left.
+ */
+export const GRADUATED_PARTWAY: Record<
+  "steps" | "level",
+  Pick<PlanMeta, "tagline" | "summary" | "pros" | "cons">
+> = {
+  steps: {
+    tagline: "Starts low, steps up over the years you have left",
+    summary:
+      "Your 10 years began when your loans entered repayment, and switching plans keeps them, so Graduated is priced over what is left. It starts at roughly half your Standard bill and steps up at even intervals, at most two years apart, to as much as three times where it starts, ending when your 10 years do. More total interest than Standard.",
+    pros: [
+      "Starts at roughly half your Standard bill",
+      "Still ends when your 10 years do",
+    ],
+    cons: [
+      "Early payments are below the PSLF threshold, so those months earn no credit",
+      "More total interest than Standard",
+      "Payments step up whether your income did or not",
+      "The step schedule shown is a model. Regulation caps the largest payment at three times the smallest, but your servicer sets the exact steps",
+    ],
+  },
+  level: {
+    tagline: "No step left: the same level payment as Standard",
+    summary:
+      "Graduated steps up over the 10 years that began when your loans entered repayment. With two years or less of them left, no step is left, so it is the same level payment as Standard, ending on the same date.",
+    pros: [
+      "The same payment and end date as Standard",
+      "Earns Public Service Loan Forgiveness credit, as Standard does",
+    ],
+    cons: ["No lower start this late in your 10 years"],
+  },
+};
+
 export const LEGACY_PLANS: PlanId[] = [
   "standard",
   "graduated",
@@ -276,7 +312,7 @@ export const NO_LATE_FEES_NOTE =
   "The Department of Education does not charge late fees on Direct Loans. What missing a payment actually costs: you are delinquent the day after the due date, it is reported to the credit bureaus at 90 days, and the loan defaults at 270 days.";
 
 export const ASSUMPTIONS =
-  "Two things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. And like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens.";
+  "Three things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. Like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens. And unless you tell us you are repaying on Standard now, they start every plan this month. If you are already repaying, Standard, Graduated and Extended keep the term that began when you entered repayment, and switching plans does not restart it, so your servicer's bill and end date are the real ones. If you are in school or your six-month grace period, nothing is due until grace ends, so payments start later and unsubsidized interest keeps building until then.";
 
 export const NOT_ADVICE =
   "These are estimates, not financial advice. The right plan depends on things this tool does not know, like whether your income is about to change or what else you owe. Your servicer sets your actual payment, and studentaid.gov is the authority on your account.";

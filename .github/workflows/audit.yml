@@ -44,9 +44,39 @@ jobs:
       - name: Playwright suite
         working-directory: audits
         run: npm test
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: audits/playwright-report
+          retention-days: 14
+
+  # The scans take about 8 minutes and never fail the build (shared runners make
+  # timings noisy), so they run in their own job, after merges to main, weekly
+  # and on demand, instead of holding up every pull request.
+  scans:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            audits/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Install audit kit
+        working-directory: audits
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
       - name: Scan and budgets
-        # Reported, not enforced: shared runners make timings noisy, so a budget miss here
-        # marks this step but not the job. `npm run audit` on a quiet machine enforces them.
+        # Reported, not enforced: a budget miss marks this step but not the job.
+        # `npm run audit` on a quiet machine enforces them.
         continue-on-error: true
         working-directory: audits
         run: node run.mjs --only lighthouse,flow,design,ux,responsive,inp,readable --runs 1
@@ -57,9 +87,7 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: audit-results
-          path: |
-            audits/results/latest
-            audits/playwright-report
+          path: audits/results/latest
           retention-days: 14
 
   live-site:

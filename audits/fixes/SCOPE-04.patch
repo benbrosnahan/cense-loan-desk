@@ -1,0 +1,183 @@
+diff --git a/src/components/loans/LoanForm.tsx b/src/components/loans/LoanForm.tsx
+index 4a2cdd7..6cb6b44 100644
+--- a/src/components/loans/LoanForm.tsx
++++ b/src/components/loans/LoanForm.tsx
+@@ -19,6 +19,7 @@ import {
+   SERVICER_UNKNOWN,
+ } from "@/types";
+ import { SCHOOL_YEARS, suggestRate } from "@/data/seed";
++import { mayBeFfelOrPerkins } from "@/lib/calc";
+ import {
+   cn,
+   formatDollarsInput,
+@@ -321,6 +322,16 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+           <p className="mt-2 text-sm leading-snug text-slate-700" aria-live="polite">
+             {LOAN_KIND_HINTS[f.kind]}
+           </p>
++          {/* Out of the live region on purpose: it does not change with the
++              type, so it should not be read out on every tap. */}
++          <p className="mt-2 text-sm leading-snug text-slate-600">
++            These four are federal Direct Loans, the only kind this tool
++            models. It does not fit FFEL, Perkins, consolidation or private
++            loans: FFEL and Perkins loans need a Direct Consolidation Loan
++            before RAP or Public Service Loan Forgiveness apply, and a
++            consolidation loan&apos;s Standard plan can run up to 30 years.
++            Check those with your servicer or on studentaid.gov.
++          </p>
+         </div>
+ 
+         {/* ---- The two numbers ---- */}
+@@ -504,6 +515,21 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+         </Notice>
+       )}
+ 
++      {mayBeFfelOrPerkins(f) && (
++        <Notice tone="warn" title="Is this an FFEL or Perkins loan?" className="mt-5">
++          {f.servicer === "ECSI"
++            ? "ECSI services Perkins and other campus loans."
++            : "No FFEL loans were made after June 30, 2010, so a loan paid out before then may be one."}{" "}
++          If studentaid.gov calls this loan FFEL or Perkins, RAP and Public
++          Service Loan Forgiveness do not apply to it unless it is consolidated
++          into a Direct Consolidation Loan (34 CFR 685.209(d)(4),
++          685.219(b)(7)), and the plans here will not fit it. Perkins loans
++          have their own cancellation for teachers, nurses, firefighters and
++          other public-service jobs, which consolidating gives up, so ask your
++          school first.
++        </Notice>
++      )}
++
+       {f.kind === "parent_plus" && (
+         <Notice tone="warn" title="Parent PLUS loans have fewer options" className="mt-5">
+           Parent PLUS loans cannot be repaid under IBR or RAP (34 CFR
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..704ed47 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -11,13 +11,20 @@ import { useState } from "react";
+ import { Loan, PlanId, Profile, RankedPlan } from "@/types";
+ import {
+   ASSUMPTIONS,
++  FFEL_NOTE,
+   PARENT_PLUS_NOTE,
+   PLAN_META,
+   POST_CUTOFF_WARNING,
+   POST_CUTOFF_WARNING_PARENT_PLUS,
+   SAME_PLAN_RULE,
+ } from "@/data/plans";
+-import { buildContext, estimatePlans, isPostCutoff, rankPlans } from "@/lib/calc";
++import {
++  buildContext,
++  estimatePlans,
++  isPostCutoff,
++  mayBeFfelOrPerkins,
++  rankPlans,
++} from "@/lib/calc";
+ import { cn, years } from "@/lib/utils";
+ import {
+   Badge,
+@@ -305,6 +312,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+   const estimates = estimatePlans(ctx);
+   const { ranked, topPickReason } = rankPlans(estimates, ctx);
+   const postLoans = loans.filter(isPostCutoff);
++  const maybeFfel = loans.filter(mayBeFfelOrPerkins);
+   const open = ranked.filter((r) => r.estimate.eligible);
+   const closed = ranked.filter((r) => !r.estimate.eligible);
+   const top = ranked.find((r) => r.isTopPick);
+@@ -318,7 +326,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+ 
+   return (
+     <div className="space-y-5">
+-      {(ctx.postCutoff || ctx.parentPlus) && (
++      {(ctx.postCutoff || ctx.parentPlus || maybeFfel.length > 0) && (
+         <div className="space-y-3">
+           {ctx.postCutoff && (
+             <Notice tone="warn" title="One date decided this">
+@@ -336,6 +344,20 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+               {PARENT_PLUS_NOTE}
+             </Notice>
+           )}
++          {maybeFfel.length > 0 && (
++            <Notice
++              tone="warn"
++              title={
++                maybeFfel.length === 1
++                  ? "Is this an FFEL or Perkins loan?"
++                  : "Are these FFEL or Perkins loans?"
++              }
++            >
++              Check {maybeFfel.map((l) => l.nickname).join(", ")} on
++              studentaid.gov: no FFEL loans were made after June 30, 2010, and
++              ECSI services Perkins loans. {FFEL_NOTE}
++            </Notice>
++          )}
+         </div>
+       )}
+ 
+@@ -375,8 +397,9 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+               )}
+             </div>
+             <p className="mt-5 border-t border-white/25 pt-4 text-sm leading-relaxed text-white/85">
+-              An estimate, not financial advice. Your servicer sets your
+-              actual payment.
++              An estimate for federal Direct Loans, not financial advice. FFEL,
++              Perkins, consolidation and private loans are not modeled. Your
++              servicer sets your actual payment.
+             </p>
+           </div>
+         </FadeIn>
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..0728da1 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -254,6 +254,16 @@ export const PARENT_PLUS_INELIGIBLE_REASON =
+ export const PARENT_PLUS_NOTE =
+   "Parent PLUS loans cannot be repaid under IBR or RAP, so both are left out here. If you also have loans from your own education, those may still qualify, repaid separately from the Parent PLUS loans. Remove the Parent PLUS loans to see those figures. If you consolidated your Parent PLUS loans, different rules apply: depending on when you consolidated and which plan you have paid under, the consolidation loan may qualify for ICR or IBR. This tool does not model that, so confirm your options with your loan servicer or on studentaid.gov.";
+ 
++/**
++ * For a loan that may be FFEL or Perkins (see mayBeFfelOrPerkins). RAP is for
++ * Direct Loans only (34 CFR 685.209(c)(6), (d)(4)), and PSLF counts payments
++ * on Direct Loans only (685.219(b)(7)), so these loans need a Direct
++ * Consolidation Loan first. FFEL keeps its own IBR through the holder
++ * (682.215), which this tool does not price.
++ */
++export const FFEL_NOTE =
++  "Everything below treats every loan as a federal Direct Loan, but FFEL and Perkins loans cannot use RAP or earn Public Service Loan Forgiveness credit unless they are consolidated into a Direct Consolidation Loan. Perkins loans have their own cancellation for some public-service jobs, which consolidating gives up, so ask your school first.";
++
+ export const POST_CUTOFF_WARNING_PARENT_PLUS =
+   "At least one of your loans was disbursed on or after July 1, 2026. That closes Standard, Graduated, Extended and IBR across your whole portfolio, including the loans you took out earlier. Parent PLUS loans cannot use RAP either, so Tiered Standard is the only plan left for them.";
+ 
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..28059f1 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -49,6 +49,21 @@ export function anyPostCutoff(loans: Loan[]): boolean {
+   return loans.some(isPostCutoff);
+ }
+ 
++/**
++ * True when a loan entered as a Direct type may be an FFEL or Perkins loan,
++ * which this tool does not model. No FFEL loan was made after June 30, 2010
++ * (Pub. L. 111-152), and ECSI services Perkins and other campus loans. Direct
++ * Loans were made before 2010 too, so this only asks the borrower to check.
++ */
++export function mayBeFfelOrPerkins(
++  loan: Pick<Loan, "disbursementDate" | "servicer">
++): boolean {
++  return (
++    (!!loan.disbursementDate && loan.disbursementDate < "2010-07-01") ||
++    loan.servicer === "ECSI"
++  );
++}
++
+ /**
+  * True when any loan is a Parent PLUS loan, which closes IBR and RAP to it
+  * under 34 CFR 685.209(d)(2) and (d)(4). See PARENT_PLUS_EXCLUDED_PLANS.
+@@ -533,7 +548,7 @@ export function rankPlans(
+         (a.monthlyPayment ?? Infinity) <= (b.monthlyPayment ?? Infinity) ? a : b
+       );
+       reason = ctx.publicService
+-        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
++        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments on Direct Loans the rest is cancelled, tax free."
+         : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
+     } else {
+       top = lowestInterest;

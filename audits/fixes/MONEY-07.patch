@@ -1,0 +1,313 @@
+diff --git a/README.md b/README.md
+index 11d8eb6..6773674 100644
+--- a/README.md
++++ b/README.md
+@@ -112,9 +112,10 @@ replicated in Python.
+   charge is capped at the payment and the balance is unchanged before the $50
+   match. The old code made RAP look better than it is.
+ - **Payoff allocation was arbitrary.** It spread 50% of the budget pro rata for
+-  no defensible reason. Now the plan's required payment is allocated pro rata by
+-  balance (what a servicer does absent instructions) and only the extra is
+-  directed at the target loan.
++  no defensible reason. Now, on a fixed plan, the required payment is split by
++  each loan's own installment, the amount due that repays it within the term,
++  which is how the plan's card prices it. On the other plans it is split pro
++  rata by balance. Only the extra is directed at the target loan.
+ - **Header plan count was hardcoded** to "5 of 6" and disagreed with the Plans
+   tab whenever Extended was out on the $30,000 floor. Now computed from the same
+   engine.
+@@ -177,7 +178,7 @@ a dashboard.
+ 
+ **Signature element: the payoff runway.** `src/components/charts/PayoffRunway.tsx` draws
+ the balance falling to zero with and without the extra payment, and the headline above it
+-states the takeaway in words ("$100 extra a month gets you out 3 years 1 month sooner").
++states the takeaway in words ("$100 extra a month gets you out 3 years sooner").
+ It reads from `projectPayoff` in `src/lib/ranking.ts`, which is the same simulation
+ `compareStrategies` uses, extended to also record the month-by-month balance and the month
+ each loan clears.
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..8740b33 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -52,6 +52,9 @@ interface Props {
+   onGoToPlans: () => void;
+ }
+ 
++/** Plans with a level payment that repays each loan within a set term. */
++const FIXED_TERM: PlanId[] = ["standard", "extended", "tiered_standard"];
++
+ const STRATEGY_COPY: Record<Strategy, { name: string; sub: string; blurb: string }> = {
+   avalanche: {
+     name: "Highest rate first",
+@@ -96,23 +99,38 @@ export default function RankingPanel({
+     selected && selected.eligible ? selected.monthlyPayment : null;
+ 
+   const extra = Math.max(0, Math.min(EXTRA_MAX, profile.extraPerMonth || 0));
++  // On a fixed plan each loan is billed its own installment over the term,
++  // which is how the plan's card prices it. IBR at its cap pays the 10-year
++  // Standard amount, so it is one too.
++  const termYears =
++    selected &&
++    (FIXED_TERM.includes(selected.id) ||
++      (selected.id === "ibr" &&
++        (selected.monthlyPayment ?? 0) >= ctx.pslfBenchmark))
++      ? selected.years
++      : undefined;
+ 
+   const ranked = useMemo(() => rankLoans(loans, strategy), [loans, strategy]);
+   const comparison = useMemo(
+-    () => (required !== null ? compareStrategies(loans, required, extra) : null),
+-    [loans, required, extra]
++    () =>
++      required !== null
++        ? compareStrategies(loans, required, extra, termYears)
++        : null,
++    [loans, required, extra, termYears]
+   );
+   const main = useMemo(
+     () =>
+-      required !== null ? projectPayoff(loans, strategy, required, extra) : null,
+-    [loans, strategy, required, extra]
++      required !== null
++        ? projectPayoff(loans, strategy, required, extra, termYears)
++        : null,
++    [loans, strategy, required, extra, termYears]
+   );
+   const base = useMemo(
+     () =>
+       required !== null && extra > 0
+-        ? projectPayoff(loans, strategy, required, 0)
++        ? projectPayoff(loans, strategy, required, 0, termYears)
+         : null,
+-    [loans, strategy, required, extra]
++    [loans, strategy, required, extra, termYears]
+   );
+ 
+   const monthsSaved = main && base && base.paidOff ? base.months - main.months : 0;
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..82820a7 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -71,13 +71,26 @@ export function amortizedPayment(
+   return (balance * r * pow) / (pow - 1);
+ }
+ 
+-function fixedTotals(balance: number, ratePct: number, years: number) {
+-  const monthly = amortizedPayment(balance, ratePct, years);
++/**
++ * A fixed plan's payment: each loan amortised over the term at its own rate,
++ * then added up. That is what repays every loan within the term (34 CFR
++ * 685.208(b)(1)(i) and (b)(4)(ii)). One payment at the blended rate is a
++ * little lower and leaves the high-rate loans owing when the term ends.
++ */
++export function levelPayment(loans: Loan[], years: number): number {
++  return loans.reduce(
++    (sum, l) => sum + amortizedPayment(l.balance, l.rate, years),
++    0
++  );
++}
++
++function fixedTotals(loans: Loan[], years: number) {
++  const monthly = levelPayment(loans, years);
+   const totalPaid = monthly * years * 12;
+   return {
+     monthlyPayment: monthly,
+     totalPaid,
+-    totalInterest: Math.max(0, totalPaid - balance),
++    totalInterest: Math.max(0, totalPaid - totalBalance(loans)),
+   };
+ }
+ 
+@@ -214,7 +227,10 @@ export interface PlanContext {
+   parentPlus: boolean;
+   balance: number;
+   rate: number;
+-  /** The 10-year Standard payment. The statutory yardstick for PSLF credit. */
++  /**
++   * The 10-year Standard payment, priced loan by loan. The statutory
++   * yardstick for PSLF credit, and IBR's cap.
++   */
+   pslfBenchmark: number;
+   publicService: boolean;
+ }
+@@ -230,7 +246,7 @@ export function buildContext(loans: Loan[], profile: Profile): PlanContext {
+     parentPlus: anyParentPlus(loans),
+     balance,
+     rate,
+-    pslfBenchmark: amortizedPayment(balance, rate, 10),
++    pslfBenchmark: levelPayment(loans, 10),
+     publicService:
+       profile.employment === "government" || profile.employment === "nonprofit",
+   };
+@@ -337,7 +353,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+ 
+     // ---- Fixed plans -------------------------------------------------
+     if (id === "standard") {
+-      const t = fixedTotals(balance, rate, 10);
++      const t = fixedTotals(ctx.loans, 10);
+       return {
+         ...base,
+         eligible: true,
+@@ -371,7 +387,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     if (id === "extended") {
+-      const t = fixedTotals(balance, rate, 25);
++      const t = fixedTotals(ctx.loans, 25);
+       const p = pslfForFixedPlan(t.monthlyPayment, pslfBenchmark, "Extended");
+       return {
+         ...base,
+@@ -386,7 +402,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+ 
+     if (id === "tiered_standard") {
+       const years = getTieredStandardYears(balance);
+-      const t = fixedTotals(balance, rate, years);
++      const t = fixedTotals(ctx.loans, years);
+       const monthly = Math.max(t.monthlyPayment, TIERED_STANDARD_MIN_PAYMENT);
+       // Tiered Standard NEVER earns PSLF credit, including the 10-year tier.
+       //
+@@ -433,8 +449,22 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     if (id === "ibr") {
+-      const cap = amortizedPayment(balance, rate, 10);
+-      const pay = Math.min(ibrMonthly(profile), cap);
++      // At its cap IBR's payment is the 10-year Standard payment
++      // (685.209(f)(2)(ii)), and a payment that size repays the loans within
++      // 10 years, so it runs on Standard's own schedule.
++      if (pslfBenchmark > 0 && ibrMonthly(profile) >= pslfBenchmark) {
++        return {
++          ...base,
++          eligible: true,
++          ...fixedTotals(ctx.loans, 10),
++          years: 10,
++          forgivenAmount: 0,
++          pslf: "counts",
++          pslfNote:
++            "IBR always counts toward Public Service Loan Forgiveness, even a $0 payment.",
++        };
++      }
++      const pay = ibrMonthly(profile);
+       const sim = simulateIdr(balance, rate, pay, 20, {
+         waiveUnpaidInterest: false,
+         matchPrincipal: false,
+diff --git a/src/lib/ranking.ts b/src/lib/ranking.ts
+index 79d0cf8..3ee0ea8 100644
+--- a/src/lib/ranking.ts
++++ b/src/lib/ranking.ts
+@@ -4,6 +4,7 @@
+ // generalised from generic high-cost debt to federal student loans.
+ 
+ import { Loan, RankedLoan, Strategy } from "@/types";
++import { amortizedPayment } from "@/lib/calc";
+ 
+ /**
+  * Order loans by strategy.
+@@ -73,18 +74,30 @@ interface SimOutcome {
+  * Month-by-month simulation: accrue interest, then pour the whole budget into
+  * the target loan in strategy order. The budget is the required payment on the
+  * borrower's chosen plan plus whatever extra they told us about.
++ *
++ * `termYears` is set on a fixed plan (Standard, Extended, Tiered Standard, and
++ * IBR at its cap). There each loan is billed its own installment, so the
++ * required payment is split in proportion to those installments.
+  */
+ function simulate(
+   loans: Loan[],
+   strategy: Strategy,
+   requiredPayment: number,
+   extra: number,
++  termYears?: number,
+   maxMonths = 600
+ ): SimOutcome {
+   const monthlyBudget = requiredPayment + extra;
+   const order = orderLoans(loans, strategy).map((l) => l.id);
+   const byId = new Map(loans.map((l) => [l.id, l]));
+   const balances = new Map(loans.map((l) => [l.id, l.balance]));
++  // Each loan's own installment over the plan's term, set at today's balance.
++  const installment = new Map(
++    loans.map((l) => [
++      l.id,
++      termYears ? amortizedPayment(l.balance, l.rate, termYears) : 0,
++    ])
++  );
+ 
+   let totalInterest = 0;
+   let months = 0;
+@@ -108,16 +121,26 @@ function simulate(
+     let left = monthlyBudget;
+ 
+     // The borrower is on ONE plan, so the servicer bills a single required
+-    // amount for the whole portfolio and spreads it across the loans. Absent
+-    // instructions that allocation is pro rata by balance, so model it that
+-    // way. As loans clear, the freed share redistributes automatically because
+-    // the split is recomputed from live balances each month.
++    // amount for the whole portfolio and spreads it across the loans. On a
++    // fixed plan each loan has its own amount due, the installment that repays
++    // it within the term at its own rate, and the payment is split in that
++    // proportion, so every loan clears on schedule and the end date and
++    // interest match the plan's card. Elsewhere it is split pro rata by
++    // balance. As loans clear, the freed share redistributes automatically
++    // because the split is recomputed over the loans still open each month.
+     const active = order.filter((id) => balances.get(id)! > 0);
+     const activeTotal = active.reduce((s, id) => s + balances.get(id)!, 0);
++    const activeInstallments = active.reduce(
++      (s, id) => s + installment.get(id)!,
++      0
++    );
+     if (activeTotal > 0) {
+       const required = Math.min(requiredPayment, left);
+       for (const id of active) {
+-        const share = (balances.get(id)! / activeTotal) * required;
++        const share =
++          activeInstallments > 0
++            ? (installment.get(id)! / activeInstallments) * required
++            : (balances.get(id)! / activeTotal) * required;
+         const pay = Math.min(share, balances.get(id)!, left);
+         balances.set(id, balances.get(id)! - pay);
+         left -= pay;
+@@ -165,10 +188,17 @@ export function projectPayoff(
+   loans: Loan[],
+   strategy: Strategy,
+   requiredPayment: number,
+-  extraPerMonth: number
++  extraPerMonth: number,
++  termYears?: number
+ ): PayoffProjection | null {
+   if (!loans.length || requiredPayment <= 0) return null;
+-  return simulate(loans, strategy, requiredPayment, Math.max(0, extraPerMonth));
++  return simulate(
++    loans,
++    strategy,
++    requiredPayment,
++    Math.max(0, extraPerMonth),
++    termYears
++  );
+ }
+ 
+ export interface StrategyComparison {
+@@ -190,19 +220,21 @@ export interface StrategyComparison {
+  * `requiredPayment` must come from the borrower's selected repayment plan.
+  * Without it there is no defensible timeline, so callers pass null and the UI
+  * shows the ranking without a projection rather than inventing one.
++ * `termYears` is that plan's term when it is a fixed plan.
+  */
+ export function compareStrategies(
+   loans: Loan[],
+   requiredPayment: number,
+-  extraPerMonth: number
++  extraPerMonth: number,
++  termYears?: number
+ ): StrategyComparison | null {
+   if (!loans.length || requiredPayment <= 0) return null;
+ 
+   const extra = Math.max(0, extraPerMonth);
+   const budget = requiredPayment + extra;
+ 
+-  const avalanche = simulate(loans, "avalanche", requiredPayment, extra);
+-  const snowball = simulate(loans, "snowball", requiredPayment, extra);
++  const avalanche = simulate(loans, "avalanche", requiredPayment, extra, termYears);
++  const snowball = simulate(loans, "snowball", requiredPayment, extra, termYears);
+ 
+   return {
+     avalanche,

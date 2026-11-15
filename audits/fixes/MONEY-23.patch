@@ -1,0 +1,158 @@
+diff --git a/README.md b/README.md
+index 11d8eb6..1e71536 100644
+--- a/README.md
++++ b/README.md
+@@ -13,7 +13,7 @@ Combines and supersedes two earlier prototypes:
+ 
+ 1. **Manual loan entry.** Servicer, type, principal, balance, rate, disbursement date, minimum payment. No aid-file import.
+ 2. **July 1, 2026 eligibility flag.** One loan disbursed on or after that date limits the whole portfolio to RAP and Tiered Standard (34 CFR 685.210).
+-3. **Plan comparison.** Monthly, term, total paid, interest, forgiven amount, and PSLF status for all six plans.
++3. **Plan comparison.** Monthly, term, total paid, interest, forgiven amount, and PSLF status for the six plans compared here.
+ 4. **Payoff order.** Avalanche/snowball toggle with the honest dollar cost of choosing snowball. Kept off the main view.
+ 5. **Snapshot history.** Dated balance/rate records with a diff, exportable as a spreadsheet.
+ 
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..b6d6d1e 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -27,6 +27,7 @@ import {
+   NO_LATE_FEES_NOTE,
+   NOT_ADVICE,
+   PLAN_META,
++  PLAN_ORDER,
+   PRIVACY_NOTE,
+ } from "@/data/plans";
+ import {
+@@ -613,7 +614,9 @@ export default function Page() {
+ 
+                   <NextStep
+                     title="See which repayment plans you can use"
+-                    body={`${eligiblePlanCount} of the 6 federal plans are open to you.`}
++                    // Kept to two lines: a taller card centres under the sticky
++                    // bar when focused at 320x256. Plans names PAYE and ICR.
++                    body={`${eligiblePlanCount} of the ${PLAN_ORDER.length} plans compared here are open to you.`}
+                     action="Go to repayment plans"
+                     onClick={() => goTo("plans")}
+                   />
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..efa498b 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -13,11 +13,19 @@ import {
+   ASSUMPTIONS,
+   PARENT_PLUS_NOTE,
+   PLAN_META,
++  PLAN_ORDER,
+   POST_CUTOFF_WARNING,
+   POST_CUTOFF_WARNING_PARENT_PLUS,
+   SAME_PLAN_RULE,
++  SUNSETTING_PLANS_NOTE,
+ } from "@/data/plans";
+-import { buildContext, estimatePlans, isPostCutoff, rankPlans } from "@/lib/calc";
++import {
++  buildContext,
++  estimatePlans,
++  isPostCutoff,
++  payeAndIcrMayBeOpen,
++  rankPlans,
++} from "@/lib/calc";
+ import { cn, years } from "@/lib/utils";
+ import {
+   Badge,
+@@ -309,6 +317,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+   const closed = ranked.filter((r) => !r.estimate.eligible);
+   const top = ranked.find((r) => r.isTopPick);
+   const rapOpen = open.some((r) => r.estimate.id === "rap");
++  const payeAndIcrOpen = payeAndIcrMayBeOpen(loans);
+ 
+   const maxMonthly = Math.max(
+     1,
+@@ -386,11 +395,11 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+         <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+           <h2 className="font-display text-2xl font-bold text-slate-900">
+             {open.length === 1
+-              ? "The one plan open to you"
+-              : `All ${open.length} plans open to you`}
++              ? "The one plan here that is open to you"
++              : `${open.length} plans here are open to you`}
+           </h2>
+           <p className="text-sm text-slate-600">
+-            {open.length} of 6 federal plans
++            {`${open.length} of the ${PLAN_ORDER.length} plans compared here`}
+           </p>
+         </div>
+         {open.length > 1 && (
+@@ -413,6 +422,11 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+             </FadeIn>
+           ))}
+         </div>
++        {payeAndIcrOpen && (
++          <Notice tone="info" title="Two plans not shown" className="mt-3">
++            {SUNSETTING_PLANS_NOTE}
++          </Notice>
++        )}
+       </div>
+ 
+       {/* Closed plans stay fully legible. Muting them to the point of
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..21a38f2 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -266,6 +266,16 @@ export const PLAN_ORDER: PlanId[] = [
+   "rap",
+ ];
+ 
++/**
++ * PLAN_ORDER is not every federal plan. ED still offers PAYE and ICR on loans
++ * paid out before July 1, 2026, until both end by July 1, 2028 (34 CFR
++ * 685.209(c)(4) and (c)(5); for ICR, also 91 FR 34815), and ICR payments
++ * count for PSLF until then (34 CFR 685.219(b)(28)(iv)).
++ * Neither is priced here. Shown when payeAndIcrMayBeOpen() is true.
++ */
++export const SUNSETTING_PLANS_NOTE =
++  "PAYE and ICR are not shown here. If all your loans were paid out before July 1, 2026, you may still be able to choose them until they end by July 1, 2028. Where PAYE is open to you, it charges 10% of your income above 150% of the poverty line, never more than the 10-year Standard payment, and forgives what is left after 20 years. ICR can cost less for some borrowers going for Public Service Loan Forgiveness. Check both on studentaid.gov before you choose.";
++
+ export const POST_CUTOFF_WARNING =
+   "At least one of your loans was disbursed on or after July 1, 2026. That closes Standard, Graduated, Extended and IBR across your whole portfolio, including the loans you took out earlier. RAP and Tiered Standard are your only two options.";
+ 
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..8f1d3db 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -57,6 +57,17 @@ export function anyParentPlus(loans: Loan[]): boolean {
+   return loans.some((l) => l.kind === "parent_plus");
+ }
+ 
++/**
++ * True when PAYE and ICR, which this tool does not price, may still be open:
++ * every loan predates July 1, 2026 and at least one is the borrower's own.
++ * ED offers both until they end by July 1, 2028 (34 CFR 685.209(c)(4) and
++ * (c)(5); for ICR, also 91 FR 34815), and ICR payments count for PSLF until
++ * then (685.219(b)(28)(iv)).
++ */
++export function payeAndIcrMayBeOpen(loans: Loan[]): boolean {
++  return !anyPostCutoff(loans) && loans.some((l) => l.kind !== "parent_plus");
++}
++
+ /** Standard amortised monthly payment. Handles the 0% edge case. */
+ export function amortizedPayment(
+   balance: number,
+@@ -532,9 +543,15 @@ export function rankPlans(
+       top = qualifying.reduce((a, b) =>
+         (a.monthlyPayment ?? Infinity) <= (b.monthlyPayment ?? Infinity) ? a : b
+       );
+-      reason = ctx.publicService
+-        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
+-        : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
++      // "Lowest" covers only the plans priced here. ICR is not, and for some
++      // PSLF borrowers it costs less, so say so while it can still be chosen.
++      reason =
++        (ctx.publicService
++          ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans compared here that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
++          : "This is the lowest payment among the plans compared here that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.") +
++        (payeAndIcrMayBeOpen(ctx.loans)
++          ? " ICR, a plan not priced here, can cost less for some borrowers until it ends by July 1, 2028."
++          : "");
+     } else {
+       top = lowestInterest;
+       reason =

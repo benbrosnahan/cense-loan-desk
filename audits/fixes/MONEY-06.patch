@@ -1,0 +1,872 @@
+diff --git a/src/components/charts/PayoffRunway.tsx b/src/components/charts/PayoffRunway.tsx
+index 9c3dc5c..4565efd 100644
+--- a/src/components/charts/PayoffRunway.tsx
++++ b/src/components/charts/PayoffRunway.tsx
+@@ -139,9 +139,11 @@ export default function PayoffRunway({
+ 
+   return (
+     <figure className={cn("m-0", className)}>
+-      {/* Legend. Carries the dates, so the chart needs no labels that collide. */}
++      {/* Legend. Carries the dates, so the chart needs no labels that collide.
++          Each row is keyed by what it shows, so React replaces it whole: a
++          browser translator swaps the text React would edit in place. */}
+       <ul className="flex flex-col gap-1.5 text-sm text-slate-800">
+-        <li className="flex items-center gap-2.5">
++        <li key={`main-${extra}-${monthsMain}`} className="flex items-center gap-2.5">
+           <svg aria-hidden width="28" height="10" className="flex-shrink-0">
+             <line x1="1" y1="5" x2="27" y2="5" stroke={GREEN} strokeWidth="3" strokeLinecap="round" />
+           </svg>
+@@ -159,7 +161,7 @@ export default function PayoffRunway({
+           </span>
+         </li>
+         {showBase && (
+-          <li className="flex items-center gap-2.5">
++          <li key={`base-${monthsBase}`} className="flex items-center gap-2.5">
+             <svg aria-hidden width="28" height="10" className="flex-shrink-0">
+               <line x1="1" y1="5" x2="27" y2="5" stroke={BASELINE} strokeWidth="2" strokeDasharray="5 4" />
+             </svg>
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..be02ebb 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -16,7 +16,7 @@
+ import { useEffect, useMemo, useState } from "react";
+ import { Loan, PlanId, Profile, Strategy } from "@/types";
+ import { PLAN_META } from "@/data/plans";
+-import { buildContext, estimatePlans } from "@/lib/calc";
++import { buildContext, estimatePlans, planSchedule } from "@/lib/calc";
+ import { compareStrategies, projectPayoff, rankLoans } from "@/lib/ranking";
+ import {
+   cn,
+@@ -94,25 +94,36 @@ export default function RankingPanel({
+     : null;
+   const required =
+     selected && selected.eligible ? selected.monthlyPayment : null;
++  // The selected plan's own schedule, so Payoff runs the plan its card prices.
++  const plan = useMemo(
++    () => (selected ? planSchedule(selected, ctx) : null),
++    [selected, ctx]
++  );
++  const graduated = selected?.id === "graduated";
+ 
+   const extra = Math.max(0, Math.min(EXTRA_MAX, profile.extraPerMonth || 0));
+ 
+   const ranked = useMemo(() => rankLoans(loans, strategy), [loans, strategy]);
+   const comparison = useMemo(
+-    () => (required !== null ? compareStrategies(loans, required, extra) : null),
+-    [loans, required, extra]
++    () =>
++      required !== null
++        ? compareStrategies(loans, required, extra, plan)
++        : null,
++    [loans, required, extra, plan]
+   );
+   const main = useMemo(
+     () =>
+-      required !== null ? projectPayoff(loans, strategy, required, extra) : null,
+-    [loans, strategy, required, extra]
++      required !== null
++        ? projectPayoff(loans, strategy, required, extra, plan)
++        : null,
++    [loans, strategy, required, extra, plan]
+   );
+   const base = useMemo(
+     () =>
+       required !== null && extra > 0
+-        ? projectPayoff(loans, strategy, required, 0)
++        ? projectPayoff(loans, strategy, required, 0, plan)
+         : null,
+-    [loans, strategy, required, extra]
++    [loans, strategy, required, extra, plan]
+   );
+ 
+   const monthsSaved = main && base && base.paidOff ? base.months - main.months : 0;
+@@ -120,23 +131,102 @@ export default function RankingPanel({
+     main && base && base.paidOff
+       ? Math.max(0, base.totalInterest - main.totalInterest)
+       : 0;
++  // On IBR and RAP the required payment alone may end in forgiveness. Then
++  // extra money ends nothing sooner and saves no interest that matters: what
++  // it changes is the total paid and what is left to forgive.
++  const forgiven = !!main && !main.paidOff && main.forgiven > 0;
++  const baseForgiven = !!base && !base.paidOff && base.forgiven > 0;
++  const paidMore = main && base ? main.totalPaid - base.totalPaid : 0;
++  const moreOrLess = paidMore >= 0 ? "more" : "less";
++  const costsMore = paidMore > 0.5;
++  const sameForgiven =
++    !!main && !!base && Math.abs(main.forgiven - base.forgiven) < 0.5;
++  // On RAP the extra can cost more in total: the engine counts it as part of
++  // the month's payment, so it first pays interest RAP would otherwise waive
++  // (34 CFR 685.209(h)(4)(i)) and then replaces ED's matching principal
++  // ((o)(2)(i)). The rule does not settle that reading, so the page says so.
++  const rapExtraNote =
++    selected?.id === "rap" && extra > 0 && costsMore
++      ? " On RAP, money you add goes first to any interest RAP would otherwise waive, then takes the place of the up to $50 ED puts toward your principal each month, and only after that brings your end date closer. That counts the extra as part of your payment for the month, one reading of 34 CFR 685.209(h)(4)(i) and (o)(2)(i); if your servicer applies it separately, it can do more."
++      : "";
++  // What forgiveness means for this borrower. Payoff does not model PSLF, so
++  // a public-service worker is not told the balance waits 20 or 30 years.
++  const forgivenNote = ctx.publicService
++    ? " Payoff does not count Public Service Loan Forgiveness: after 120 qualifying payments while you work in public service, what is left is cancelled then, tax free."
++    : " Outside Public Service Loan Forgiveness, a forgiven balance counts as taxable income the year it is cancelled.";
++  // Everything the headline and the sentence under it show. Both are keyed on
++  // it, so a change replaces them whole and a page translator's copies are
++  // never left holding text React edits or removes (RES-12).
++  const storyKey = [
++    selected?.id,
++    ctx.publicService,
++    extra,
++    comparison?.budget,
++    main?.paidOff,
++    main?.months,
++    Math.round(main?.totalPaid ?? 0),
++    Math.round(main?.forgiven ?? 0),
++    base?.paidOff,
++    base?.months,
++    Math.round(base?.totalPaid ?? 0),
++    Math.round(base?.forgiven ?? 0),
++    monthsSaved,
++    roughly(interestSaved),
++  ].join("|");
+ 
+   // The sentence a screen reader hears. It waits for the slider to settle, so
+   // dragging does not read out forty intermediate values.
+   const summary = useMemo(() => {
+     if (!main || !comparison) return "";
++    const ends = monthYearFromNow(main.months);
++    if (forgiven && extra > 0 && base && baseForgiven)
++      return `Paying ${money(extra)} extra a month does not end this any sooner. The rest is forgiven in ${ends}, and you pay ${money(
++        main.totalPaid
++      )} in total instead of ${money(base.totalPaid)}, with ${
++        sameForgiven
++          ? `the same ${money(main.forgiven)} forgiven`
++          : `${money(main.forgiven)} forgiven instead of ${money(base.forgiven)}`
++      }.${rapExtraNote}${forgivenNote}`;
++    if (forgiven)
++      return `The rest is forgiven in ${ends}. You pay ${money(
++        main.totalPaid
++      )} over ${monthsLabel(main.months)}, and the ${money(
++        main.forgiven
++      )} still owed after that is forgiven.${forgivenNote}`;
+     if (!main.paidOff)
+       return `At ${money(comparison.budget)} a month this balance does not reach zero.`;
++    if (extra > 0 && base && baseForgiven)
++      return `Paying ${money(extra)} extra a month, you are debt free in ${ends}. On the required payment alone ${money(
++        base.forgiven
++      )} would be forgiven in ${monthYearFromNow(base.months)}. You pay ${money(
++        Math.abs(paidMore)
++      )} ${moreOrLess} in total.${forgivenNote}`;
++    const cost = costsMore
++      ? `but you pay about ${money(roughly(paidMore))} more in total`
++      : `with about ${money(roughly(interestSaved))} less interest`;
+     if (extra > 0 && monthsSaved > 0)
+-      return `Paying ${money(extra)} extra a month, you are debt free in ${monthYearFromNow(
+-        main.months
+-      )}, ${monthsInWords(monthsSaved)} sooner, with about ${money(
+-        roughly(interestSaved)
+-      )} less interest.`;
+-    return `Paying the required amount only, you are debt free in ${monthYearFromNow(
+-      main.months
+-    )}.`;
+-  }, [main, comparison, extra, monthsSaved, interestSaved]);
++      return `Paying ${money(extra)} extra a month, you are debt free in ${ends}, ${monthsInWords(
++        monthsSaved
++      )} sooner, ${cost}.${rapExtraNote}`;
++    if (extra > 0)
++      return `Paying ${money(extra)} extra a month, you are debt free in ${ends}, the same month, ${cost}.${rapExtraNote}`;
++    return `Paying the required amount only, you are debt free in ${ends}.`;
++  }, [
++    main,
++    base,
++    comparison,
++    extra,
++    forgiven,
++    baseForgiven,
++    paidMore,
++    moreOrLess,
++    costsMore,
++    sameForgiven,
++    rapExtraNote,
++    forgivenNote,
++    monthsSaved,
++    interestSaved,
++  ]);
+   const [announced, setAnnounced] = useState("");
+   useEffect(() => {
+     const t = setTimeout(() => setAnnounced(summary), 700);
+@@ -169,12 +259,18 @@ export default function RankingPanel({
+             <>
+               <Eyebrow>
+                 On {PLAN_META[selected!.id].name} ·{" "}
+-                <Money value={comparison.requiredPayment} /> a month required
++                <Money value={comparison.requiredPayment} /> a month{" "}
++                {graduated ? "to start" : "required"}
+               </Eyebrow>
+ 
+               {/* The headline is the takeaway, not a label. */}
+-              <h2 className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl">
+-                {!main.paidOff ? (
++              <h2
++                key={`head-${storyKey}`}
++                className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl"
++              >
++                {forgiven ? (
++                  <>The rest is forgiven in {monthYearFromNow(main.months)}</>
++                ) : !main.paidOff ? (
+                   <>This payment does not clear the balance</>
+                 ) : extra > 0 && monthsSaved > 0 ? (
+                   <>
+@@ -185,13 +281,56 @@ export default function RankingPanel({
+                   <>Debt free in {monthYearFromNow(main.months)}</>
+                 )}
+               </h2>
+-              <p className="mt-2 text-base leading-relaxed text-slate-700">
+-                {!main.paidOff ? (
++              <p
++                key={`sub-${storyKey}`}
++                className="mt-2 text-base leading-relaxed text-slate-700"
++              >
++                {forgiven && extra > 0 && base && baseForgiven ? (
++                  <>
++                    Paying <Money value={extra} /> extra does not end this any
++                    sooner. You pay{" "}
++                    <strong className="font-semibold text-slate-900">
++                      <Money value={main.totalPaid} />
++                    </strong>{" "}
++                    in total instead of <Money value={base.totalPaid} />, and{" "}
++                    {sameForgiven ? (
++                      <>
++                        the same <Money value={main.forgiven} /> is forgiven.
++                      </>
++                    ) : (
++                      <>
++                        <Money value={main.forgiven} /> is forgiven instead of{" "}
++                        <Money value={base.forgiven} />.
++                      </>
++                    )}
++                    {rapExtraNote}
++                    {forgivenNote}
++                  </>
++                ) : forgiven ? (
++                  <>
++                    You pay <Money value={main.totalPaid} /> over{" "}
++                    {monthsLabel(main.months)}, and the{" "}
++                    <strong className="font-semibold text-slate-900">
++                      <Money value={main.forgiven} />
++                    </strong>{" "}
++                    still owed after that is forgiven.{forgivenNote}
++                  </>
++                ) : !main.paidOff ? (
+                   <>
+                     At <Money value={comparison.budget} /> a month these
+-                    balances never reach zero. On an income-driven plan that is
+-                    expected, and the remaining balance is forgiven at the end
+-                    of the term instead.
++                    balances never reach zero.
++                  </>
++                ) : extra > 0 && base && baseForgiven ? (
++                  <>
++                    On the required payment alone,{" "}
++                    <Money value={base.forgiven} /> would be forgiven in{" "}
++                    {monthYearFromNow(base.months)}. With{" "}
++                    <Money value={extra} /> extra it is gone in{" "}
++                    {monthYearFromNow(main.months)}, and you pay{" "}
++                    <strong className="font-semibold text-slate-900">
++                      <Money value={Math.abs(paidMore)} /> {moreOrLess}
++                    </strong>{" "}
++                    in total.{forgivenNote}
+                   </>
+                 ) : extra > 0 && monthsSaved > 0 ? (
+                   <>
+@@ -199,17 +338,21 @@ export default function RankingPanel({
+                     <strong className="font-semibold text-slate-900">
+                       {monthYearFromNow(main.months)}
+                     </strong>{" "}
+-                    and pay about{" "}
++                    {costsMore ? "but pay about" : "and pay about"}{" "}
+                     <strong className="font-semibold text-slate-900">
+-                      <Money value={roughly(interestSaved)} />
++                      <Money
++                        value={roughly(costsMore ? paidMore : interestSaved)}
++                      />
+                     </strong>{" "}
+-                    less in interest.
++                    {costsMore ? <>more in total.{rapExtraNote}</> : <>less in interest.</>}
+                   </>
+-                ) : extra > 0 && base && !base.paidOff ? (
++                ) : extra > 0 ? (
+                   <>
+-                    On the required payment alone this balance would never
+-                    reach zero. With <Money value={extra} /> extra it is gone
+-                    in {monthYearFromNow(main.months)}.
++                    With <Money value={extra} /> extra you still finish in{" "}
++                    {monthYearFromNow(main.months)}, and pay about{" "}
++                    <Money value={roughly(costsMore ? paidMore : interestSaved)} />{" "}
++                    {costsMore ? "more in total" : "less in interest"}.
++                    {rapExtraNote}
+                   </>
+                 ) : (
+                   <>
+@@ -301,11 +444,11 @@ export default function RankingPanel({
+                 />
+               )}
+ 
+-              {main.paidOff && (
++              {(main.paidOff || forgiven) && (
+                 <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-5">
+                   <div>
+                     <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+-                      Done
++                      {forgiven ? "Forgiven" : "Done"}
+                     </dt>
+                     <dd className="tnum mt-1 text-base font-bold text-slate-900 sm:text-xl">
+                       {shortMonthYearFromNow(main.months)}
+@@ -321,7 +464,7 @@ export default function RankingPanel({
+                   </div>
+                   <div>
+                     <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+-                      Monthly
++                      {graduated ? "Monthly, to start" : "Monthly"}
+                     </dt>
+                     <dd className="mt-1 text-base font-bold text-slate-900 sm:text-xl">
+                       <Money value={comparison.budget} />
+@@ -332,10 +475,19 @@ export default function RankingPanel({
+ 
+               <p className="mt-4 text-sm leading-relaxed text-slate-600">
+                 What this assumes: payments start this month, and your required
+-                payment stays at <Money value={comparison.requiredPayment} />{" "}
+-                the whole way.
+-                {selected!.id === "graduated" &&
+-                  " On Graduated it steps up every two years, so you would finish sooner than shown."}
++                payment{" "}
++                {graduated ? (
++                  <>
++                    starts at <Money value={comparison.requiredPayment} /> and
++                    steps up every two years, on the same schedule as the
++                    Repayment plans tab.
++                  </>
++                ) : (
++                  <>
++                    stays at <Money value={comparison.requiredPayment} /> the
++                    whole way.
++                  </>
++                )}
+                 {PLAN_META[selected!.id].incomeDriven &&
+                   " On an income-driven plan it moves with your income each year."}
+               </p>
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..f3cf9df 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -5,6 +5,7 @@ import {
+   Loan,
+   PlanEstimate,
+   PlanId,
++  PlanSchedule,
+   Profile,
+   PslfStatus,
+   RankedPlan,
+@@ -85,8 +86,9 @@ function fixedTotals(balance: number, ratePct: number, years: number) {
+  * Graduated: starts low and steps up every 2 years over 10.
+  * Modelled as a starting payment near interest-only with five step-ups, with
+  * the growth factor solved numerically so the schedule actually amortises.
++ * The Plans card and the Payoff projection both run this one schedule.
+  */
+-function graduatedTotals(balance: number, ratePct: number) {
++export function graduatedSchedule(balance: number, ratePct: number) {
+   const r = ratePct / 100 / 12;
+   const steps = 5;
+   const monthsPerStep = 24;
+@@ -113,25 +115,101 @@ function graduatedTotals(balance: number, ratePct: number) {
+   }
+   const g = hi;
+ 
++  return {
++    base,
++    finalPayment: base * Math.pow(g, steps - 1),
++    termMonths: steps * monthsPerStep,
++    /** The payment due in month `month`, counting from 0. */
++    paymentAt: (month: number) =>
++      base * Math.pow(g, Math.min(steps - 1, Math.floor(month / monthsPerStep))),
++  };
++}
++
++function graduatedTotals(balance: number, ratePct: number) {
++  const r = ratePct / 100 / 12;
++  const schedule = graduatedSchedule(balance, ratePct);
++
+   let bal = balance;
+   let totalPaid = 0;
+-  for (let s = 0; s < steps && bal > 0; s++) {
+-    const pay = base * Math.pow(g, s);
+-    for (let m = 0; m < monthsPerStep && bal > 0; m++) {
+-      const interest = bal * r;
+-      const applied = Math.min(pay, bal + interest);
+-      bal = bal + interest - applied;
+-      totalPaid += applied;
+-    }
++  for (let m = 0; m < schedule.termMonths && bal > 0; m++) {
++    const interest = bal * r;
++    const applied = Math.min(schedule.paymentAt(m), bal + interest);
++    bal = bal + interest - applied;
++    totalPaid += applied;
+   }
+   return {
+-    monthlyPayment: base, // the starting payment, which is what people plan around
+-    finalPayment: base * Math.pow(g, steps - 1),
++    monthlyPayment: schedule.base, // the starting payment, which is what people plan around
++    finalPayment: schedule.finalPayment,
+     totalPaid,
+     totalInterest: Math.max(0, totalPaid - balance),
+   };
+ }
+ 
++/** RAP's interest waiver and $50 matching principal, or neither. */
++export interface IdrRules {
++  waiveUnpaidInterest: boolean;
++  matchPrincipal: boolean;
++}
++
++const IBR_RULES: IdrRules = { waiveUnpaidInterest: false, matchPrincipal: false };
++const RAP_RULES: IdrRules = { waiveUnpaidInterest: true, matchPrincipal: true };
++
++/**
++ * What is owed going into a month. `unpaid` is interest charged but not paid
++ * that earns no interest itself; it stays 0 here, where unpaid interest is
++ * added to principal.
++ */
++export interface IdrState {
++  principal: number;
++  unpaid: number;
++}
++
++/**
++ * One month of repayment on one balance. The Plans card runs IBR and RAP
++ * month by month through this step, and Payoff runs every month of every plan
++ * through it, so a change to these rules moves both tabs together.
++ */
++export function idrMonth(
++  state: IdrState,
++  ratePct: number,
++  monthlyPayment: number,
++  opts: IdrRules
++): { state: IdrState; paid: number; interestPaid: number } {
++  const r = ratePct / 100 / 12;
++  let bal = state.principal + state.unpaid;
++  const interest = bal * r;
++  let pay = Math.min(monthlyPayment, bal + interest);
++
++  // 34 CFR 685.209(h)(4)(i), verbatim: under RAP "the Secretary does not
++  // charge the borrower's account for any accrued interest that is not
++  // covered by the borrower's on-time payment of the amount due for that
++  // month." So the charge is capped at the payment; the shortfall is waived,
++  // NOT credited to principal. Under IBR the full interest is charged.
++  const interestCharged = opts.waiveUnpaidInterest
++    ? Math.min(interest, pay)
++    : interest;
++  bal = bal + interestCharged - pay;
++
++  // RAP's matching principal payment. 34 CFR 685.209(o)(2)(i): when an
++  // on-time payment reduces principal by less than $50, ED reduces principal
++  // by (the lesser of $50 or the payment) minus (what already hit principal).
++  const principalReduction = Math.max(0, pay - interestCharged);
++  if (opts.matchPrincipal && principalReduction < 50) {
++    bal -= Math.min(50, pay) - principalReduction;
++  }
++
++  if (bal < 0) {
++    pay += bal;
++    bal = 0;
++  }
++  // Each payment goes to the month's interest first (685.211(a)(1)).
++  return {
++    state: { principal: bal, unpaid: 0 },
++    paid: pay,
++    interestPaid: Math.min(pay, interestCharged),
++  };
++}
++
+ /**
+  * Simulate an income-driven plan at a flat income.
+  *
+@@ -144,50 +222,27 @@ function simulateIdr(
+   ratePct: number,
+   monthlyPayment: number,
+   maxYears: number,
+-  opts: { waiveUnpaidInterest: boolean; matchPrincipal: boolean }
++  opts: IdrRules
+ ) {
+-  const r = ratePct / 100 / 12;
+-  let bal = balance;
++  let state: IdrState = { principal: balance, unpaid: 0 };
+   let totalPaid = 0;
+   const maxMonths = maxYears * 12;
+   let months = 0;
+ 
+   for (let m = 0; m < maxMonths; m++) {
+-    if (bal <= 0.005) break;
+-    const interest = bal * r;
+-    let pay = Math.min(monthlyPayment, bal + interest);
+-
+-    // 34 CFR 685.209(h)(4)(i), verbatim: under RAP "the Secretary does not
+-    // charge the borrower's account for any accrued interest that is not
+-    // covered by the borrower's on-time payment of the amount due for that
+-    // month." So the charge is capped at the payment; the shortfall is waived,
+-    // NOT credited to principal. Under IBR the full interest is charged.
+-    const interestCharged = opts.waiveUnpaidInterest
+-      ? Math.min(interest, pay)
+-      : interest;
+-    bal = bal + interestCharged - pay;
+-
+-    // RAP's matching principal payment. 34 CFR 685.209(o)(2)(i): when an
+-    // on-time payment reduces principal by less than $50, ED reduces principal
+-    // by (the lesser of $50 or the payment) minus (what already hit principal).
+-    const principalReduction = Math.max(0, pay - interestCharged);
+-    if (opts.matchPrincipal && principalReduction < 50) {
+-      bal -= Math.min(50, pay) - principalReduction;
+-    }
+-
+-    if (bal < 0) {
+-      pay += bal;
+-      bal = 0;
+-    }
+-    totalPaid += pay;
++    if (state.principal + state.unpaid <= 0.005) break;
++    const step = idrMonth(state, ratePct, monthlyPayment, opts);
++    state = step.state;
++    totalPaid += step.paid;
+     months++;
+   }
+ 
++  const left = state.principal + state.unpaid;
+   return {
+     totalPaid,
+-    forgiven: Math.max(0, bal),
++    forgiven: Math.max(0, left),
+     months,
+-    paidOff: bal <= 0.005,
++    paidOff: left <= 0.005,
+   };
+ }
+ 
+@@ -435,10 +490,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     if (id === "ibr") {
+       const cap = amortizedPayment(balance, rate, 10);
+       const pay = Math.min(ibrMonthly(profile), cap);
+-      const sim = simulateIdr(balance, rate, pay, 20, {
+-        waiveUnpaidInterest: false,
+-        matchPrincipal: false,
+-      });
++      const sim = simulateIdr(balance, rate, pay, 20, IBR_RULES);
+       return {
+         ...base,
+         eligible: true,
+@@ -454,10 +506,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     const pay = rapMonthly(profile);
+-    const sim = simulateIdr(balance, rate, pay, 30, {
+-      waiveUnpaidInterest: true,
+-      matchPrincipal: true,
+-    });
++    const sim = simulateIdr(balance, rate, pay, 30, RAP_RULES);
+     return {
+       ...base,
+       eligible: true,
+@@ -616,6 +665,39 @@ export function rankPlans(
+   return { ranked, topPickReason: reason };
+ }
+ 
++/**
++ * The selected plan's schedule for the Payoff projection, built from the same
++ * figures as its card so Plans and Payoff run one plan: Graduated's steps, a
++ * fixed plan's term, and IBR's and RAP's forgiveness. Null until it is priced.
++ */
++export function planSchedule(
++  e: PlanEstimate,
++  ctx: PlanContext
++): PlanSchedule | null {
++  if (!e.eligible || e.monthlyPayment === null) return null;
++  if (e.id === "graduated") {
++    const g = graduatedSchedule(ctx.balance, ctx.rate);
++    return {
++      paymentAt: g.paymentAt,
++      termMonths: g.termMonths,
++      forgivesAtTerm: false,
++      rules: IBR_RULES,
++    };
++  }
++  const payment = e.monthlyPayment;
++  const forgivesAtTerm = PLAN_META[e.id].incomeDriven;
++  return {
++    paymentAt: () => payment,
++    termMonths: Math.round(
++      (forgivesAtTerm ? e.forgivenessYears ?? e.years : e.years) * 12
++    ),
++    forgivesAtTerm,
++    // A fixed payment always covers its interest, so the IBR rules are plain
++    // amortisation for every plan but RAP.
++    rules: e.id === "rap" ? RAP_RULES : IBR_RULES,
++  };
++}
++
+ /** The required monthly payment on the plan the borrower selected. */
+ export function requiredPaymentForPlan(
+   estimates: PlanEstimate[],
+diff --git a/src/lib/ranking.ts b/src/lib/ranking.ts
+index 79d0cf8..23090b9 100644
+--- a/src/lib/ranking.ts
++++ b/src/lib/ranking.ts
+@@ -3,7 +3,8 @@
+ // Adapted from the Debt Dashboard engine (loan-paydown/src/lib/paydown.ts),
+ // generalised from generic high-cost debt to federal student loans.
+ 
+-import { Loan, RankedLoan, Strategy } from "@/types";
++import { Loan, PlanSchedule, RankedLoan, Strategy } from "@/types";
++import { idrMonth } from "@/lib/calc";
+ 
+ /**
+  * Order loans by strategy.
+@@ -58,8 +59,17 @@ export function rankLoans(loans: Loan[], strategy: Strategy): RankedLoan[] {
+ 
+ interface SimOutcome {
+   months: number;
++  /**
++   * Interest actually paid: the part of each payment that goes to interest.
++   * Never below 0 and never above what is paid. Unpaid interest that is
++   * waived or forgiven is not in it.
++   */
+   totalInterest: number;
++  /** Everything the borrower pays, extra included. */
++  totalPaid: number;
+   paidOff: boolean;
++  /** Still owed after the plan's last payment, and forgiven. 0 unless IBR or RAP. */
++  forgiven: number;
+   /**
+    * Total balance at the end of each month. Index 0 is today's balance, so
+    * the array is `months + 1` long. Drives the payoff chart.
+@@ -69,64 +79,77 @@ interface SimOutcome {
+   payoffMonthById: Record<string, number>;
+ }
+ 
++/** No waiver and no match: plain amortisation. */
++const PLAIN = { waiveUnpaidInterest: false, matchPrincipal: false };
++
+ /**
+  * Month-by-month simulation: accrue interest, then pour the whole budget into
+  * the target loan in strategy order. The budget is the required payment on the
+  * borrower's chosen plan plus whatever extra they told us about.
++ *
++ * Given the plan's schedule it runs that plan's own rules: Graduated's steps,
++ * a fixed plan repaid within its term, and IBR and RAP stopping at their last
++ * payment with what is left forgiven. Without one, a flat payment runs for up
++ * to 50 years.
++ *
++ * Each month runs through idrMonth, the step the Plans card runs for IBR and
++ * RAP, on the whole balance at the rate that charges the loans' own interest.
++ * The required payment moves every loan in proportion to its balance, so at
++ * $0 extra the blend never shifts and Payoff matches the card exactly. What
++ * the extra changes goes to the target loan, which then lowers the rate.
+  */
+ function simulate(
+   loans: Loan[],
+   strategy: Strategy,
+   requiredPayment: number,
+   extra: number,
+-  maxMonths = 600
++  plan?: PlanSchedule | null
+ ): SimOutcome {
+-  const monthlyBudget = requiredPayment + extra;
++  const maxMonths = plan ? plan.termMonths : 600;
++  const rules = plan ? plan.rules : PLAIN;
+   const order = orderLoans(loans, strategy).map((l) => l.id);
+   const byId = new Map(loans.map((l) => [l.id, l]));
+   const balances = new Map(loans.map((l) => [l.id, l.balance]));
++  const startBalance = loans.reduce((sum, l) => sum + l.balance, 0);
+ 
+-  let totalInterest = 0;
++  let unpaid = 0;
++  let totalPaid = 0;
++  let interestPaid = 0;
+   let months = 0;
+-  const balanceByMonth: number[] = [
+-    loans.reduce((sum, l) => sum + l.balance, 0),
+-  ];
++  const balanceByMonth: number[] = [startBalance];
+   const payoffMonthById: Record<string, number> = {};
+ 
+   for (let m = 0; m < maxMonths; m++) {
+-    const remaining = Array.from(balances.values()).reduce((a, b) => a + b, 0);
+-    if (remaining <= 0.005) break;
++    let principal = 0;
++    let accrued = 0;
++    balances.forEach((bal, id) => {
++      if (bal <= 0) return;
++      principal += bal;
++      accrued += bal * (byId.get(id)!.rate / 100 / 12);
++    });
++    if (principal + unpaid <= 0.005) break;
++    const rate = principal > 0 ? (accrued / principal) * 1200 : 0;
+ 
+-    for (const id of order) {
+-      const bal = balances.get(id)!;
+-      if (bal <= 0) continue;
+-      const interest = bal * (byId.get(id)!.rate / 100 / 12);
+-      balances.set(id, bal + interest);
+-      totalInterest += interest;
++    let due = plan ? plan.paymentAt(m) : requiredPayment;
++    // A fixed plan is repaid within its term, so its last payment is
++    // whatever is left.
++    if (plan && !plan.forgivesAtTerm && m === maxMonths - 1) {
++      due = Math.max(due, principal + unpaid + accrued - extra);
+     }
+ 
+-    let left = monthlyBudget;
+-
+-    // The borrower is on ONE plan, so the servicer bills a single required
+-    // amount for the whole portfolio and spreads it across the loans. Absent
+-    // instructions that allocation is pro rata by balance, so model it that
+-    // way. As loans clear, the freed share redistributes automatically because
+-    // the split is recomputed from live balances each month.
+-    const active = order.filter((id) => balances.get(id)! > 0);
+-    const activeTotal = active.reduce((s, id) => s + balances.get(id)!, 0);
+-    if (activeTotal > 0) {
+-      const required = Math.min(requiredPayment, left);
+-      for (const id of active) {
+-        const share = (balances.get(id)! / activeTotal) * required;
+-        const pay = Math.min(share, balances.get(id)!, left);
+-        balances.set(id, balances.get(id)! - pay);
+-        left -= pay;
+-      }
+-    }
++    const state = { principal, unpaid };
++    const required = idrMonth(state, rate, due, rules);
++    const step = extra > 0 ? idrMonth(state, rate, due + extra, rules) : required;
++
++    // The required payment is billed across the loans pro rata by balance,
++    // so every loan moves in proportion. Interest first, then principal
++    // (34 CFR 685.211(a)(1)), comes out the same.
++    const scale = principal > 0 ? required.state.principal / principal : 0;
++    balances.forEach((bal, id) => balances.set(id, bal * scale));
+ 
+-    // Everything still in hand — the extra, plus anything the pro rata split
+-    // could not place because a loan cleared — goes to the target loan. This
+-    // is the whole point of telling your servicer where extra money should go.
++    // What the extra changes goes to the target loan, in strategy order: the
++    // whole point of telling your servicer where extra money should go.
++    let left = Math.max(0, required.state.principal - step.state.principal);
+     for (const id of order) {
+       if (left <= 0) break;
+       const bal = balances.get(id)!;
+@@ -136,10 +159,13 @@ function simulate(
+       left -= pay;
+     }
+ 
++    unpaid = step.state.unpaid;
++    totalPaid += step.paid;
++    interestPaid += step.interestPaid;
+     months++;
+ 
+     // Recorded after the fact, so the loop above is untouched.
+-    let total = 0;
++    let total = unpaid;
+     for (const id of order) {
+       const bal = balances.get(id)!;
+       total += Math.max(0, bal);
+@@ -150,8 +176,19 @@ function simulate(
+     balanceByMonth.push(total);
+   }
+ 
+-  const paidOff = Array.from(balances.values()).every((b) => b <= 0.005);
+-  return { months, totalInterest, paidOff, balanceByMonth, payoffMonthById };
++  const left =
++    unpaid +
++    Array.from(balances.values()).reduce((a, b) => a + Math.max(0, b), 0);
++  const paidOff = left <= 0.005;
++  return {
++    months,
++    totalInterest: interestPaid,
++    totalPaid,
++    paidOff,
++    forgiven: plan?.forgivesAtTerm && !paidOff ? left : 0,
++    balanceByMonth,
++    payoffMonthById,
++  };
+ }
+ 
+ export type PayoffProjection = SimOutcome;
+@@ -165,10 +202,17 @@ export function projectPayoff(
+   loans: Loan[],
+   strategy: Strategy,
+   requiredPayment: number,
+-  extraPerMonth: number
++  extraPerMonth: number,
++  plan?: PlanSchedule | null
+ ): PayoffProjection | null {
+   if (!loans.length || requiredPayment <= 0) return null;
+-  return simulate(loans, strategy, requiredPayment, Math.max(0, extraPerMonth));
++  return simulate(
++    loans,
++    strategy,
++    requiredPayment,
++    Math.max(0, extraPerMonth),
++    plan
++  );
+ }
+ 
+ export interface StrategyComparison {
+@@ -189,20 +233,22 @@ export interface StrategyComparison {
+  *
+  * `requiredPayment` must come from the borrower's selected repayment plan.
+  * Without it there is no defensible timeline, so callers pass null and the UI
+- * shows the ranking without a projection rather than inventing one.
++ * shows the ranking without a projection rather than inventing one. `plan` is
++ * that plan's schedule, from planSchedule in calc.ts.
+  */
+ export function compareStrategies(
+   loans: Loan[],
+   requiredPayment: number,
+-  extraPerMonth: number
++  extraPerMonth: number,
++  plan?: PlanSchedule | null
+ ): StrategyComparison | null {
+   if (!loans.length || requiredPayment <= 0) return null;
+ 
+   const extra = Math.max(0, extraPerMonth);
+   const budget = requiredPayment + extra;
+ 
+-  const avalanche = simulate(loans, "avalanche", requiredPayment, extra);
+-  const snowball = simulate(loans, "snowball", requiredPayment, extra);
++  const avalanche = simulate(loans, "avalanche", requiredPayment, extra, plan);
++  const snowball = simulate(loans, "snowball", requiredPayment, extra, plan);
+ 
+   return {
+     avalanche,
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..f35a75b 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -81,6 +81,24 @@ export interface PlanEstimate {
+   ineligibleReason?: string;
+ }
+ 
++/**
++ * The selected plan's own payment rules, which the Payoff projection runs.
++ * Built from the same figures as the plan's card on the Repayment plans tab.
++ */
++export interface PlanSchedule {
++  /** Required payment in month `month`, counting from 0. Steps up on Graduated, flat otherwise. */
++  paymentAt: (month: number) => number;
++  /** Payments the plan runs for: its term on a fixed plan, 240 on IBR, 360 on RAP. */
++  termMonths: number;
++  /** IBR and RAP: whatever is still owed after the last payment is forgiven. */
++  forgivesAtTerm: boolean;
++  /**
++   * The rules each month runs under, passed to idrMonth in calc.ts. On RAP the
++   * 34 CFR 685.209(h)(4)(i) interest waiver and (o)(2)(i) $50 matching principal.
++   */
++  rules: { waiveUnpaidInterest: boolean; matchPrincipal: boolean };
++}
++
+ /** A ranked plan plus the reason it was or was not the pick. */
+ export interface RankedPlan {
+   estimate: PlanEstimate;

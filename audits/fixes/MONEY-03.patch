@@ -1,0 +1,149 @@
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..d84ae31 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -37,7 +37,15 @@ export const TIERED_STANDARD_TERMS: { maxBalance: number; years: number }[] = [
+   { maxBalance: Infinity, years: 25 },
+ ];
+ 
+-export const TIERED_STANDARD_MIN_PAYMENT = 50;
++/**
++ * Standard and Tiered Standard bill at least $50 a month; only the last
++ * payment, or a balance under $50, may be less. 34 CFR 685.208(b)(1)(ii),
++ * (b)(8)(ii) and (c)(1)(ii). Extended shares the same code but never reaches
++ * the floor above $30,000. Graduated has its own rule, (b)(6)(iii).
++ */
++export const FIXED_PLAN_MIN_PAYMENT = 50;
++/** The same floor, under the name verify.mjs checks. */
++export const TIERED_STANDARD_MIN_PAYMENT = FIXED_PLAN_MIN_PAYMENT;
+ 
+ export function getTieredStandardYears(balance: number): number {
+   return TIERED_STANDARD_TERMS.find((t) => balance < t.maxBalance)?.years ?? 25;
+@@ -86,9 +94,9 @@ export interface PlanMeta {
+ export const PLAN_META: Record<PlanId, PlanMeta> = {
+   standard: {
+     name: "Standard",
+-    tagline: "Fixed payment, done in 10 years",
++    tagline: "Fixed payment, done within 10 years",
+     summary:
+-      "The same payment every month for 10 years, whatever you earn. The shortest term of any plan, so the least interest.",
++      "The same payment every month, at least $50, for up to 10 years, whatever you earn. The shortest term of any plan, so the least interest.",
+     incomeDriven: false,
+     forgivenessYears: null,
+     postCutoff: false,
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..8e067ff 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -11,6 +11,7 @@ import {
+ } from "@/types";
+ import {
+   EXTENDED_MIN_BALANCE,
++  FIXED_PLAN_MIN_PAYMENT,
+   LEGACY_PLANS,
+   PARENT_PLUS_EXCLUDED_PLANS,
+   PARENT_PLUS_INELIGIBLE_REASON,
+@@ -19,7 +20,6 @@ import {
+   POST_CUTOFF_PLANS,
+   RAP_DEPENDENT_CREDIT,
+   RAP_MIN_MONTHLY,
+-  TIERED_STANDARD_MIN_PAYMENT,
+   getPovertyLine,
+   getTieredStandardYears,
+   rapAnnualBasePayment,
+@@ -73,11 +73,32 @@ export function amortizedPayment(
+ 
+ function fixedTotals(balance: number, ratePct: number, years: number) {
+   const monthly = amortizedPayment(balance, ratePct, years);
+-  const totalPaid = monthly * years * 12;
++  if (balance <= 0 || monthly >= FIXED_PLAN_MIN_PAYMENT) {
++    const totalPaid = monthly * years * 12;
++    return {
++      monthlyPayment: monthly,
++      totalPaid,
++      totalInterest: Math.max(0, totalPaid - balance),
++      years,
++    };
++  }
++  // Below the floor the bill is $50, less only on the last payment, so the
++  // balance clears before the term ends. Replay it to get the real total.
++  const r = ratePct / 100 / 12;
++  let bal = balance;
++  let totalPaid = 0;
++  let months = 0;
++  while (bal > 0.005 && months < years * 12) {
++    const due = Math.min(FIXED_PLAN_MIN_PAYMENT, bal * (1 + r));
++    bal = bal * (1 + r) - due;
++    totalPaid += due;
++    months++;
++  }
+   return {
+-    monthlyPayment: monthly,
++    monthlyPayment: Math.min(FIXED_PLAN_MIN_PAYMENT, balance * (1 + r)),
+     totalPaid,
+     totalInterest: Math.max(0, totalPaid - balance),
++    years: months / 12,
+   };
+ }
+ 
+@@ -230,7 +251,9 @@ export function buildContext(loans: Loan[], profile: Profile): PlanContext {
+     parentPlus: anyParentPlus(loans),
+     balance,
+     rate,
+-    pslfBenchmark: amortizedPayment(balance, rate, 10),
++    // 685.219(b)(28)(iii) compares against the 685.208(b) Standard payment,
++    // which carries the $50 floor.
++    pslfBenchmark: fixedTotals(balance, rate, 10).monthlyPayment,
+     publicService:
+       profile.employment === "government" || profile.employment === "nonprofit",
+   };
+@@ -341,7 +364,6 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       return {
+         ...base,
+         eligible: true,
+-        years: 10,
+         forgivenAmount: 0,
+         pslf: "counts",
+         pslfNote:
+@@ -376,7 +398,6 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       return {
+         ...base,
+         eligible: true,
+-        years: 25,
+         forgivenAmount: 0,
+         pslf: p.status,
+         pslfNote: p.note,
+@@ -385,9 +406,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     if (id === "tiered_standard") {
+-      const years = getTieredStandardYears(balance);
+-      const t = fixedTotals(balance, rate, years);
+-      const monthly = Math.max(t.monthlyPayment, TIERED_STANDARD_MIN_PAYMENT);
++      const t = fixedTotals(balance, rate, getTieredStandardYears(balance));
+       // Tiered Standard NEVER earns PSLF credit, including the 10-year tier.
+       //
+       // It is absent from the qualifying-plan list in 685.219(b)(28)(ii), which
+@@ -404,9 +423,9 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       return {
+         ...base,
+         eligible: true,
+-        years,
++        years: t.years,
+         forgivenAmount: 0,
+-        monthlyPayment: monthly,
++        monthlyPayment: t.monthlyPayment,
+         totalPaid: t.totalPaid,
+         totalInterest: t.totalInterest,
+         pslf: "does_not_count",
+@@ -433,7 +452,9 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     if (id === "ibr") {
+-      const cap = amortizedPayment(balance, rate, 10);
++      // 685.209(f)(2)(ii): capped at what the 10-year Standard plan would
++      // bill, its $50 floor included.
++      const cap = fixedTotals(balance, rate, 10).monthlyPayment;
+       const pay = Math.min(ibrMonthly(profile), cap);
+       const sim = simulateIdr(balance, rate, pay, 20, {
+         waiveUnpaidInterest: false,

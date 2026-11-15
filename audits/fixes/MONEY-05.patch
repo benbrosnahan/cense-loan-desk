@@ -1,0 +1,54 @@
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..b23458b 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -152,6 +152,36 @@ function simulateIdr(
+   const maxMonths = maxYears * 12;
+   let months = 0;
+ 
++  if (!opts.waiveUnpaidInterest) {
++    // IBR: interest accrues in full (the three-year subsidy for subsidized
++    // loans, 685.209(h)(2)(i), is not modelled), but while the borrower stays
++    // on IBR the unpaid part is not capitalized (34 CFR 685.209(j)(2),
++    // 685.202(b)).
++    // It sits beside principal and earns no interest, and each payment goes
++    // to accrued interest first (685.211(a)(1)(ii)).
++    let principal = balance;
++    let unpaid = 0;
++    for (let m = 0; m < maxMonths; m++) {
++      if (principal + unpaid <= 0.005) break;
++      unpaid += principal * r;
++      const pay = Math.min(monthlyPayment, principal + unpaid);
++      const toInterest = Math.min(pay, unpaid);
++      unpaid -= toInterest;
++      // Same order of operations as the loop below, so wherever the payment
++      // covers the interest IBR computes exactly what it did before.
++      principal = principal + toInterest - pay;
++      totalPaid += pay;
++      months++;
++    }
++    const left = principal + unpaid;
++    return {
++      totalPaid,
++      forgiven: Math.max(0, left),
++      months,
++      paidOff: left <= 0.005,
++    };
++  }
++
+   for (let m = 0; m < maxMonths; m++) {
+     if (bal <= 0.005) break;
+     const interest = bal * r;
+@@ -161,10 +191,8 @@ function simulateIdr(
+     // charge the borrower's account for any accrued interest that is not
+     // covered by the borrower's on-time payment of the amount due for that
+     // month." So the charge is capped at the payment; the shortfall is waived,
+-    // NOT credited to principal. Under IBR the full interest is charged.
+-    const interestCharged = opts.waiveUnpaidInterest
+-      ? Math.min(interest, pay)
+-      : interest;
++    // NOT credited to principal. (IBR returns above.)
++    const interestCharged = Math.min(interest, pay);
+     bal = bal + interestCharged - pay;
+ 
+     // RAP's matching principal payment. 34 CFR 685.209(o)(2)(i): when an

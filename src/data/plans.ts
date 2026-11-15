@@ -66,8 +66,50 @@ export function rapAnnualBasePayment(agi: number): number {
   return agi * 0.1;
 }
 
-/** Extended requires more than this in Direct Loans. Source: 34 CFR 685.208(e). */
+/** Extended requires more than this in Direct Loans. Source: 34 CFR 685.208(b)(4)(i). */
 export const EXTENDED_MIN_BALANCE = 30000;
+
+/**
+ * 2026 federal income tax for a single filer, used to estimate the tax on a
+ * balance forgiven at the end of IBR or RAP. Source: Rev. Proc. 2025-32 (2026
+ * inflation adjustments, with the Pub. L. 119-21 changes): standard deduction
+ * $16,100 and the seven brackets below, each rate applying up to `upTo`.
+ *
+ * Why it is taxed: Pub. L. 119-21 sec. 70119 narrowed the IRC 108(f)(5)
+ * exclusion to death and disability discharges after December 31, 2025, so a
+ * balance forgiven at the end of IBR or RAP is taxable income again. PSLF
+ * forgiveness stays excluded under 108(f)(1), so it is never taxed here.
+ *
+ * A planning estimate, not a rule: today's brackets for the borrower's filing
+ * status (single, or married filing jointly), no state tax. Named wherever it is used (the recommendation, the plan card and
+ * ASSUMPTIONS).
+ */
+export const FEDERAL_TAX_2026_SINGLE = {
+  standardDeduction: 16100,
+  brackets: [
+    { upTo: 12400, rate: 0.1 },
+    { upTo: 50400, rate: 0.12 },
+    { upTo: 105700, rate: 0.22 },
+    { upTo: 201775, rate: 0.24 },
+    { upTo: 256225, rate: 0.32 },
+    { upTo: 640600, rate: 0.35 },
+    { upTo: Infinity, rate: 0.37 },
+  ],
+} as const;
+
+/** 2026 federal income tax, married filing jointly (Rev. Proc. 2025-32; IRS newsroom, Oct 2025). */
+export const FEDERAL_TAX_2026_JOINT = {
+  standardDeduction: 32200,
+  brackets: [
+    { upTo: 24800, rate: 0.1 },
+    { upTo: 100800, rate: 0.12 },
+    { upTo: 211400, rate: 0.22 },
+    { upTo: 403550, rate: 0.24 },
+    { upTo: 512450, rate: 0.32 },
+    { upTo: 768700, rate: 0.35 },
+    { upTo: Infinity, rate: 0.37 },
+  ],
+} as const;
 
 export interface PlanMeta {
   name: string;
@@ -107,12 +149,12 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
     name: "Graduated",
     tagline: "Starts low, steps up every 2 years",
     summary:
-      "Payments start at roughly half the Standard amount and rise every two years, still finishing in 10. More total interest than Standard.",
+      "Payments start at a little over half the Standard amount and rise every two years, still finishing in 10. More total interest than Standard.",
     incomeDriven: false,
     forgivenessYears: null,
     postCutoff: false,
     pros: [
-      "Starts at roughly half the Standard payment",
+      "Starts at a little over half the Standard payment",
       "Still finishes in 10 years on a predictable schedule",
     ],
     cons: [
@@ -145,7 +187,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
     name: "IBR",
     tagline: "Payment tied to your income",
     summary:
-      "Caps your payment at 10% of discretionary income, meaning what you earn above 150% of the poverty line. A low enough income means a $0 payment, and $0 still counts.",
+      "Caps your payment at 10% of discretionary income, meaning your adjusted gross income above 150% of the poverty line. A low enough income means a $0 payment, and $0 still counts.",
     incomeDriven: true,
     forgivenessYears: 20,
     postCutoff: false,
@@ -186,7 +228,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
     name: "RAP",
     tagline: "Income-driven, and the balance always shrinks",
     summary:
-      "The Repayment Assistance Plan. Your payment is a slice of your total income, 1% to 10%, minus $50 per dependent, with a $10 monthly floor. Forgiveness after 30 years.",
+      "The Repayment Assistance Plan. Your payment is a slice of your adjusted gross income (AGI), 1% to 10%, minus $50 per dependent, with a $10 monthly floor. Forgiveness after 30 years.",
     incomeDriven: true,
     forgivenessYears: 30,
     postCutoff: true,
@@ -197,7 +239,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
       "Available even if you borrowed on or after July 1, 2026",
     ],
     cons: [
-      "Charges a percentage of your total income, not just income above the poverty floor",
+      "Charges a percentage of your whole AGI, not just income above the poverty floor",
       "Forgiveness takes 30 years, 10 longer than IBR",
       "Forgiveness at 30 years counts as taxable income",
       "You have to recertify your income every year",
@@ -206,6 +248,42 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
 };
 
 /** Plans open when every loan was disbursed before July 1, 2026. */
+/**
+ * Graduated's card for a borrower partway through the 10 years that began
+ * when the loans entered repayment, where PLAN_META's copy describes the
+ * whole 10. "level" is for two years or less left, when no step is left.
+ */
+export const GRADUATED_PARTWAY: Record<
+  "steps" | "level",
+  Pick<PlanMeta, "tagline" | "summary" | "pros" | "cons">
+> = {
+  steps: {
+    tagline: "Starts low, steps up over the years you have left",
+    summary:
+      "Your 10 years began when your loans entered repayment, and switching plans keeps them, so Graduated is priced over what is left. It starts at roughly half your Standard bill and steps up at even intervals, at most two years apart, to as much as three times where it starts, ending when your 10 years do. More total interest than Standard.",
+    pros: [
+      "Starts at roughly half your Standard bill",
+      "Still ends when your 10 years do",
+    ],
+    cons: [
+      "Early payments are below the PSLF threshold, so those months earn no credit",
+      "More total interest than Standard",
+      "Payments step up whether your income did or not",
+      "The step schedule shown is a model. Regulation caps the largest payment at three times the smallest, but your servicer sets the exact steps",
+    ],
+  },
+  level: {
+    tagline: "No step left: the same level payment as Standard",
+    summary:
+      "Graduated steps up over the 10 years that began when your loans entered repayment. With two years or less of them left, no step is left, so it is the same level payment as Standard, ending on the same date.",
+    pros: [
+      "The same payment and end date as Standard",
+      "Earns Public Service Loan Forgiveness credit, as Standard does",
+    ],
+    cons: ["No lower start this late in your 10 years"],
+  },
+};
+
 export const LEGACY_PLANS: PlanId[] = [
   "standard",
   "graduated",
@@ -276,7 +354,7 @@ export const NO_LATE_FEES_NOTE =
   "The Department of Education does not charge late fees on Direct Loans. What missing a payment actually costs: you are delinquent the day after the due date, it is reported to the credit bureaus at 90 days, and the loan defaults at 270 days.";
 
 export const ASSUMPTIONS =
-  "Two things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. And like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens.";
+  "Four things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. Like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens. Unless you tell us you are repaying on Standard now, they start every plan this month. If you are already repaying, Standard, Graduated and Extended keep the term that began when you entered repayment, and switching plans does not restart it, so your servicer's bill and end date are the real ones. If you are in school or your six-month grace period, nothing is due until grace ends, so payments start later and unsubsidized interest keeps building until then. And a balance forgiven at the end of IBR or RAP is shown and ranked with its estimated federal income tax, at today's brackets for your filing status and without state tax. Forgiveness under Public Service Loan Forgiveness is not taxed.";
 
 export const NOT_ADVICE =
   "These are estimates, not financial advice. The right plan depends on things this tool does not know, like whether your income is about to change or what else you owe. Your servicer sets your actual payment, and studentaid.gov is the authority on your account.";

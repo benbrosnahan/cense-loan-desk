@@ -1,0 +1,78 @@
+{
+ "generatedAt": "2026-11-03T06:37:01.067Z",
+ "url": "https://cense-loan-desk.vercel.app/",
+ "target": "live",
+ "command": "node run.mjs --target live --only security,geo,tools",
+ "runs": 3,
+ "steps": {
+  "security": {
+   "status": "ok",
+   "seconds": 0.2
+  },
+  "geo": {
+   "status": "ok",
+   "seconds": 11.6
+  },
+  "tools": {
+   "status": "ok",
+   "seconds": 0.7
+  }
+ },
+ "budgets": [
+  {
+   "id": "floor.securityLive",
+   "label": "Security score, live (floor)",
+   "measured": 71,
+   "limit": 71,
+   "op": ">=",
+   "unit": "score",
+   "status": "pass"
+  },
+  {
+   "id": "floor.geo",
+   "label": "GEO score (floor)",
+   "measured": 44,
+   "limit": 44,
+   "op": ">=",
+   "unit": "score",
+   "status": "pass"
+  }
+ ],
+ "budgetsFailed": 0,
+ "targets": [
+  {
+   "label": "Security score, live",
+   "measured": 71,
+   "goal": 90,
+   "met": false
+  },
+  {
+   "label": "GEO score",
+   "measured": 44,
+   "goal": 80,
+   "met": false
+  }
+ ],
+ "scores": {
+  "security.score": 71,
+  "security.https": 100,
+  "security.headers": 27,
+  "security.cookies": 100,
+  "security.content": 80,
+  "geo.score": 44,
+  "geo.crawlAccess": 20,
+  "geo.serverContent": 12,
+  "geo.structuredData": 0,
+  "geo.socialMeta": 7,
+  "geo.discovery": 0,
+  "geo.indexability": 5,
+  "geo.contentParity": 0,
+  "tools.header-check.score": 40,
+  "tools.meta-validate.score": 60,
+  "tools.structured-data.totalSchemas": 0,
+  "tools.sitemap-validate.found": 0,
+  "tools.redirect-check.redirectCount": 0,
+  "tools.broken-links.broken": 0,
+  "tools.webmcp-check.aiReadinessScore": 0
+ }
+}

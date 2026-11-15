@@ -1,0 +1,269 @@
+{
+ "url": "http://localhost:3100/",
+ "siteType": "saas",
+ "viewports": {
+  "desktop": {
+   "width": 1440,
+   "height": 900,
+   "dpr": 1,
+   "isMobile": false
+  },
+  "mobile": {
+   "width": 375,
+   "height": 812,
+   "dpr": 1,
+   "isMobile": true
+  }
+ },
+ "note": "Deterministic findings only. UX scores come from the AI review: it writes ux/ai/<tag>.json, then node lib/merge-ux.mjs <this folder>/ux scores and merges them.",
+ "screens": [
+  {
+   "tag": "empty-desktop",
+   "state": "empty",
+   "formFactor": "desktop",
+   "findings": 7,
+   "p1": 1,
+   "p2": 6,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 62,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 3 pointer target(s) smaller than M3's comfortable 48×48px at 1440px wide",
+    "P2 Missing landmark(s): nav.",
+    "P2 5 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "empty-mobile",
+   "state": "empty",
+   "formFactor": "mobile",
+   "findings": 7,
+   "p1": 1,
+   "p2": 6,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 62,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 3 tap target(s) smaller than M3's comfortable 48×48px at 375px wide",
+    "P2 Missing landmark(s): nav.",
+    "P2 5 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "form-errors-desktop",
+   "state": "form-errors",
+   "formFactor": "desktop",
+   "findings": 7,
+   "p1": 1,
+   "p2": 6,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 62,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 9 pointer target(s) smaller than M3's comfortable 48×48px at 1440px wide",
+    "P2 Missing landmark(s): nav.",
+    "P2 9 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "form-errors-mobile",
+   "state": "form-errors",
+   "formFactor": "mobile",
+   "findings": 7,
+   "p1": 1,
+   "p2": 6,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 62,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 9 tap target(s) smaller than M3's comfortable 48×48px at 375px wide",
+    "P2 Missing landmark(s): nav.",
+    "P2 9 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "loans-desktop",
+   "state": "loans",
+   "formFactor": "desktop",
+   "findings": 6,
+   "p1": 1,
+   "p2": 5,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 65.6,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 11 pointer target(s) smaller than M3's comfortable 48×48px at 1440px wide",
+    "P2 5 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "loans-mobile",
+   "state": "loans",
+   "formFactor": "mobile",
+   "findings": 6,
+   "p1": 1,
+   "p2": 5,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 65.6,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 11 tap target(s) smaller than M3's comfortable 48×48px at 375px wide",
+    "P2 5 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "plans-desktop",
+   "state": "plans",
+   "formFactor": "desktop",
+   "findings": 7,
+   "p1": 1,
+   "p2": 6,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 63.2,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 17 pointer target(s) smaller than M3's comfortable 48×48px at 1440px wide",
+    "P2 11 distinct text colors",
+    "P2 22 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "plans-mobile",
+   "state": "plans",
+   "formFactor": "mobile",
+   "findings": 7,
+   "p1": 1,
+   "p2": 6,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 63.2,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 16 tap target(s) smaller than M3's comfortable 48×48px at 375px wide",
+    "P2 11 distinct text colors",
+    "P2 22 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "payoff-desktop",
+   "state": "payoff",
+   "formFactor": "desktop",
+   "findings": 7,
+   "p1": 1,
+   "p2": 6,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 63.2,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 15 pointer target(s) smaller than M3's comfortable 48×48px at 1440px wide",
+    "P2 10 distinct text colors",
+    "P2 16 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "payoff-mobile",
+   "state": "payoff",
+   "formFactor": "mobile",
+   "findings": 7,
+   "p1": 1,
+   "p2": 6,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 63.2,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 15 tap target(s) smaller than M3's comfortable 48×48px at 375px wide",
+    "P2 10 distinct text colors",
+    "P2 16 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "records-desktop",
+   "state": "records",
+   "formFactor": "desktop",
+   "findings": 6,
+   "p1": 1,
+   "p2": 5,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 65.6,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 7 pointer target(s) smaller than M3's comfortable 48×48px at 1440px wide",
+    "P2 5 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  },
+  {
+   "tag": "records-mobile",
+   "state": "records",
+   "formFactor": "mobile",
+   "findings": 6,
+   "p1": 1,
+   "p2": 5,
+   "p3": 0,
+   "extras": 0,
+   "designScore": 65.6,
+   "designGrade": "D",
+   "findingTitles": [
+    "P2 7 tap target(s) smaller than M3's comfortable 48×48px at 375px wide",
+    "P2 5 reading-copy text node(s) below 16px (or any text below 11px).",
+    "P2 1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "P2 1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "P1 1 transition(s) animate layout props (width/height/top/left/margin)",
+    "P2 1 infinite decorative loop(s)"
+   ]
+  }
+ ]
+}

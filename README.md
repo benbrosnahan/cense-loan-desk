@@ -87,7 +87,7 @@ Two independent harnesses. Neither re-runs the app's own logic and agrees with
 itself; every figure is derived a second way and compared.
 
 ```bash
-node verify.mjs        # 180 assertions over the shipped calc/ranking modules
+node verify.mjs        # 184 assertions over the shipped calc/ranking modules
 ```
 
 Covers: amortisation against the closed form `B*r / (1 - (1+r)^-n)`; the 2026

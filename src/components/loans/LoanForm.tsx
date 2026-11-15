@@ -24,6 +24,7 @@ import {
   formatDollarsInput,
   parseNumber,
   scrollBehavior,
+  todayIso,
   uid,
 } from "@/lib/utils";
 import {
@@ -125,6 +126,8 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
     rate: false,
   });
   const [tried, setTried] = useState(false);
+  // Typing the balance, even the same figure again, confirms it as of today.
+  const [balanceTyped, setBalanceTyped] = useState(false);
 
   useEffect(() => {
     const el = formRef.current;
@@ -212,6 +215,8 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
         rate,
         disbursementDate: f.disbursementDate,
         minPayment: parseNumber(f.minPayment),
+        balanceAsOf:
+          !initial || balanceTyped ? todayIso() : initial.balanceAsOf,
       },
       { addAnother }
     );
@@ -340,9 +345,10 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
               placeholder="0"
               aria-invalid={!!show("balance")}
               aria-describedby="balance-msg"
-              onChange={(e) =>
-                set("balance", formatDollarsInput(e.target.value))
-              }
+              onChange={(e) => {
+                setBalanceTyped(true);
+                set("balance", formatDollarsInput(e.target.value));
+              }}
               onBlur={() => setTouched((t) => ({ ...t, balance: true }))}
             />
           </Field>
@@ -352,13 +358,15 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
             htmlFor="rate"
             error={show("rate")}
             hint={
+              // Keyed by what they show, so React swaps the hint whole: a
+              // browser translator replaces the text React would edit.
               rateIsAuto && suggested !== null ? (
-                <>
+                <span key={`auto-${yearLabel}`}>
                   We filled in the published undergraduate rate for {yearLabel}.
                   Change it if yours is different.
-                </>
+                </span>
               ) : suggested !== null && rate !== suggested ? (
-                <>
+                <span key={`differs-${yearLabel}-${suggested}`}>
                   The published undergraduate rate for {yearLabel} was{" "}
                   {suggested}%.{" "}
                   <button
@@ -371,7 +379,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
                   >
                     Use {suggested}%
                   </button>
-                </>
+                </span>
               ) : (
                 "Federal rates are fixed, so this never changes."
               )

@@ -1,0 +1,175 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..d45f813 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -132,6 +132,8 @@ export default function Page() {
+   const [toast, setToast] = useState<ToastState | null>(null);
+   const [busyExport, setBusyExport] = useState(false);
+   const [hideAmounts, setHideAmounts] = useState(false);
++  // Storage keys whose last write the browser refused.
++  const [failing, setFailing] = useState<string[]>([]);
+   const sectionRef = useRef<HTMLDivElement>(null);
+ 
+   // First run is deliberately empty. Someone arriving from the newsletter
+@@ -148,15 +150,27 @@ export default function Page() {
+     setHydrated(true);
+   }, []);
+ 
++  // One entry per key whose last write failed, so a loan save that works
++  // cannot hide a snapshot save that did not. The page still writes once at
++  // load, so blocked storage is caught before anything is typed.
++  const failed = useRef(new Set<string>());
++  const track = useCallback((key: string, ok: boolean) => {
++    const keys = failed.current;
++    if (ok === !keys.has(key)) return; // unchanged: no extra render per keystroke
++    if (ok) keys.delete(key);
++    else keys.add(key);
++    setFailing(Array.from(keys));
++  }, []);
++
+   useEffect(() => {
+-    if (hydrated) loanStore.save(loans);
+-  }, [loans, hydrated]);
++    if (hydrated) track("loans", loanStore.save(loans));
++  }, [loans, hydrated, track]);
+   useEffect(() => {
+-    if (hydrated) profileStore.save(profile);
+-  }, [profile, hydrated]);
++    if (hydrated) track("profile", profileStore.save(profile));
++  }, [profile, hydrated, track]);
+   useEffect(() => {
+-    if (hydrated) snapshotStore.save(snapshots);
+-  }, [snapshots, hydrated]);
++    if (hydrated) track("snapshots", snapshotStore.save(snapshots));
++  }, [snapshots, hydrated, track]);
+   useEffect(() => {
+     if (!hydrated) return;
+     try {
+@@ -178,6 +192,13 @@ export default function Page() {
+       setToast({ message, action }),
+     []
+   );
++  // For messages that say something reached storage under `key`. While that
++  // key's writes fail, the toast says the opposite (see <Toast> at the end).
++  const saySaved = useCallback(
++    (key: string, message: string, action?: ToastState["action"]) =>
++      setToast({ message, action, savedKey: key }),
++    []
++  );
+ 
+   const balance = useMemo(() => totalBalance(loans), [loans]);
+   const principal = useMemo(() => totalPrincipal(loans), [loans]);
+@@ -239,11 +260,11 @@ export default function Page() {
+       });
+       setFormKey((k) => k + 1);
+       setAdding(true);
+-      say(`Saved ${loan.nickname}`);
++      saySaved("loans", `Saved ${loan.nickname}`);
+     } else {
+       setFormDefaults({ servicer: loan.servicer });
+       setAdding(false);
+-      say(isNew ? `Saved ${loan.nickname}` : "Changes saved");
++      saySaved("loans", isNew ? `Saved ${loan.nickname}` : "Changes saved");
+     }
+   };
+ 
+@@ -273,7 +294,7 @@ export default function Page() {
+ 
+   const saveSnapshot = () => {
+     setSnapshots((prev) => [...prev, makeSnapshot(loans)]);
+-    say("Snapshot saved");
++    saySaved("snapshots", "Snapshot saved");
+   };
+ 
+   const doExport = async () => {
+@@ -305,6 +326,7 @@ export default function Page() {
+   const empty = loans.length === 0;
+   const example = isExample(loans);
+   const interest = Math.max(0, balance - principal);
++  const saveFailed = failing.length > 0;
+ 
+   return (
+     <main
+@@ -351,6 +373,16 @@ export default function Page() {
+         </div>
+       </header>
+ 
++      {saveFailed && (
++        <div role="alert" className="no-print mx-auto mt-3 max-w-3xl px-4 sm:px-6">
++          <Notice tone="danger" title="This browser is not saving what you enter">
++            Reloading or closing this page will erase it. To keep your loans
++            here, allow site data for this page in your browser settings. A
++            spreadsheet download keeps a copy, but it cannot be loaded back in.
++          </Notice>
++        </div>
++      )}
++
+       <div id="main" className="mx-auto max-w-3xl px-4 sm:px-6">
+         {/* ---------- First run ---------- */}
+         {empty && (
+@@ -416,8 +448,9 @@ export default function Page() {
+                 <Card className="p-5">
+                   <Eyebrow>What stays private</Eyebrow>
+                   <p className="mt-2 text-base leading-relaxed text-slate-800">
+-                    All of it. There is no account and no server. What you type
+-                    is saved in this browser and goes nowhere else.
++                    All of it. There is no account and no server. What you type{" "}
++                    {saveFailed ? "stays on this page" : "is saved in this browser"}{" "}
++                    and goes nowhere else.
+                   </p>
+                   <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                     Nothing here is for sale, and nothing is trying to
+@@ -859,7 +892,16 @@ export default function Page() {
+         </footer>
+       </div>
+ 
+-      <Toast toast={toast} onDismiss={() => setToast(null)} />
++      {/* Rewritten as it renders, so it also covers the first failure, which
++          is only known once the save effect has run. */}
++      <Toast
++        toast={
++          toast?.savedKey && failing.includes(toast.savedKey)
++            ? { ...toast, message: "Kept for this visit only. Not saved." }
++            : toast
++        }
++        onDismiss={() => setToast(null)}
++      />
+     </main>
+   );
+ }
+diff --git a/src/components/shared/ui.tsx b/src/components/shared/ui.tsx
+index 2315a07..274291d 100644
+--- a/src/components/shared/ui.tsx
++++ b/src/components/shared/ui.tsx
+@@ -566,6 +566,8 @@ export interface ToastState {
+   message: string;
+   /** Optional undo. A toast with an action stays up longer. */
+   action?: { label: string; run: () => void };
++  /** The storage key this message says was saved, if it says so. */
++  savedKey?: string;
+ }
+ 
+ export function Toast({
+diff --git a/src/lib/storage.ts b/src/lib/storage.ts
+index e41444f..26f91bd 100644
+--- a/src/lib/storage.ts
++++ b/src/lib/storage.ts
+@@ -24,12 +24,15 @@ function read<T>(key: string, fallback: T): T {
+   }
+ }
+ 
+-function write(key: string, value: unknown): void {
+-  if (typeof window === "undefined") return;
++/** False when the browser refused the write (storage blocked or full). */
++function write(key: string, value: unknown): boolean {
++  if (typeof window === "undefined") return true;
+   try {
+     window.localStorage.setItem(key, JSON.stringify(value));
++    return true;
+   } catch {
+-    // Nothing useful to do — the UI keeps working from in-memory state.
++    // The UI keeps working from in-memory state, and page.tsx warns.
++    return false;
+   }
+ }
+ 

@@ -1,0 +1,110 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..75e9919 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -258,13 +258,43 @@ export default function Page() {
+     });
+   };
+ 
++  // An open form would bring an erased loan back, and the next new loan would
++  // start on the servicer typed last. Clearing data clears those too.
++  const resetForms = () => {
++    setEditing(null);
++    setAdding(false);
++    setFormDefaults({});
++  };
++
+   const clearLoans = () => {
+     const before = loans;
+     setLoans([]);
++    resetForms();
+     setTab("loans");
+     say("All loans cleared", { label: "Undo", run: () => setLoans(before) });
+   };
+ 
++  // Back to exactly what a first visit stores, so nothing is left for the
++  // next person on this browser to see or to be priced on.
++  const eraseAll = () => {
++    const before = { loans, snapshots, profile, hideAmounts };
++    setLoans([]);
++    setSnapshots([]);
++    setProfile(DEFAULT_PROFILE);
++    setHideAmounts(false);
++    resetForms();
++    setTab("loans");
++    say("Everything erased", {
++      label: "Undo",
++      run: () => {
++        setLoans(before.loans);
++        setSnapshots(before.snapshots);
++        setProfile(before.profile);
++        setHideAmounts(before.hideAmounts);
++      },
++    });
++  };
++
+   const clearSnapshots = () => {
+     const before = snapshots;
+     setSnapshots([]);
+@@ -305,6 +335,14 @@ export default function Page() {
+   const empty = loans.length === 0;
+   const example = isExample(loans);
+   const interest = Math.max(0, balance - principal);
++  // Records or answers still stored with no loans: left by removing loans
++  // one by one or with Clear every loan, here or by someone earlier. Records
++  // stored as anything but a list count as none, as the first-run screen does.
++  const leftovers =
++    (Array.isArray(snapshots) && snapshots.length > 0) ||
++    (Object.keys(DEFAULT_PROFILE) as (keyof Profile)[]).some(
++      (k) => profile[k] !== DEFAULT_PROFILE[k]
++    );
+ 
+   return (
+     <main
+@@ -381,6 +419,20 @@ export default function Page() {
+               </div>
+             )}
+ 
++            {!adding && leftovers && (
++              <p className="mt-4 text-sm leading-relaxed text-slate-700">
++                Plan answers or saved records are still stored in this
++                browser.{" "}
++                <button
++                  type="button"
++                  onClick={eraseAll}
++                  className="min-h-[40px] font-semibold text-navy underline underline-offset-2 hover:text-navy-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
++                >
++                  Erase them
++                </button>
++              </p>
++            )}
++
+             {adding ? (
+               <div className="mt-8">
+                 <LoanForm
+@@ -643,7 +695,10 @@ export default function Page() {
+                     </div>
+                     <Disclosure summary="Clear my data" className="mt-2">
+                       <div className="flex flex-col gap-2 sm:flex-row">
+-                        <Button size="sm" variant="danger" onClick={clearLoans}>
++                        <Button size="sm" variant="danger" onClick={eraseAll}>
++                          Erase everything
++                        </Button>
++                        <Button size="sm" variant="ghost" onClick={clearLoans}>
+                           Clear every loan
+                         </Button>
+                         <Button
+@@ -656,8 +711,11 @@ export default function Page() {
+                         </Button>
+                       </div>
+                       <p className="mt-2 text-sm text-slate-600">
+-                        This removes the data from this browser. It was never
+-                        anywhere else.
++                        Erase everything removes your loans, saved records,
++                        income and other answers from this browser. The other
++                        two remove only what they name. None of it was ever on
++                        a server. A spreadsheet you downloaded is separate, so
++                        delete that yourself.
+                       </p>
+                     </Disclosure>
+                   </Card>

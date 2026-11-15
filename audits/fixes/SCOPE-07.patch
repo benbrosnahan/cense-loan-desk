@@ -1,0 +1,534 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..56b05ec 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -34,6 +34,7 @@ import {
+   anyPostCutoff,
+   buildContext,
+   estimatePlans,
++  ibrNewBorrower,
+   totalBalance,
+   totalPrincipal,
+ } from "@/lib/calc";
+@@ -81,6 +82,9 @@ const HIDE_KEY = "cense.loandesk.hideAmounts.v1";
+ const isExample = (loans: Loan[]) =>
+   loans.length > 0 && loans.every((l) => l.id.startsWith("seed-"));
+ 
++/** A count of monthly payments typed into a field: digits only, blank is 0. */
++const paymentCount = (raw: string) => Number(raw.replace(/\D/g, "")) || 0;
++
+ function EyeIcon({ off }: { off: boolean }) {
+   return (
+     <svg
+@@ -197,9 +201,14 @@ export default function Page() {
+     [loans, profile]
+   );
+   const eligiblePlanCount = estimates.filter((e) => e.eligible).length;
++  // A plan whose forgiveness count is already met has no payment left to show.
+   const selectedEstimate =
+     estimates.find(
+-      (e) => e.id === profile.selectedPlan && e.eligible && e.monthlyPayment !== null
++      (e) =>
++        e.id === profile.selectedPlan &&
++        e.eligible &&
++        e.monthlyPayment !== null &&
++        e.paymentsLeft !== 0
+     ) ?? null;
+ 
+   const goTo = (next: Tab) => {
+@@ -774,6 +783,79 @@ export default function Page() {
+                           </select>
+                         </Field>
+                       </div>
++
++                      <Disclosure
++                        summary="Already made payments toward forgiveness?"
++                        defaultOpen={profile.idrCount > 0 || profile.pslfCount > 0}
++                      >
++                        <p className="text-sm leading-relaxed text-slate-700">
++                          {ibrNewBorrower(loans)
++                            ? "Payments that already count bring forgiveness closer, so IBR and RAP below price only the ones still to make. Leave these blank if you are just starting."
++                            : "Payments that already count bring forgiveness closer. Leave these blank if you are just starting."}
++                        </p>
++                        {!ibrNewBorrower(loans) && (
++                          <p className="mt-2 text-sm leading-relaxed text-slate-700">
++                            With a loan from before July 2014, IBR and RAP below
++                            do not use these counts yet: IBR still assumes 10% of
++                            discretionary income over 20 years, where your rule
++                            is 15% over 25 years, so both stay on the same
++                            footing. Only the PSLF count is used, to say how many
++                            qualifying payments are left.
++                          </p>
++                        )}
++                        <div className="mt-4 grid gap-5 sm:grid-cols-2">
++                          <Field
++                            label="Payments already counted toward income-driven forgiveness"
++                            hint={
++                              ibrNewBorrower(loans)
++                                ? "Your IDR count on studentaid.gov. If your loans show different counts, enter the smallest. RAP counts most of the same months, so its figures use this count as an approximation."
++                                : "Your IDR count on studentaid.gov. If your loans show different counts, enter the smallest."
++                            }
++                            htmlFor="idrcount"
++                            optional
++                          >
++                            <input
++                              id="idrcount"
++                              className={inputClass}
++                              inputMode="numeric"
++                              autoComplete="off"
++                              maxLength={3}
++                              aria-describedby="idrcount-msg"
++                              placeholder="0"
++                              value={profile.idrCount ? String(profile.idrCount) : ""}
++                              onChange={(e) =>
++                                setProfile((p) => ({
++                                  ...p,
++                                  idrCount: paymentCount(e.target.value),
++                                }))
++                              }
++                            />
++                          </Field>
++                          <Field
++                            label="Qualifying payments already counted toward PSLF"
++                            hint="Your PSLF count on studentaid.gov, if you work in public service. Forgiveness comes at 120."
++                            htmlFor="pslfcount"
++                            optional
++                          >
++                            <input
++                              id="pslfcount"
++                              className={inputClass}
++                              inputMode="numeric"
++                              autoComplete="off"
++                              maxLength={3}
++                              aria-describedby="pslfcount-msg"
++                              placeholder="0"
++                              value={profile.pslfCount ? String(profile.pslfCount) : ""}
++                              onChange={(e) =>
++                                setProfile((p) => ({
++                                  ...p,
++                                  pslfCount: paymentCount(e.target.value),
++                                }))
++                              }
++                            />
++                          </Field>
++                        </div>
++                      </Disclosure>
+                     </div>
+                   </Card>
+ 
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..20245ee 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -18,7 +18,7 @@ import {
+   SAME_PLAN_RULE,
+ } from "@/data/plans";
+ import { buildContext, estimatePlans, isPostCutoff, rankPlans } from "@/lib/calc";
+-import { cn, years } from "@/lib/utils";
++import { cn, monthYearFromNow, years } from "@/lib/utils";
+ import {
+   Badge,
+   Button,
+@@ -108,6 +108,11 @@ function PlanRow({
+   const meta = PLAN_META[e.id];
+   const [open, setOpen] = useState(false);
+   const panelId = `plan-${e.id}`;
++  const term = (e.forgivenessYears ?? 0) * 12;
++  // Payments already counted toward forgiveness: IBR and RAP price only the
++  // ones left, and a count that meets the term leaves nothing to price.
++  const countMet = e.paymentsLeft === 0;
++  const credited = e.paymentsLeft !== undefined && e.paymentsLeft < term;
+ 
+   return (
+     <Card
+@@ -126,7 +131,7 @@ function PlanRow({
+         </div>
+         <p className="mt-0.5 text-sm text-slate-700">{meta.tagline}</p>
+ 
+-        {e.monthlyPayment === null && (
++        {e.monthlyPayment === null && !countMet && (
+           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+             <p className="text-sm leading-relaxed text-slate-800">
+               This plan is priced off what you earn, not what you owe. Add your
+@@ -147,7 +152,13 @@ function PlanRow({
+           </div>
+         )}
+ 
+-        {e.monthlyPayment !== null && (
++        {countMet && (
++          <p className="mt-4 rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800">
++            {`Your count already meets the ${term} payments ${meta.name} needs. Ask your servicer to confirm it and process forgiveness.`}
++          </p>
++        )}
++
++        {e.monthlyPayment !== null && !countMet && (
+         <div className="mt-4 grid gap-3.5 sm:grid-cols-2 sm:gap-6">
+           <Measure
+             label={e.id === "graduated" ? "Per month, to start" : "Per month"}
+@@ -198,7 +209,7 @@ function PlanRow({
+         )}
+ 
+         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+-          {e.monthlyPayment !== null && (
++          {e.monthlyPayment !== null && !countMet && (
+             <Button
+               size="sm"
+               variant={selected ? "primary" : "secondary"}
+@@ -245,14 +256,18 @@ function PlanRow({
+               </div>
+             </dl>
+ 
+-            {e.forgivenAmount > 1 && (
++            {e.forgivenAmount > 1 && !countMet && (
+               <p className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800">
+                 <strong>
+                   <Money value={e.forgivenAmount} />
+                 </strong>{" "}
+-                would still be left after {e.forgivenessYears} years and gets
+-                forgiven. Outside of PSLF, a forgiven balance counts as taxable
+-                income the year it is cancelled.
++                <span>
++                  {credited
++                    ? `would still be left after ${e.paymentsLeft} more payments, in ${monthYearFromNow(e.paymentsLeft ?? 0)}, and gets forgiven.`
++                    : `would still be left after ${e.forgivenessYears} years and gets forgiven.`}
++                </span>{" "}
++                Outside of PSLF, a forgiven balance counts as taxable income the
++                year it is cancelled.
+               </p>
+             )}
+ 
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..7fe590d 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -85,15 +85,18 @@ export default function RankingPanel({
+ 
+   const ctx = useMemo(() => buildContext(loans, profile), [loans, profile]);
+   const estimates = useMemo(() => estimatePlans(ctx), [ctx]);
++  // A plan whose forgiveness count is already met has no payment left.
+   const eligible = estimates.filter(
+-    (e) => e.eligible && e.monthlyPayment !== null
++    (e) => e.eligible && e.monthlyPayment !== null && e.paymentsLeft !== 0
+   );
+ 
+   const selected = profile.selectedPlan
+     ? estimates.find((e) => e.id === profile.selectedPlan) ?? null
+     : null;
+   const required =
+-    selected && selected.eligible ? selected.monthlyPayment : null;
++    selected && selected.eligible && selected.paymentsLeft !== 0
++      ? selected.monthlyPayment
++      : null;
+ 
+   const extra = Math.max(0, Math.min(EXTRA_MAX, profile.extraPerMonth || 0));
+ 
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..0ad7288 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -143,13 +143,12 @@ function simulateIdr(
+   balance: number,
+   ratePct: number,
+   monthlyPayment: number,
+-  maxYears: number,
++  maxMonths: number,
+   opts: { waiveUnpaidInterest: boolean; matchPrincipal: boolean }
+ ) {
+   const r = ratePct / 100 / 12;
+   let bal = balance;
+   let totalPaid = 0;
+-  const maxMonths = maxYears * 12;
+   let months = 0;
+ 
+   for (let m = 0; m < maxMonths; m++) {
+@@ -205,6 +204,38 @@ function rapMonthly(profile: Profile): number {
+   return Math.max(RAP_MIN_MONTHLY, base - dependents * RAP_DEPENDENT_CREDIT);
+ }
+ 
++/**
++ * IBR "new borrower" (34 CFR 685.209(b)(13)(ii)): owed no Direct or FFEL loan
++ * on July 1, 2014. Any loan entered from before then means not one.
++ */
++export function ibrNewBorrower(loans: Loan[]): boolean {
++  return !loans.some(
++    (l) => l.disbursementDate && l.disbursementDate < "2014-07-01"
++  );
++}
++
++/** A count of monthly payments from the profile: whole, never negative. */
++function paymentCount(n: unknown): number {
++  return typeof n === "number" && Number.isFinite(n) && n > 0
++    ? Math.floor(n)
++    : 0;
++}
++
++/**
++ * Payments already counted toward income-driven forgiveness. A payment that
++ * qualifies for PSLF counts toward IBR too (685.209(k)(4)(v)), so the PSLF
++ * count is a floor. RAP counts most of the same months ((k)(8)(i)(C)), so for
++ * RAP this is an approximation, and the form says so.
++ */
++export function idrCredit(profile: Profile): number {
++  return Math.max(paymentCount(profile.idrCount), paymentCount(profile.pslfCount));
++}
++
++/** Qualifying payments still needed for PSLF, out of 120 (685.219(c)(1)(iii)). */
++export function pslfPaymentsLeft(profile: Profile): number {
++  return Math.max(0, 120 - paymentCount(profile.pslfCount));
++}
++
+ export interface PlanContext {
+   loans: Loan[];
+   profile: Profile;
+@@ -212,6 +243,8 @@ export interface PlanContext {
+   postCutoff: boolean;
+   /** Any Parent PLUS loan in the portfolio. Closes IBR and RAP. */
+   parentPlus: boolean;
++  /** No loan from before July 1, 2014. Only then do IBR and RAP take the forgiveness count. */
++  ibrNewBorrower: boolean;
+   balance: number;
+   rate: number;
+   /** The 10-year Standard payment. The statutory yardstick for PSLF credit. */
+@@ -228,6 +261,7 @@ export function buildContext(loans: Loan[], profile: Profile): PlanContext {
+     hasIncome: profile.income > 0,
+     postCutoff: anyPostCutoff(loans),
+     parentPlus: anyParentPlus(loans),
++    ibrNewBorrower: ibrNewBorrower(loans),
+     balance,
+     rate,
+     pslfBenchmark: amortizedPayment(balance, rate, 10),
+@@ -416,15 +450,29 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     // ---- Income-driven plans ----------------------------------------
++    // Forgiveness comes after a set number of payments: 240 on IBR for a new
++    // borrower (685.209(k)(2)) and 360 on RAP ((k)(7)). Payments already
++    // counted come off that number, so only the payments still to make are
++    // priced, from today.
++    //
++    // IBR for a borrower who is not new needs 15% over 300 payments ((f)(3)(i),
++    // (k)(1)), which is not modeled yet. Until it is, both IBR and RAP ignore
++    // the count for that borrower and keep exactly their old figures, so the
++    // two stay comparable and neither moves; only the PSLF sentence uses it.
++    const counted = ctx.ibrNewBorrower;
++    const term = id === "rap" ? 360 : 240;
++    const left = counted ? Math.max(0, term - idrCredit(profile)) : term;
++    const idrBase = counted ? { ...base, paymentsLeft: left } : base;
++
+     // Always qualify for PSLF under 685.219(b)(28)(i) and (v), including $0.
+     if (!hasIncome) {
+       return {
+-        ...base,
++        ...idrBase,
+         eligible: true,
+         monthlyPayment: null,
+         totalPaid: null,
+         totalInterest: null,
+-        years: id === "rap" ? 30 : 20,
++        years: left / 12,
+         forgivenAmount: 0,
+         pslf: "counts",
+         pslfNote:
+@@ -435,17 +483,17 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     if (id === "ibr") {
+       const cap = amortizedPayment(balance, rate, 10);
+       const pay = Math.min(ibrMonthly(profile), cap);
+-      const sim = simulateIdr(balance, rate, pay, 20, {
++      const sim = simulateIdr(balance, rate, pay, left, {
+         waiveUnpaidInterest: false,
+         matchPrincipal: false,
+       });
+       return {
+-        ...base,
++        ...idrBase,
+         eligible: true,
+         monthlyPayment: pay,
+         totalPaid: sim.totalPaid,
+         totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
+-        years: sim.paidOff ? sim.months / 12 : 20,
++        years: sim.paidOff ? sim.months / 12 : left / 12,
+         forgivenAmount: sim.forgiven,
+         pslf: "counts",
+         pslfNote:
+@@ -454,17 +502,17 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     const pay = rapMonthly(profile);
+-    const sim = simulateIdr(balance, rate, pay, 30, {
++    const sim = simulateIdr(balance, rate, pay, left, {
+       waiveUnpaidInterest: true,
+       matchPrincipal: true,
+     });
+     return {
+-      ...base,
++      ...idrBase,
+       eligible: true,
+       monthlyPayment: pay,
+       totalPaid: sim.totalPaid,
+       totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
+-      years: sim.paidOff ? sim.months / 12 : 30,
++      years: sim.paidOff ? sim.months / 12 : left / 12,
+       forgivenAmount: sim.forgiven,
+       pslf: "counts",
+       pslfNote:
+@@ -496,8 +544,10 @@ export function rankPlans(
+   estimates: PlanEstimate[],
+   ctx: PlanContext
+ ): { ranked: RankedPlan[]; topPickReason: string } {
++  // A plan whose count is already met has nothing left to price, so it is
++  // not compared with the others; its card says to ask for forgiveness.
+   const eligible = estimates.filter(
+-    (e) => e.eligible && e.monthlyPayment !== null
++    (e) => e.eligible && e.monthlyPayment !== null && e.paymentsLeft !== 0
+   );
+ 
+   if (!eligible.length) {
+@@ -532,8 +582,15 @@ export function rankPlans(
+       top = qualifying.reduce((a, b) =>
+         (a.monthlyPayment ?? Infinity) <= (b.monthlyPayment ?? Infinity) ? a : b
+       );
++      const pslfLeft = pslfPaymentsLeft(ctx.profile);
+       reason = ctx.publicService
+-        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
++        ? `You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. ${
++            pslfLeft === 0
++              ? "Your count already reaches 120 qualifying payments: apply for forgiveness on studentaid.gov."
++              : pslfLeft < 120
++                ? `After ${pslfLeft} more qualifying payment${pslfLeft === 1 ? "" : "s"} the rest is cancelled, tax free.`
++                : "After 120 qualifying payments the rest is cancelled, tax free."
++          }`
+         : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
+     } else {
+       top = lowestInterest;
+@@ -557,7 +614,7 @@ export function rankPlans(
+ 
+   const whyNotFor = (e: PlanEstimate): string => {
+     if (e.id === top.id) return "";
+-    if (!e.eligible) return "";
++    if (!e.eligible || e.paymentsLeft === 0) return "";
+     if (e.monthlyPayment === null) return "Add your income to compare this one.";
+ 
+     const parts: string[] = [];
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..58eeb85 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -79,6 +79,11 @@ export interface PlanEstimate {
+   forgivenAmount: number;
+   /** Set when ineligible, explaining exactly why. */
+   ineligibleReason?: string;
++  /**
++   * IBR and RAP only: payments still to make before forgiveness, after the
++   * ones the borrower says already count. 0 = the count already meets the term.
++   */
++  paymentsLeft?: number;
+ }
+ 
+ /** A ranked plan plus the reason it was or was not the pick. */
+@@ -111,6 +116,14 @@ export interface Profile {
+   /** Annual gross income. 0 = not supplied, which hides income-driven estimates. */
+   income: number;
+   householdSize: number;
++  /**
++   * Payments already counted toward income-driven forgiveness (the IDR count
++   * on studentaid.gov). 0 = none or not known. IBR and RAP price only the
++   * payments still to make (34 CFR 685.209(k)(4)).
++   */
++  idrCount: number;
++  /** Qualifying PSLF payments already counted. PSLF needs 120 (685.219(c)(1)(iii)). */
++  pslfCount: number;
+   employment: Employment;
+   goal: Goal;
+   /** Extra dollars per month above the required payment. */
+@@ -122,6 +135,8 @@ export interface Profile {
+ export const DEFAULT_PROFILE: Profile = {
+   income: 0,
+   householdSize: 1,
++  idrCount: 0,
++  pslfCount: 0,
+   employment: "unsure",
+   goal: "unsure",
+   // Starts at zero on purpose. A pre-filled amount anchors what people pay.
+diff --git a/verify.mjs b/verify.mjs
+index 70a71a4..5585e3b 100644
+--- a/verify.mjs
++++ b/verify.mjs
+@@ -623,6 +623,78 @@ console.log("\n[17] Parent PLUS eligibility — 685.209(d)(2), (d)(4), 685.210(a
+      direct === "extended,graduated,ibr,rap,standard", direct);
+ }
+ 
++// ============================================================ credit
++console.log("\n[19] Payments already counted — 685.209(k)(2), (k)(4), (k)(7)");
++{
++  const L = (bal, rate, date) => [{ id: "c" + date, nickname: "c", servicer: "X", kind: "direct_unsub",
++    subsidy: "unsubsidized", principal: bal, balance: bal, rate, disbursementDate: date, minPayment: 0 }];
++  const prof = (over) => ({ income: 48000, householdSize: 1, employment: "private", goal: "unsure",
++    extraPerMonth: 0, selectedPlan: null, idrCount: 0, pslfCount: 0, ...over });
++  const plan = (loans, p, id) => calc.estimatePlans(calc.buildContext(loans, p)).find((e) => e.id === id);
++  // Hand-derived: 10% of income above 150% of the $15,960 poverty line, over 12.
++  const pay = ((48000 - 1.5 * 15960) * 0.1) / 12; // $200.50, under the $284.63 of monthly interest
++  const r = 6.21 / 1200;
++  const leftAfter = (n) => 55000 * (1 + r) ** n - pay * ((1 + r) ** n - 1) / r;
++  const newLoan = L(55000, 6.21, "2014-09-01");
++
++  const none = plan(newLoan, prof({}), "ibr");
++  near("IBR, no count: 240 payments of $200.50", none.totalPaid, 240 * pay, 0.5);
++  const ibr = plan(newLoan, prof({ idrCount: 120 }), "ibr");
++  ok("IBR, 120 counted: 120 payments left over 10 years", ibr.paymentsLeft === 120 && ibr.years === 10,
++     `${ibr.paymentsLeft} left, ${ibr.years} yr`);
++  near("IBR, 120 counted: $24,060 paid", ibr.totalPaid, 120 * pay, 0.5);
++  near("IBR, 120 counted: forgiven balance after 120 more payments", ibr.forgivenAmount, leftAfter(120), 1);
++  // RAP: 4% of $48,000 is $160 a month; interest past the payment is waived and
++  // $50 of principal is matched, so it never clears in 240 payments.
++  const rap = plan(newLoan, prof({ idrCount: 120 }), "rap");
++  ok("RAP, 120 counted: 240 payments left", rap.paymentsLeft === 240, String(rap.paymentsLeft));
++  near("RAP, 120 counted: $38,400 paid", rap.totalPaid, 240 * 160, 0.5);
++  // A PSLF-qualifying payment counts toward IBR ((k)(4)(v)).
++  const viaPslf = plan(newLoan, prof({ pslfCount: 100 }), "ibr");
++  ok("IBR counts PSLF payments: 140 left after 100", viaPslf.paymentsLeft === 140, String(viaPslf.paymentsLeft));
++  // Not a new borrower (a loan from 2010): IBR's 15% over 300 payments is not
++  // modeled yet, so IBR and RAP both ignore the count and keep their
++  // payments from today, which keeps them comparable.
++  const oldLoan = L(45000, 6.8, "2010-09-01");
++  const oldPay = ((50000 - 1.5 * 15960) * 0.1) / 12; // $217.17, under the $255 of monthly interest
++  const old = plan(oldLoan, prof({ income: 50000, idrCount: 180 }), "ibr");
++  ok("IBR, loan from 2010, 180 counted: count ignored, 240 payments from today",
++     old.paymentsLeft === undefined && old.years === 20 && Math.abs(old.totalPaid - 240 * oldPay) < 0.5,
++     `${old.paymentsLeft} left, ${old.years} yr, $${old.totalPaid.toFixed(2)}`);
++  const oldRap = plan(oldLoan, prof({ income: 50000, idrCount: 180 }), "rap");
++  ok("RAP, loan from 2010, 180 counted: count ignored, 360 payments from today",
++     oldRap.paymentsLeft === undefined && oldRap.years === 30, `${oldRap.paymentsLeft} left, ${oldRap.years} yr`);
++  // Sweep: with a loan from before July 2014, IBR, RAP and the ranking are the
++  // same whatever the count.
++  let moved = [];
++  let seed = 19;
++  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
++  for (let t = 0; t < 200; t++) {
++    const loans = [...L(Math.round(5000 + rnd() * 90000), Math.round((3 + rnd() * 6) * 100) / 100, `${2005 + Math.floor(rnd() * 9)}-09-01`),
++                   ...L(Math.round(1000 + rnd() * 30000), 6.53, "2019-09-01")].map((l, i) => ({ ...l, id: "s" + i }));
++    const p0 = prof({ income: Math.round(rnd() * 150000), householdSize: 1 + Math.floor(rnd() * 5) });
++    const rank = (pp) => { const c = calc.buildContext(loans, pp); return calc.rankPlans(calc.estimatePlans(c), c).ranked; };
++    const a = rank(p0);
++    const b = rank({ ...p0, idrCount: Math.floor(rnd() * 320), pslfCount: Math.floor(rnd() * 130) });
++    if (JSON.stringify(a) !== JSON.stringify(b)) moved.push(`t${t}`);
++  }
++  ok("200 portfolios with a loan from before July 2014: IBR, RAP and the ranking ignore the count",
++     moved.length === 0, moved.slice(0, 6).join(" "));
++  // A count that already meets the term leaves nothing to price or rank.
++  const p = prof({ idrCount: 240, goal: "lowest_payment" });
++  const ctx = calc.buildContext(newLoan, p);
++  const { ranked } = calc.rankPlans(calc.estimatePlans(ctx), ctx);
++  const met = ranked.find((x) => x.estimate.id === "ibr");
++  ok("IBR count met: 0 left, not ranked against the others",
++     met.estimate.paymentsLeft === 0 && !met.isTopPick && !met.isLowestPayment && met.whyNot === "",
++     JSON.stringify({ left: met.estimate.paymentsLeft, top: met.isTopPick, low: met.isLowestPayment }));
++  // PSLF needs 120 in all (685.219(c)(1)(iii)).
++  const ps = prof({ employment: "government", goal: "forgiveness", pslfCount: 100 });
++  const pctx = calc.buildContext(newLoan, ps);
++  ok("PSLF with 100 counted: 20 more qualifying payments",
++     /After 20 more qualifying payments/.test(calc.rankPlans(calc.estimatePlans(pctx), pctx).topPickReason));
++}
++
+ // ============================================================ report
+ console.log("\n" + "=".repeat(78));
+ console.log(`PASS ${pass}   FAIL ${fail}`);

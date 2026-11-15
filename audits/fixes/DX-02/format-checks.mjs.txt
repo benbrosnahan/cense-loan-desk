@@ -1,0 +1,20 @@
+// ============================================================ outside the engine
+console.log("\n[--] What turns an engine number into what the borrower reads");
+{
+  const utils = await import("./.verify/lib/utils.js");
+  const seed = await import("./.verify/data/seed.js");
+  const storage = await import("./.verify/lib/storage.js");
+  near("parseNumber keeps the decimal", utils.parseNumber("6.53"), 6.53, 1e-9);
+  near("parseNumber strips $ and commas", utils.parseNumber("$12,000.50"), 12000.5, 1e-9);
+  ok("money shows whole dollars", utils.money(1234.4) === "$1,234", utils.money(1234.4));
+  const jan = new Date(2026, 0, 15);
+  ok("debt-free month", utils.monthYearFromNow(13, jan) === "February 2027", utils.monthYearFromNow(13, jan));
+  ok("months in words", utils.monthsInWords(40) === "3 years 4 months", utils.monthsInWords(40));
+  near("2024-25 undergraduate rate", seed.suggestRate("2024-09-01"), 6.53, 1e-9);
+  near("first day of the 2024-25 rate", seed.suggestRate("2024-07-01"), 6.53, 1e-9);
+  const l = (bal) => ({ id: "a", nickname: "a", servicer: "x", kind: "direct_sub", subsidy: "subsidized", principal: 1000, balance: bal, rate: 5, disbursementDate: "2024-09-01", minPayment: 0 });
+  const older = storage.makeSnapshot([l(2000)]);
+  const newer = storage.makeSnapshot([l(2001)]);
+  near("snapshot total is the balance", older.totalBalance, 2000, 1e-9);
+  ok("a $1 balance move is reported", storage.diffSnapshots(older, newer).length === 1);
+}

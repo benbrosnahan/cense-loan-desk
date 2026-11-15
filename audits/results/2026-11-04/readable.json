@@ -1,0 +1,104 @@
+{
+ "url": "http://localhost:3100/",
+ "runs": 3,
+ "throttle": {
+  "latencyMs": 562.5,
+  "downloadKbps": 1474.56,
+  "uploadKbps": 675,
+  "cpu": 4
+ },
+ "viewport": {
+  "width": 412,
+  "height": 823,
+  "deviceScaleFactor": 1.75,
+  "isMobile": true,
+  "hasTouch": true
+ },
+ "method": "Cold loads, each in a fresh browser, on slow 4G applied for real with devtools throttling (not simulated) and 4x CPU. Marks are ms from navigation start, read inside the page: skeleton is the first frame with .animate-pulse in the DOM, real the first frame with main h1 and no .animate-pulse, readable the first frame where the first .rise block is at opacity 0.99 or more (real when there is no .rise); fp and fcp are Paint Timing, lcp the last largest-contentful-paint entry. Each median is per mark, over the loads without an error; with an even count, the higher middle value.",
+ "scenarios": {
+  "first": {
+   "runs": [
+    {
+     "run": 1,
+     "fp": 1456,
+     "fcp": 2636,
+     "skeleton": 1453,
+     "real": 2602,
+     "readable": 2849,
+     "lcp": 2636,
+     "lcpElement": "h1 \"Loan Desk\""
+    },
+    {
+     "run": 2,
+     "fp": 1468,
+     "fcp": 2652,
+     "skeleton": 1463,
+     "real": 2609,
+     "readable": 2868,
+     "lcp": 2652,
+     "lcpElement": "h1 \"Loan Desk\""
+    },
+    {
+     "run": 3,
+     "fp": 1472,
+     "fcp": 2640,
+     "skeleton": 1454,
+     "real": 2604,
+     "readable": 2854,
+     "lcp": 2640,
+     "lcpElement": "h1 \"Loan Desk\""
+    }
+   ],
+   "median": {
+    "fp": 1468,
+    "fcp": 2640,
+    "skeleton": 1454,
+    "real": 2604,
+    "readable": 2854,
+    "lcp": 2640
+   }
+  },
+  "returning": {
+   "runs": [
+    {
+     "run": 1,
+     "fp": 1456,
+     "fcp": 2672,
+     "skeleton": 1453,
+     "real": 2624,
+     "readable": 2884,
+     "lcp": 2672,
+     "lcpElement": "h1 \"Loan Desk\""
+    },
+    {
+     "run": 2,
+     "fp": 1472,
+     "fcp": 2692,
+     "skeleton": 1462,
+     "real": 2640,
+     "readable": 2905,
+     "lcp": 2692,
+     "lcpElement": "h1 \"Loan Desk\""
+    },
+    {
+     "run": 3,
+     "fp": 1472,
+     "fcp": 2672,
+     "skeleton": 1454,
+     "real": 2630,
+     "readable": 2885,
+     "lcp": 2672,
+     "lcpElement": "h1 \"Loan Desk\""
+    }
+   ],
+   "median": {
+    "fp": 1472,
+    "fcp": 2672,
+    "skeleton": 1454,
+    "real": 2630,
+    "readable": 2885,
+    "lcp": 2672
+   }
+  }
+ }
+}

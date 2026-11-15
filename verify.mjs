@@ -434,8 +434,12 @@ console.log("\n[13] Strategy comparison");
   ok("cannot beat the zero-interest floor",
      cmp.avalanche.months >= Math.floor(total / 225),
      `${cmp.avalanche.months} vs floor ${Math.floor(total / 225)}`);
-  // No plan selected -> caller passes 0 -> no projection.
-  ok("zero required payment yields null", ranking.compareStrategies(port, 0, 100) === null);
+  // No plan selected: the caller passes null and never calls this. Exactly $0 is
+  // a real answer (IBR at or under 150% of poverty), so it must project.
+  const zero = ranking.compareStrategies(port, 0, 100);
+  ok("$0 required still projects the extra", !!zero && zero.requiredPayment === 0 && zero.budget === 100);
+  ok("$0 required and no extra never clears", ranking.compareStrategies(port, 0, 0)?.budgetTooLow === true);
+  ok("negative required payment yields null", ranking.compareStrategies(port, -1, 100) === null);
   ok("empty portfolio yields null", ranking.compareStrategies([], 125, 100) === null);
   // More extra must never be slower or costlier.
   const more = ranking.compareStrategies(port, 125, 400);
@@ -521,6 +525,11 @@ console.log("\n[15] Plan ranking / recommendation");
   const over = run("least_total", "private", 30001).ranked.find((r) => r.estimate.id === "extended");
   ok("Extended closed under $30k", !under.estimate.eligible);
   ok("Extended open above $30k", over.estimate.eligible);
+  // "More than $30,000": exactly $30,000 stays closed, a cent over opens it.
+  const exact = run("least_total", "private", 30000).ranked.find((r) => r.estimate.id === "extended");
+  const cent = run("least_total", "private", 30000.01).ranked.find((r) => r.estimate.id === "extended");
+  ok("Extended closed at exactly $30,000", !exact.estimate.eligible);
+  ok("Extended open at $30,000.01", cent.estimate.eligible);
 }
 
 // ============================================================ 16. invariants
@@ -621,6 +630,34 @@ console.log("\n[17] Parent PLUS eligibility — 685.209(d)(2), (d)(4), 685.210(a
   const direct = open([L("direct_sub", 20000, "2022-08-15"), L("direct_unsub", 15000, "2023-08-15")]);
   ok("Direct Sub/Unsub pre-cutoff: all five legacy plans open",
      direct === "extended,graduated,ibr,rap,standard", direct);
+}
+
+// ============================================================ 18. review fixes
+console.log("\n[18] Forgiveness tax and the Tiered Standard floor (review, 2026-11-15)");
+{
+  // Expected taxes worked by hand from the IRS 2026 tables. The standard
+  // deduction comes off income plus the forgiven balance, so an unused part of
+  // it shelters forgiveness for a low earner.
+  near("tax: AGI $0, $66,000 forgiven, single = $5,740", calc.forgivenessTax(0, 66000), 5740, 0.5);
+  near("tax: AGI $12,000, $40,000 forgiven, single = $4,060", calc.forgivenessTax(12000, 40000), 4060, 0.5);
+  near("tax: AGI $30,000, $50,000 forgiven, single = $7,350", calc.forgivenessTax(30000, 50000), 7350, 0.5);
+  near("tax: joint AGI $52,000, $30,000 forgiven = $3,500", calc.forgivenessTax(52000, 30000, true), 3500, 0.5);
+  ok("tax: nothing forgiven = 0", calc.forgivenessTax(40000, 0) === 0);
+
+  // Tiered Standard at its $50 floor: price the $50 actually charged. Closed
+  // form, not the app's loop: k full payments, then one partial payment.
+  const loans = [{ id: "t", nickname: "t", servicer: "X", kind: "direct_unsub", subsidy: "unsubsidized",
+    principal: 3500, balance: 3500, rate: 6.39, disbursementDate: "2026-08-15", minPayment: 0 }];
+  const p = { income: 0, incomeKnown: false, householdSize: 1, filesJointly: false, spouseLoanBalance: 0,
+    employment: "private", goal: "least_total", extraPerMonth: 0, selectedPlan: null };
+  const t = calc.estimatePlans(calc.buildContext(loans, p)).find((e) => e.id === "tiered_standard");
+  const r = 6.39 / 1200, B = 3500, P = 50;
+  const k = Math.floor(-Math.log(1 - (r * B) / P) / Math.log(1 + r));
+  const left = B * (1 + r) ** k - (P * ((1 + r) ** k - 1)) / r;
+  const total = P * k + left * (1 + r);
+  ok("Tiered floor: $50 a month", t.monthlyPayment === 50, `got ${t.monthlyPayment}`);
+  near("Tiered floor: total paid is for $50 a month", t.totalPaid, total, 0.5, "$");
+  near("Tiered floor: months to repay", t.years * 12, k + 1, 0.001);
 }
 
 // ============================================================ report

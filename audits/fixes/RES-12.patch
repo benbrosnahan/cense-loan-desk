@@ -1,0 +1,427 @@
+diff --git a/src/app/error.tsx b/src/app/error.tsx
+new file mode 100644
+index 0000000..6dc4367
+--- /dev/null
++++ b/src/app/error.tsx
+@@ -0,0 +1,29 @@
++"use client";
++
++// Cense Loan Desk — shown if the page throws while it updates. Created with
++// Claude Code.
++//
++// Browser translation is the known cause: the translator swaps out text React
++// still holds, and React throws when it next edits that text. Without this
++// file Next replaces the whole page with a bare error and no way back.
++
++import { Button } from "@/components/shared/ui";
++
++export default function PageError({ reset }: { reset: () => void }) {
++  return (
++    <main className="min-h-screen bg-page">
++      <div className="mx-auto max-w-3xl px-4 pt-16 sm:px-6">
++        <h1 className="font-display text-3xl font-bold leading-tight text-slate-900">
++          Something went wrong on this screen
++        </h1>
++        <p className="mt-3 max-w-xl text-lg leading-relaxed text-slate-700">
++          Your saved loans are still in this browser. Try again to reopen Loan
++          Desk.
++        </p>
++        <div className="mt-7">
++          <Button onClick={() => reset()}>Try again</Button>
++        </div>
++      </div>
++    </main>
++  );
++}
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..fe9a05b 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -455,7 +455,12 @@ export default function Page() {
+               <p className="figure mt-1 text-[3.5rem] font-bold leading-none text-slate-900 sm:text-7xl">
+                 <Money value={balance} tabular={false} />
+               </p>
+-              <p className="mt-2 text-base text-slate-700">
++              {/* Keyed by what it shows, so React replaces the line whole: a
++                  browser translator swaps the text React would edit. */}
++              <p
++                key={`sum-${loans.length}-${servicerCount}-${selectedEstimate?.id}-${selectedEstimate?.monthlyPayment}`}
++                className="mt-2 text-base text-slate-700"
++              >
+                 across {loans.length} loan{loans.length === 1 ? "" : "s"}
+                 {servicerCount > 0 &&
+                   ` with ${servicerCount} servicer${
+@@ -547,8 +552,14 @@ export default function Page() {
+               {/* ---------- Loans ---------- */}
+               {tab === "loans" && (
+                 <div className="space-y-5">
++                  {/* Keyed by the clause it shows, so React replaces it whole: a
++                      browser translator swaps the text React would edit. */}
+                   {postCutoff && (
+-                    <Notice tone="warn" title="Check this before anything else">
++                    <Notice
++                      key={`cutoff-${parentPlus}`}
++                      tone="warn"
++                      title="Check this before anything else"
++                    >
+                       At least one loan was disbursed on or after July 1, 2026.
+                       {parentPlus
+                         ? " That limits your entire portfolio to RAP and Tiered Standard, and Parent PLUS loans cannot use RAP, so they are limited to Tiered Standard."
+diff --git a/src/components/charts/PayoffRunway.tsx b/src/components/charts/PayoffRunway.tsx
+index 9c3dc5c..4565efd 100644
+--- a/src/components/charts/PayoffRunway.tsx
++++ b/src/components/charts/PayoffRunway.tsx
+@@ -139,9 +139,11 @@ export default function PayoffRunway({
+ 
+   return (
+     <figure className={cn("m-0", className)}>
+-      {/* Legend. Carries the dates, so the chart needs no labels that collide. */}
++      {/* Legend. Carries the dates, so the chart needs no labels that collide.
++          Each row is keyed by what it shows, so React replaces it whole: a
++          browser translator swaps the text React would edit in place. */}
+       <ul className="flex flex-col gap-1.5 text-sm text-slate-800">
+-        <li className="flex items-center gap-2.5">
++        <li key={`main-${extra}-${monthsMain}`} className="flex items-center gap-2.5">
+           <svg aria-hidden width="28" height="10" className="flex-shrink-0">
+             <line x1="1" y1="5" x2="27" y2="5" stroke={GREEN} strokeWidth="3" strokeLinecap="round" />
+           </svg>
+@@ -159,7 +161,7 @@ export default function PayoffRunway({
+           </span>
+         </li>
+         {showBase && (
+-          <li className="flex items-center gap-2.5">
++          <li key={`base-${monthsBase}`} className="flex items-center gap-2.5">
+             <svg aria-hidden width="28" height="10" className="flex-shrink-0">
+               <line x1="1" y1="5" x2="27" y2="5" stroke={BASELINE} strokeWidth="2" strokeDasharray="5 4" />
+             </svg>
+diff --git a/src/components/history/HistoryPanel.tsx b/src/components/history/HistoryPanel.tsx
+index 2dfda68..0577ce9 100644
+--- a/src/components/history/HistoryPanel.tsx
++++ b/src/components/history/HistoryPanel.tsx
+@@ -75,7 +75,10 @@ export default function HistoryPanel({
+               {busy ? "Preparing…" : "Download as a spreadsheet"}
+             </Button>
+           </div>
+-          <p className="mt-3 text-sm leading-relaxed text-slate-600">
++          <p
++            key={sorted.length ? "note" : "note-empty"}
++            className="mt-3 text-sm leading-relaxed text-slate-600"
++          >
+             A snapshot stores every loan exactly as it stands right now, on this
+             device. The spreadsheet is the copy you keep outside the browser.
+             {!sorted.length &&
+diff --git a/src/components/loans/LoanForm.tsx b/src/components/loans/LoanForm.tsx
+index 4a2cdd7..6239836 100644
+--- a/src/components/loans/LoanForm.tsx
++++ b/src/components/loans/LoanForm.tsx
+@@ -352,13 +352,15 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+             htmlFor="rate"
+             error={show("rate")}
+             hint={
++              // Keyed by what they show, so React swaps the hint whole: a
++              // browser translator replaces the text React would edit.
+               rateIsAuto && suggested !== null ? (
+-                <>
++                <span key={`auto-${yearLabel}`}>
+                   We filled in the published undergraduate rate for {yearLabel}.
+                   Change it if yours is different.
+-                </>
++                </span>
+               ) : suggested !== null && rate !== suggested ? (
+-                <>
++                <span key={`differs-${yearLabel}-${suggested}`}>
+                   The published undergraduate rate for {yearLabel} was{" "}
+                   {suggested}%.{" "}
+                   <button
+@@ -371,7 +373,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+                   >
+                     Use {suggested}%
+                   </button>
+-                </>
++                </span>
+               ) : (
+                 "Federal rates are fixed, so this never changes."
+               )
+diff --git a/src/components/loans/LoanList.tsx b/src/components/loans/LoanList.tsx
+index b292296..63857be 100644
+--- a/src/components/loans/LoanList.tsx
++++ b/src/components/loans/LoanList.tsx
+@@ -54,12 +54,11 @@ export default function LoanList({ loans, onEdit, onDelete }: Props) {
+                     {l.nickname}
+                   </span>
+                   <span className="tnum mt-0.5 block truncate text-sm text-slate-600">
+-                    {LOAN_KIND_SHORT[l.kind]} · {pct(l.rate)}
++                    <span>{`${LOAN_KIND_SHORT[l.kind]} · ${pct(l.rate)}`}</span>
+                     <span className="hidden sm:inline print:inline">
+-                      {" · "}
+-                      {l.servicer} · paid out {niceDate(l.disbursementDate)}
++                      {` · ${l.servicer} · paid out ${niceDate(l.disbursementDate)}`}
+                     </span>
+-                    {isPostCutoff(l) && " · after Jul 1, 2026"}
++                    {isPostCutoff(l) && <span> · after Jul 1, 2026</span>}
+                   </span>
+                 </span>
+                 <span className="text-right">
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..ad0901a 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -68,7 +68,7 @@ function Measure({
+       <div className="flex items-baseline justify-between gap-2">
+         <span className="text-sm text-slate-700">{label}</span>
+         <span className="text-base font-bold text-slate-900">
+-          {value === null ? "—" : <Money value={value} />}
++          {value === null ? <span>—</span> : <Money value={value} />}
+           {note && (
+             <span className="ml-1 text-xs font-normal text-slate-600">
+               {note}
+@@ -220,7 +220,7 @@ function PlanRow({
+             )}
+           >
+             <Chevron open={open} />
+-            {open ? "Hide the detail" : "How this plan works"}
++            <span>{open ? "Hide the detail" : "How this plan works"}</span>
+           </button>
+         </div>
+ 
+@@ -245,8 +245,13 @@ function PlanRow({
+               </div>
+             </dl>
+ 
++            {/* Keyed by what it shows, so React replaces the sentence whole: a
++                browser translator swaps the text React would edit in place. */}
+             {e.forgivenAmount > 1 && (
+-              <p className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800">
++              <p
++                key={`forgiven-${e.forgivenAmount}-${e.forgivenessYears}`}
++                className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800"
++              >
+                 <strong>
+                   <Money value={e.forgivenAmount} />
+                 </strong>{" "}
+@@ -320,8 +325,15 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+     <div className="space-y-5">
+       {(ctx.postCutoff || ctx.parentPlus) && (
+         <div className="space-y-3">
++          {/* Keyed by what it shows, so React replaces it whole: a browser
++              translator swaps the text React would edit in place. Undo can
++              change the loans while this tab is open. */}
+           {ctx.postCutoff && (
+-            <Notice tone="warn" title="One date decided this">
++            <Notice
++              key={`cutoff-${ctx.parentPlus}-${postLoans.map((l) => l.nickname).join(", ")}`}
++              tone="warn"
++              title="One date decided this"
++            >
+               {ctx.parentPlus
+                 ? POST_CUTOFF_WARNING_PARENT_PLUS
+                 : POST_CUTOFF_WARNING}
+@@ -349,7 +361,12 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+               <h2 className="font-display text-4xl font-bold leading-none sm:text-5xl">
+                 {PLAN_META[top.estimate.id].name}
+               </h2>
+-              <p className="text-base text-white/90">
++              {/* Keyed so React replaces the amount whole: a browser
++                  translator swaps the text React would edit in place. */}
++              <p
++                key={`${top.estimate.id}-${top.estimate.monthlyPayment}`}
++                className="text-base text-white/90"
++              >
+                 <span className="amt figure text-3xl font-bold text-white">
+                   <Money value={top.estimate.monthlyPayment} tabular={false} />
+                 </span>{" "}
+@@ -370,7 +387,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+                   onClick={() => onSelectPlan(top.estimate.id)}
+                   className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+                 >
+-                  Use {PLAN_META[top.estimate.id].name} as my plan
++                  {`Use ${PLAN_META[top.estimate.id].name} as my plan`}
+                 </button>
+               )}
+             </div>
+@@ -390,7 +407,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+               : `All ${open.length} plans open to you`}
+           </h2>
+           <p className="text-sm text-slate-600">
+-            {open.length} of 6 federal plans
++            {`${open.length} of 6 federal plans`}
+           </p>
+         </div>
+         {open.length > 1 && (
+@@ -420,7 +437,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+       {closed.length > 0 && (
+         <Card className="border-dashed bg-slate-50/60 p-5 shadow-none sm:p-6">
+           <h2 className="font-display text-xl font-bold text-slate-900">
+-            {closed.length} plan{closed.length === 1 ? "" : "s"} not open to you
++            {`${closed.length} plan${closed.length === 1 ? "" : "s"} not open to you`}
+           </h2>
+           <ul className="mt-3 space-y-3">
+             {closed.map((p) => (
+@@ -429,10 +446,11 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+                   {PLAN_META[p.estimate.id].name}
+                 </p>
+                 <p className="text-sm leading-relaxed text-slate-700">
+-                  {p.estimate.ineligibleReason}
+-                  {p.estimate.id === "tiered_standard" &&
+-                    rapOpen &&
+-                    " RAP, the other plan created in 2026, is open to you and is in the list above."}
++                  {`${p.estimate.ineligibleReason ?? ""}${
++                    p.estimate.id === "tiered_standard" && rapOpen
++                      ? " RAP, the other plan created in 2026, is open to you and is in the list above."
++                      : ""
++                  }`}
+                 </p>
+               </li>
+             ))}
+@@ -459,8 +477,13 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+             <Notice tone="info" title="One plan covers all of them">
+               {SAME_PLAN_RULE}
+             </Notice>
++            {/* Keyed by the clause it shows, like the cutoff notice above. */}
+             {!ctx.postCutoff && (
+-              <Notice tone="good" title="All your loans predate the cutoff">
++              <Notice
++                key={`before-cutoff-${ctx.parentPlus}`}
++                tone="good"
++                title="All your loans predate the cutoff"
++              >
+                 Every loan you entered was disbursed before July 1, 2026, so the
+                 older {ctx.parentPlus ? "fixed plans are" : "plan menu is"} still
+                 open to you. Borrowing again on or after
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..95517e1 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -167,13 +167,26 @@ export default function RankingPanel({
+             </>
+           ) : (
+             <>
+-              <Eyebrow>
++              {/* Sentences that show a figure are keyed by what they show. A
++                  browser translator swaps the text React holds for its own
++                  copy, so an edit in place would leave old figures on screen
++                  or throw; a new key makes React replace the block whole. */}
++              <Eyebrow key={`eb-${selected!.id}-${comparison.requiredPayment}`}>
+                 On {PLAN_META[selected!.id].name} ·{" "}
+                 <Money value={comparison.requiredPayment} /> a month required
+               </Eyebrow>
+ 
+               {/* The headline is the takeaway, not a label. */}
+-              <h2 className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl">
++              <h2
++                key={
++                  !main.paidOff
++                    ? "never"
++                    : extra > 0 && monthsSaved > 0
++                    ? `sooner-${extra}-${monthsSaved}`
++                    : `date-${main.months}`
++                }
++                className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl"
++              >
+                 {!main.paidOff ? (
+                   <>This payment does not clear the balance</>
+                 ) : extra > 0 && monthsSaved > 0 ? (
+@@ -185,7 +198,10 @@ export default function RankingPanel({
+                   <>Debt free in {monthYearFromNow(main.months)}</>
+                 )}
+               </h2>
+-              <p className="mt-2 text-base leading-relaxed text-slate-700">
++              <p
++                key={`sub-${main.paidOff}-${extra}-${main.months}-${monthsSaved}-${roughly(interestSaved)}-${comparison.budget}-${base?.paidOff}`}
++                className="mt-2 text-base leading-relaxed text-slate-700"
++              >
+                 {!main.paidOff ? (
+                   <>
+                     At <Money value={comparison.budget} /> a month these
+@@ -330,7 +346,10 @@ export default function RankingPanel({
+                 </dl>
+               )}
+ 
+-              <p className="mt-4 text-sm leading-relaxed text-slate-600">
++              <p
++                key={`assume-${selected!.id}-${comparison.requiredPayment}`}
++                className="mt-4 text-sm leading-relaxed text-slate-600"
++              >
+                 What this assumes: payments start this month, and your required
+                 payment stays at <Money value={comparison.requiredPayment} />{" "}
+                 the whole way.
+@@ -416,7 +435,11 @@ export default function RankingPanel({
+                   other. Pick whichever you will actually stick to.
+                 </Notice>
+               ) : (
+-                <Notice tone="info" title="What the choice actually costs">
++                <Notice
++                  key={`cost-${comparison.snowballCost}-${comparison.monthsDifference}`}
++                  tone="info"
++                  title="What the choice actually costs"
++                >
+                   Smallest balance first costs{" "}
+                   <strong>
+                     <Money value={comparison.snowballCost} />
+@@ -473,7 +496,10 @@ export default function RankingPanel({
+                         <Money value={loan.balance} className="font-semibold" />
+                       </p>
+                     </div>
+-                    <p className="mt-1 text-sm leading-snug text-slate-700">
++                    <p
++                      key={`why-${rank}-${reason}`}
++                      className="mt-1 text-sm leading-snug text-slate-700"
++                    >
+                       {rank === 1 && (
+                         <Badge tone="accent" className="mr-1.5">
+                           Extra goes here
+@@ -483,7 +509,7 @@ export default function RankingPanel({
+                     </p>
+                     {gone !== undefined && (
+                       <p className="tnum mt-1 text-sm text-slate-600">
+-                        Gone by {shortMonthYearFromNow(gone)}
++                        {`Gone by ${shortMonthYearFromNow(gone)}`}
+                       </p>
+                     )}
+                   </div>
+@@ -494,7 +520,11 @@ export default function RankingPanel({
+         </Card>
+       </FadeIn>
+ 
+-      <Notice tone="warn" title="One thing that undoes all of this">
++      <Notice
++        key={`warn-${ranked[0]?.loan.id}`}
++        tone="warn"
++        title="One thing that undoes all of this"
++      >
+         Sending extra money without instructions usually gets it spread across
+         every loan, or treated as paying next month&apos;s bill early. Tell your
+         servicer in writing to apply anything above the scheduled amount to the
+diff --git a/src/components/shared/ui.tsx b/src/components/shared/ui.tsx
+index 2315a07..b4c00ac 100644
+--- a/src/components/shared/ui.tsx
++++ b/src/components/shared/ui.tsx
+@@ -263,8 +263,11 @@ export function Field({
+         )}
+       </label>
+       <div className="mt-1.5">{children}</div>
++      {/* Keyed so React swaps the whole message rather than editing text a
++          browser translator has already replaced, which throws. */}
+       {error ? (
+         <p
++          key={`error-${error}`}
+           id={htmlFor ? `${htmlFor}-msg` : undefined}
+           role="alert"
+           className="mt-1.5 flex items-start gap-1.5 text-sm font-semibold text-red-800"
+@@ -275,6 +278,7 @@ export function Field({
+       ) : (
+         hint && (
+           <p
++            key="hint"
+             id={htmlFor ? `${htmlFor}-msg` : undefined}
+             className="mt-1.5 text-sm leading-snug text-slate-600"
+           >
+@@ -444,7 +448,7 @@ export function Disclosure({
+         )}
+       >
+         <Chevron open={open} />
+-        {open ? openSummary ?? summary : summary}
++        <span>{open ? openSummary ?? summary : summary}</span>
+       </button>
+       {open && (
+         <div id={id} className="unfold pt-2">

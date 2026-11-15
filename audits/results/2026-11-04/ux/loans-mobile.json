@@ -1,0 +1,1916 @@
+{
+ "state": "loans",
+ "formFactor": "mobile",
+ "pageContext": {
+  "indexable": true,
+  "siteType": "saas"
+ },
+ "report": {
+  "uxScore": null,
+  "typographyScore": null,
+  "contrastScore": null,
+  "layoutScore": null,
+  "responsiveScore": null,
+  "navigationScore": null,
+  "contentScore": null,
+  "totalIssues": 6,
+  "p1Count": 1,
+  "p2Count": 5,
+  "p3Count": 0,
+  "findings": [
+   {
+    "id": "95403bdb-398e-4e3c-b250-e73aa6682c98",
+    "severity": "P2",
+    "category": "Accessibility",
+    "device": "mobile",
+    "title": "11 tap target(s) smaller than M3's comfortable 48×48px at 375px wide",
+    "description": "11 tap target(s) smaller than M3's comfortable 48×48px at 375px wide — they clear the WCAG 2.5.8 24px minimum (2 via the spacing/inline exception). Examples: a.sr-only.focus:not-sr-only \"Skip to content\" (1×1px); a.font-semibold.text-navy \"Cense\" (42×18px); button.no-print.flex \"Hide dollar amounts\" (44×44px). Measured at the 375×812px mobile viewport.",
+    "recommendation": "Enlarge the control or add padding so its hit area is at least 48×48px.",
+    "source": "engine",
+    "themeId": "eng:tap-target-comfort",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "wcagCriterion": "2.5.8",
+    "evidence": {
+     "measured": "1×1px",
+     "required": "≥48×48px",
+     "selector": "a.sr-only.focus:not-sr-only",
+     "sample": "Skip to content",
+     "count": 11
+    }
+   },
+   {
+    "id": "03e184d2-795e-4693-b5b2-b4739f51e5f6",
+    "severity": "P2",
+    "category": "Typography",
+    "device": "mobile",
+    "title": "5 reading-copy text node(s) below 16px (or any text below 11px).",
+    "description": "5 reading-copy text node(s) below 16px (or any text below 11px). Examples: p.mt-1.px-1 \"They all move together on one repayment \" (14px); p.text-sm.font-bold \"Missing a payment does not cost a late f\" (14px); p.text-sm.font-semibold \"Everything you type stays in this browse\" (14px). Measured at the 375×812px mobile viewport.",
+    "recommendation": "Raise reading copy to at least 16px (12px absolute minimum for any text).",
+    "source": "engine",
+    "themeId": "eng:small-body-text",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "14px",
+     "required": "≥16px (≥11px absolute)",
+     "selector": "p.mt-1.px-1",
+     "sample": "They all move together on one repayment ",
+     "count": 5
+    }
+   },
+   {
+    "id": "4ed1dcf8-b6a6-482a-a51c-257f6466c143",
+    "severity": "P2",
+    "category": "Design Consistency",
+    "device": "mobile",
+    "title": "1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "description": "1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+    "recommendation": "Consolidate to a small token set: define CSS variables for the sanctioned values and replace ad-hoc ones.",
+    "source": "engine",
+    "themeId": "eng:radius-off-scale",
+    "scope": "page",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "0 matches for ul.overflow-hidden.rounded-3xl",
+     "contributors": [
+      {
+       "selector": "ul.overflow-hidden.rounded-3xl",
+       "value": "24px · 3 node(s)"
+      }
+     ]
+    }
+   },
+   {
+    "id": "1dceaf8e-71ed-4b8f-8f7c-6f6fb0b7f227",
+    "severity": "P2",
+    "category": "Motion",
+    "device": "mobile",
+    "title": "1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+    "description": "1 animation/transition(s) under 50ms (non-instant but too fast to read). Examples: *, ::after, ::before.",
+    "recommendation": "Keep animation durations within the 50–1000ms scale — long enough to read, short enough to feel responsive.",
+    "source": "engine",
+    "themeId": "eng:duration-too-short",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "1 occurrence(s)",
+     "required": "50–1000ms",
+     "selector": "*, ::after, ::before",
+     "count": 1
+    }
+   },
+   {
+    "id": "7a7be526-015c-4937-8871-1601aafc1b92",
+    "severity": "P1",
+    "category": "Motion",
+    "device": "mobile",
+    "title": "1 transition(s) animate layout props (width/height/top/left/margin)",
+    "description": "1 transition(s) animate layout props (width/height/top/left/margin) — animate transform/opacity instead (jank). Examples: .transition-\\[width\\].",
+    "recommendation": "Animate transform/opacity instead of layout properties (width/height/top/left/margin) to avoid jank.",
+    "source": "engine",
+    "themeId": "eng:layout-animated",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "1 transition(s) animating layout properties",
+     "selector": ".transition-\\[width\\]",
+     "count": 1
+    }
+   },
+   {
+    "id": "840127c2-d164-4b85-a8f9-7fb5ee40c065",
+    "severity": "P2",
+    "category": "Motion",
+    "device": "mobile",
+    "title": "1 infinite decorative loop(s)",
+    "description": "1 infinite decorative loop(s) — reserve infinite motion for progress indicators. Examples: .animate-pulse.",
+    "recommendation": "Reserve infinite animation for progress indicators; give decorative loops a finite iteration count.",
+    "source": "engine",
+    "themeId": "eng:infinite-loop",
+    "scope": "element",
+    "renderContext": "dom",
+    "observedOn": 1,
+    "sampleSize": 1,
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true
+    },
+    "evidence": {
+     "measured": "1 occurrence(s)",
+     "selector": ".animate-pulse",
+     "count": 1
+    }
+   }
+  ],
+  "pageContext": {
+   "indexable": true,
+   "siteType": "saas"
+  },
+  "scanData": {
+   "domContext": {
+    "textElements": [
+     {
+      "tag": "a",
+      "text": "Skip to content",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": -1,
+      "y": -1,
+      "width": 1,
+      "height": 1
+     },
+     {
+      "tag": "span",
+      "text": "Cense",
+      "fontSize": "18px",
+      "fontWeight": "700",
+      "lineHeight": "28px",
+      "color": "rgb(168, 83, 31)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.92,
+      "x": 16,
+      "y": 28,
+      "width": 54,
+      "height": 28
+     },
+     {
+      "tag": "h1",
+      "text": "Loan Desk",
+      "fontSize": "18px",
+      "fontWeight": "700",
+      "lineHeight": "28px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 76,
+      "y": 28,
+      "width": 90,
+      "height": 28
+     },
+     {
+      "tag": "span",
+      "text": "On your deviceStays on this device",
+      "fontSize": "13px",
+      "fontWeight": "600",
+      "lineHeight": "19.2px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgb(234, 243, 231)",
+      "contrastRatio": 6.42,
+      "x": 178,
+      "y": 26,
+      "width": 135,
+      "height": 31
+     },
+     {
+      "tag": "span",
+      "text": "On your device",
+      "fontSize": "13px",
+      "fontWeight": "600",
+      "lineHeight": "19.2px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 210,
+      "y": 32,
+      "width": 91,
+      "height": 19
+     },
+     {
+      "tag": "button",
+      "text": "Hide dollar amounts",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 317,
+      "y": 20,
+      "width": 44,
+      "height": 44
+     },
+     {
+      "tag": "span",
+      "text": "Hide dollar amounts",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 339,
+      "y": 42,
+      "width": 1,
+      "height": 1
+     },
+     {
+      "tag": "p",
+      "text": "You owe",
+      "fontSize": "13px",
+      "fontWeight": "600",
+      "lineHeight": "19.2px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 16,
+      "y": 92,
+      "width": 343,
+      "height": 19
+     },
+     {
+      "tag": "p",
+      "text": "$28,101",
+      "fontSize": "56px",
+      "fontWeight": "700",
+      "lineHeight": "56px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 16,
+      "y": 115,
+      "width": 343,
+      "height": 56
+     },
+     {
+      "tag": "span",
+      "text": "$28,101",
+      "fontSize": "56px",
+      "fontWeight": "700",
+      "lineHeight": "56px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 16,
+      "y": 109,
+      "width": 184,
+      "height": 67
+     },
+     {
+      "tag": "p",
+      "text": "across 8 loans with 2 servicers · $311 a month on ",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(58, 107, 62)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.35,
+      "x": 16,
+      "y": 179,
+      "width": 343,
+      "height": 48
+     },
+     {
+      "tag": "span",
+      "text": "$311",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 242,
+      "y": 181,
+      "width": 39,
+      "height": 20
+     },
+     {
+      "tag": "span",
+      "text": "$27,000",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 101,
+      "y": 268,
+      "width": 55,
+      "height": 18
+     },
+     {
+      "tag": "span",
+      "text": "$1,101",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 169,
+      "y": 292,
+      "width": 46,
+      "height": 18
+     },
+     {
+      "tag": "button",
+      "text": "LoansYour loans",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgb(39, 91, 45)",
+      "contrastRatio": 8.01,
+      "x": 21,
+      "y": 354,
+      "width": 80,
+      "height": 44
+     },
+     {
+      "tag": "span",
+      "text": "Loans",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 21,
+      "x": 41,
+      "y": 367,
+      "width": 39,
+      "height": 18
+     },
+     {
+      "tag": "button",
+      "text": "PlansRepayment plans",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 105,
+      "y": 354,
+      "width": 80,
+      "height": 44
+     },
+     {
+      "tag": "span",
+      "text": "Plans",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 127,
+      "y": 367,
+      "width": 36,
+      "height": 18
+     },
+     {
+      "tag": "button",
+      "text": "PayoffPayoff",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 190,
+      "y": 354,
+      "width": 80,
+      "height": 44
+     },
+     {
+      "tag": "span",
+      "text": "Payoff",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 208,
+      "y": 367,
+      "width": 42,
+      "height": 18
+     },
+     {
+      "tag": "button",
+      "text": "RecordsRecords2",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 274,
+      "y": 354,
+      "width": 80,
+      "height": 44
+     },
+     {
+      "tag": "span",
+      "text": "Records",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 281,
+      "y": 367,
+      "width": 54,
+      "height": 18
+     },
+     {
+      "tag": "span",
+      "text": "2",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(47, 97, 51)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.88,
+      "x": 339,
+      "y": 367,
+      "width": 8,
+      "height": 18
+     },
+     {
+      "tag": "h2",
+      "text": "Your 8 loans",
+      "fontSize": "24px",
+      "fontWeight": "700",
+      "lineHeight": "32px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 20,
+      "y": 433,
+      "width": 144,
+      "height": 32
+     },
+     {
+      "tag": "button",
+      "text": "Add a loan",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "20px",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgb(39, 91, 45)",
+      "contrastRatio": 8.01,
+      "x": 254,
+      "y": 429,
+      "width": 101,
+      "height": 40
+     },
+     {
+      "tag": "p",
+      "text": "They all move together on one repayment plan, but ",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "22.75px",
+      "color": "rgb(58, 107, 62)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.35,
+      "x": 16,
+      "y": 473,
+      "width": 343,
+      "height": 46
+     },
+     {
+      "tag": "li",
+      "text": "2022–23 subsidizedSubsidized · 4.99% · Nelnet · pa",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 17,
+      "y": 532,
+      "width": 341,
+      "height": 74
+     },
+     {
+      "tag": "button",
+      "text": "2022–23 subsidizedSubsidized · 4.99% · Nelnet · pa",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 17,
+      "y": 532,
+      "width": 341,
+      "height": 74
+     },
+     {
+      "tag": "span",
+      "text": "2022–23 subsidizedSubsidized · 4.99% · Nelnet · pa",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 33,
+      "y": 546,
+      "width": 216,
+      "height": 46
+     },
+     {
+      "tag": "span",
+      "text": "2022–23 subsidized",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 33,
+      "y": 546,
+      "width": 216,
+      "height": 24
+     },
+     {
+      "tag": "span",
+      "text": "Subsidized · 4.99% · Nelnet · paid out Sep 1, 2022",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 33,
+      "y": 572,
+      "width": 216,
+      "height": 20
+     },
+     {
+      "tag": "span",
+      "text": "$3,500",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 261,
+      "y": 557,
+      "width": 53,
+      "height": 24
+     },
+     {
+      "tag": "span",
+      "text": "$3,500",
+      "fontSize": "16px",
+      "fontWeight": "700",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 261,
+      "y": 557,
+      "width": 53,
+      "height": 24
+     },
+     {
+      "tag": "li",
+      "text": "2022–23 unsubsidizedUnsubsidized · 4.99% · Nelnet ",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 17,
+      "y": 606,
+      "width": 341,
+      "height": 75
+     },
+     {
+      "tag": "button",
+      "text": "2022–23 unsubsidizedUnsubsidized · 4.99% · Nelnet ",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 17,
+      "y": 607,
+      "width": 341,
+      "height": 74
+     },
+     {
+      "tag": "span",
+      "text": "2022–23 unsubsidizedUnsubsidized · 4.99% · Nelnet ",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 33,
+      "y": 621,
+      "width": 216,
+      "height": 46
+     },
+     {
+      "tag": "span",
+      "text": "2022–23 unsubsidized",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 33,
+      "y": 621,
+      "width": 216,
+      "height": 24
+     },
+     {
+      "tag": "span",
+      "text": "Unsubsidized · 4.99% · Nelnet · paid out Sep 1, 20",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 33,
+      "y": 647,
+      "width": 216,
+      "height": 20
+     },
+     {
+      "tag": "span",
+      "text": "$2,396",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 261,
+      "y": 632,
+      "width": 53,
+      "height": 24
+     },
+     {
+      "tag": "span",
+      "text": "$2,396",
+      "fontSize": "16px",
+      "fontWeight": "700",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 261,
+      "y": 632,
+      "width": 53,
+      "height": 24
+     },
+     {
+      "tag": "li",
+      "text": "2023–24 subsidizedSubsidized · 5.50% · Nelnet · pa",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 17,
+      "y": 681,
+      "width": 341,
+      "height": 75
+     },
+     {
+      "tag": "button",
+      "text": "2023–24 subsidizedSubsidized · 5.50% · Nelnet · pa",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 17,
+      "y": 682,
+      "width": 341,
+      "height": 74
+     },
+     {
+      "tag": "span",
+      "text": "2023–24 subsidizedSubsidized · 5.50% · Nelnet · pa",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 33,
+      "y": 696,
+      "width": 216,
+      "height": 46
+     },
+     {
+      "tag": "span",
+      "text": "2023–24 subsidized",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 33,
+      "y": 696,
+      "width": 216,
+      "height": 24
+     },
+     {
+      "tag": "span",
+      "text": "Subsidized · 5.50% · Nelnet · paid out Sep 1, 2023",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "color": "rgb(74, 110, 77)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 3.63,
+      "x": 33,
+      "y": 722,
+      "width": 216,
+      "height": 20
+     },
+     {
+      "tag": "span",
+      "text": "$4,500",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 261,
+      "y": 707,
+      "width": 53,
+      "height": 24
+     },
+     {
+      "tag": "span",
+      "text": "$4,500",
+      "fontSize": "16px",
+      "fontWeight": "700",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 261,
+      "y": 707,
+      "width": 53,
+      "height": 24
+     },
+     {
+      "tag": "li",
+      "text": "2023–24 unsubsidizedUnsubsidized · 5.50% · Nelnet ",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 17,
+      "y": 756,
+      "width": 341,
+      "height": 75
+     },
+     {
+      "tag": "button",
+      "text": "2023–24 unsubsidizedUnsubsidized · 5.50% · Nelnet ",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 17,
+      "y": 757,
+      "width": 341,
+      "height": 74
+     },
+     {
+      "tag": "span",
+      "text": "2023–24 unsubsidizedUnsubsidized · 5.50% · Nelnet ",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "color": "rgb(39, 91, 45)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "contrastRatio": 2.62,
+      "x": 33,
+      "y": 771,
+      "width": 216,
+      "height": 46
+     }
+    ],
+    "interactiveElements": [
+     {
+      "tag": "a",
+      "text": "Skip to content",
+      "width": 1,
+      "height": 1,
+      "x": -1,
+      "y": -1
+     },
+     {
+      "tag": "button",
+      "text": "Hide dollar amounts",
+      "width": 44,
+      "height": 44,
+      "x": 317,
+      "y": 20
+     },
+     {
+      "tag": "button",
+      "text": "LoansYour loans",
+      "width": 80,
+      "height": 44,
+      "x": 21,
+      "y": 354
+     },
+     {
+      "tag": "button",
+      "text": "PlansRepayment plans",
+      "width": 80,
+      "height": 44,
+      "x": 105,
+      "y": 354
+     },
+     {
+      "tag": "button",
+      "text": "PayoffPayoff",
+      "width": 80,
+      "height": 44,
+      "x": 190,
+      "y": 354
+     },
+     {
+      "tag": "button",
+      "text": "RecordsRecords2",
+      "width": 80,
+      "height": 44,
+      "x": 274,
+      "y": 354
+     },
+     {
+      "tag": "button",
+      "text": "Add a loan",
+      "width": 101,
+      "height": 40,
+      "x": 254,
+      "y": 429
+     },
+     {
+      "tag": "button",
+      "text": "2022–23 subsidizedSubsidized · 4.99% · Nelnet · pa",
+      "width": 341,
+      "height": 74,
+      "x": 17,
+      "y": 532
+     },
+     {
+      "tag": "button",
+      "text": "2022–23 unsubsidizedUnsubsidized · 4.99% · Nelnet ",
+      "width": 341,
+      "height": 74,
+      "x": 17,
+      "y": 607
+     },
+     {
+      "tag": "button",
+      "text": "2023–24 subsidizedSubsidized · 5.50% · Nelnet · pa",
+      "width": 341,
+      "height": 74,
+      "x": 17,
+      "y": 682
+     },
+     {
+      "tag": "button",
+      "text": "2023–24 unsubsidizedUnsubsidized · 5.50% · Nelnet ",
+      "width": 341,
+      "height": 74,
+      "x": 17,
+      "y": 757
+     },
+     {
+      "tag": "button",
+      "text": "2024–25 subsidizedSubsidized · 6.53% · MOHELA · pa",
+      "width": 341,
+      "height": 74,
+      "x": 17,
+      "y": 832
+     },
+     {
+      "tag": "button",
+      "text": "2024–25 unsubsidizedUnsubsidized · 6.53% · MOHELA ",
+      "width": 341,
+      "height": 74,
+      "x": 17,
+      "y": 907
+     },
+     {
+      "tag": "button",
+      "text": "2025–26 subsidizedSubsidized · 6.39% · MOHELA · pa",
+      "width": 341,
+      "height": 74,
+      "x": 17,
+      "y": 982
+     },
+     {
+      "tag": "button",
+      "text": "2025–26 unsubsidizedUnsubsidized · 6.39% · MOHELA ",
+      "width": 341,
+      "height": 74,
+      "x": 17,
+      "y": 1057
+     },
+     {
+      "tag": "button",
+      "text": "NextSee which repayment plans you can use4 of the ",
+      "width": 343,
+      "height": 156,
+      "x": 16,
+      "y": 1152
+     },
+     {
+      "tag": "button",
+      "text": "Download as a spreadsheet",
+      "width": 301,
+      "height": 40,
+      "x": 37,
+      "y": 1614
+     },
+     {
+      "tag": "button",
+      "text": "Print one page",
+      "width": 301,
+      "height": 40,
+      "x": 37,
+      "y": 1662
+     },
+     {
+      "tag": "button",
+      "text": "Clear my data",
+      "width": 131,
+      "height": 44,
+      "x": 29,
+      "y": 1710
+     },
+     {
+      "tag": "a",
+      "text": "Cense",
+      "width": 42,
+      "height": 18,
+      "x": 66,
+      "y": 2101
+     }
+    ],
+    "images": [],
+    "headings": [
+     {
+      "tag": "h1",
+      "text": "Loan Desk",
+      "fontSize": "18px",
+      "x": 76,
+      "y": 28,
+      "width": 90,
+      "height": 28
+     },
+     {
+      "tag": "h2",
+      "text": "Your 8 loans",
+      "fontSize": "24px",
+      "x": 20,
+      "y": 433,
+      "width": 144,
+      "height": 32
+     }
+    ],
+    "overflowElements": [
+     "a.sr-only",
+     "span.sr-only",
+     "span.sr-only"
+    ],
+    "stickyElements": [
+     "div.no-print (sticky)"
+    ],
+    "documentDimensions": {
+     "scrollHeight": 2252,
+     "clientHeight": 812,
+     "scrollWidth": 375,
+     "clientWidth": 375
+    }
+   }
+  }
+ },
+ "design": {
+  "report": {
+   "score": 65.6,
+   "grade": "D",
+   "buckets": {
+    "accessibility": {
+     "score": 26.4,
+     "max": 30,
+     "findings": [
+      {
+       "severity": "warn",
+       "ruleId": "tap-target-comfort",
+       "message": "11 tap target(s) smaller than M3's comfortable 48×48px at 375px wide — they clear the WCAG 2.5.8 24px minimum (2 via the spacing/inline exception).",
+       "count": 11,
+       "examples": [
+        {
+         "sig": "a.sr-only.focus:not-sr-only",
+         "tag": "a",
+         "w": 1,
+         "h": 1,
+         "sample": "Skip to content",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         },
+         "exception": "spacing"
+        },
+        {
+         "sig": "a.font-semibold.text-navy",
+         "tag": "a",
+         "w": 42,
+         "h": 18,
+         "sample": "Cense",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         },
+         "exception": "inline"
+        },
+        {
+         "sig": "button.no-print.flex",
+         "tag": "button",
+         "w": 44,
+         "h": 44,
+         "sample": "Hide dollar amounts",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.min-h-[44px].rounded-full",
+         "tag": "button",
+         "w": 80,
+         "h": 44,
+         "sample": "LoansYour loans",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.min-h-[44px].rounded-full",
+         "tag": "button",
+         "w": 80,
+         "h": 44,
+         "sample": "PlansRepayment plans",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.min-h-[44px].rounded-full",
+         "tag": "button",
+         "w": 80,
+         "h": 44,
+         "sample": "PayoffPayoff",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.min-h-[44px].rounded-full",
+         "tag": "button",
+         "w": 80,
+         "h": 44,
+         "sample": "RecordsRecords2",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        },
+        {
+         "sig": "button.inline-flex.items-center",
+         "tag": "button",
+         "w": 101,
+         "h": 40,
+         "sample": "Add a loan",
+         "viewport": {
+          "width": 375,
+          "height": 812,
+          "dpr": 1,
+          "isMobile": true,
+          "w": 375,
+          "h": 812
+         }
+        }
+       ],
+       "scope": "element",
+       "required": "≥48×48px",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "wcagCriterion": "2.5.8"
+      }
+     ]
+    },
+    "consistency": {
+     "score": 15.2,
+     "max": 20,
+     "findings": [
+      {
+       "severity": "warn",
+       "ruleId": "small-body-text",
+       "message": "5 reading-copy text node(s) below 16px (or any text below 11px).",
+       "count": 5,
+       "examples": [
+        {
+         "sig": "p.mt-1.px-1",
+         "px": 14,
+         "sample": "They all move together on one repayment "
+        },
+        {
+         "sig": "p.text-sm.font-bold",
+         "px": 14,
+         "sample": "Missing a payment does not cost a late f"
+        },
+        {
+         "sig": "p.text-sm.font-semibold",
+         "px": 14,
+         "sample": "Everything you type stays in this browse"
+        },
+        {
+         "sig": "p.mt-2.text-sm",
+         "px": 14,
+         "sample": "These are estimates, not financial advic"
+        },
+        {
+         "sig": "p.mt-2.text-sm",
+         "px": 14,
+         "sample": "Built by Cense, a free weekly personal f"
+        }
+       ],
+       "scope": "element",
+       "renderContext": "dom",
+       "required": "≥16px (≥11px absolute)",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "severity": "info",
+       "ruleId": "small-ui-labels",
+       "message": "28 UI label(s) at 12-15.9px — legitimate M3 label roles (not scored); verify their tap targets meet 48px.",
+       "count": 28,
+       "examples": [
+        {
+         "sig": "span.sm:hidden",
+         "px": 13,
+         "sample": "On your device"
+        },
+        {
+         "sig": "p.text-xs.font-semibold",
+         "px": 13,
+         "sample": "You owe"
+        },
+        {
+         "sig": "dt",
+         "px": 14,
+         "sample": "Borrowed"
+        },
+        {
+         "sig": "span.amt.tnum",
+         "px": 14,
+         "sample": "$27,000"
+        },
+        {
+         "sig": "dt",
+         "px": 14,
+         "sample": "Interest added so far"
+        },
+        {
+         "sig": "span.amt.tnum",
+         "px": 14,
+         "sample": "$1,101"
+        }
+       ],
+       "scope": "element",
+       "renderContext": "dom",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "severity": "warn",
+       "ruleId": "radius-off-scale",
+       "message": "1 border-radius value(s) off the 7-step scale (0/4/8/12/16/28/full).",
+       "values": [
+        24
+       ],
+       "scope": "page",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "contributors": [
+        {
+         "selector": "ul.overflow-hidden.rounded-3xl",
+         "value": "24px · 3 node(s)"
+        }
+       ]
+      }
+     ]
+    },
+    "motion": {
+     "score": 10.5,
+     "max": 25,
+     "findings": [
+      {
+       "severity": "warn",
+       "ruleId": "duration-too-short",
+       "message": "1 animation/transition(s) under 50ms (non-instant but too fast to read).",
+       "examples": [
+        {
+         "selector": "*, ::after, ::before",
+         "sig": "*, ::after, ::before",
+         "ms": 0
+        }
+       ],
+       "scope": "element",
+       "required": "50–1000ms"
+      },
+      {
+       "severity": "error",
+       "ruleId": "layout-animated",
+       "message": "1 transition(s) animate layout props (width/height/top/left/margin) — animate transform/opacity instead (jank).",
+       "examples": [
+        {
+         "selector": ".transition-\\[width\\]",
+         "sig": ".transition-\\[width\\]",
+         "props": [
+          "width"
+         ],
+         "kind": "transition"
+        }
+       ],
+       "scope": "element"
+      },
+      {
+       "severity": "warn",
+       "ruleId": "infinite-loop",
+       "message": "1 infinite decorative loop(s) — reserve infinite motion for progress indicators.",
+       "examples": [
+        {
+         "selector": ".animate-pulse",
+         "sig": ".animate-pulse"
+        }
+       ],
+       "scope": "element"
+      }
+     ]
+    },
+    "performance": {
+     "score": 13.5,
+     "max": 25,
+     "findings": [
+      {
+       "severity": "error",
+       "ruleId": "layout-animated",
+       "message": "1 transition(s) animate layout props (width/height/top/left/margin) — animate transform/opacity instead (jank).",
+       "examples": [
+        {
+         "selector": ".transition-\\[width\\]",
+         "sig": ".transition-\\[width\\]",
+         "props": [
+          "width"
+         ],
+         "kind": "transition"
+        }
+       ],
+       "scope": "element",
+       "reusedFrom": "motion"
+      },
+      {
+       "severity": "warn",
+       "ruleId": "infinite-loop",
+       "message": "1 infinite decorative loop(s) — reserve infinite motion for progress indicators.",
+       "examples": [
+        {
+         "selector": ".animate-pulse",
+         "sig": ".animate-pulse"
+        }
+       ],
+       "scope": "element",
+       "reusedFrom": "motion"
+      }
+     ]
+    }
+   },
+   "sections": {
+    "color": {
+     "sampled": 60,
+     "skippedUnknownBg": 0,
+     "skippedUnparseable": 0,
+     "skippedRenderContext": 0,
+     "distinctTextColors": 8,
+     "failureCount": 0,
+     "failures": []
+    },
+    "typography": {
+     "distinctFamilies": 2,
+     "families": [
+      "__Instrument_Sans_3f4a4b, __Instrument_Sans_Fallback_3f4a4b, system-ui, sans-serif",
+      "__Bricolage_Grotesque_1243c3, __Bricolage_Grotesque_Fallback_1243c3, __Instrument_Sans_3f4a4b, __Instrument_Sans_Fallback_3f4a4b, system-ui, sans-serif"
+     ],
+     "distinctSizes": 7,
+     "sizes": [
+      13,
+      14,
+      16,
+      18,
+      20,
+      24,
+      56
+     ],
+     "distinctLineHeights": 9,
+     "smallBodyCount": 5,
+     "smallBody": [
+      {
+       "sig": "p.mt-1.px-1",
+       "px": 14,
+       "sample": "They all move together on one repayment "
+      },
+      {
+       "sig": "p.text-sm.font-bold",
+       "px": 14,
+       "sample": "Missing a payment does not cost a late f"
+      },
+      {
+       "sig": "p.text-sm.font-semibold",
+       "px": 14,
+       "sample": "Everything you type stays in this browse"
+      },
+      {
+       "sig": "p.mt-2.text-sm",
+       "px": 14,
+       "sample": "These are estimates, not financial advic"
+      },
+      {
+       "sig": "p.mt-2.text-sm",
+       "px": 14,
+       "sample": "Built by Cense, a free weekly personal f"
+      }
+     ],
+     "smallLabelCount": 28,
+     "smallLabels": [
+      {
+       "sig": "span.sm:hidden",
+       "px": 13,
+       "sample": "On your device"
+      },
+      {
+       "sig": "p.text-xs.font-semibold",
+       "px": 13,
+       "sample": "You owe"
+      },
+      {
+       "sig": "dt",
+       "px": 14,
+       "sample": "Borrowed"
+      },
+      {
+       "sig": "span.amt.tnum",
+       "px": 14,
+       "sample": "$27,000"
+      },
+      {
+       "sig": "dt",
+       "px": 14,
+       "sample": "Interest added so far"
+      },
+      {
+       "sig": "span.amt.tnum",
+       "px": 14,
+       "sample": "$1,101"
+      },
+      {
+       "sig": "span.sm:hidden",
+       "px": 14,
+       "sample": "Loans"
+      },
+      {
+       "sig": "span.sm:hidden",
+       "px": 14,
+       "sample": "Plans"
+      },
+      {
+       "sig": "span.sm:hidden",
+       "px": 14,
+       "sample": "Payoff"
+      },
+      {
+       "sig": "span.sm:hidden",
+       "px": 14,
+       "sample": "Records"
+      },
+      {
+       "sig": "span.tnum.ml-1",
+       "px": 14,
+       "sample": "2"
+      },
+      {
+       "sig": "button.inline-flex.items-center",
+       "px": 14,
+       "sample": "Add a loan"
+      }
+     ],
+     "tightLeadingCount": 0,
+     "tightLeading": [],
+     "displayLeadingRelaxed": 0,
+     "formattedBlocksSkipped": 0,
+     "distinctHeadingSizes": 2,
+     "headingCount": 2,
+     "skippedRenderContext": 0
+    },
+    "shape": {
+     "distinctRadii": 4,
+     "radii": [
+      12,
+      16,
+      24,
+      9999
+     ],
+     "scale": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      28,
+      9999
+     ],
+     "offScaleValues": [
+      24
+     ]
+    },
+    "elevation": {
+     "distinctShadows": 1,
+     "levels": 6,
+     "recipes": [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(39, 91, 45, 0.04) 0px 1px 0px 0px, rgba(39, 91, 45, 0.18) 0px 8px 24px -12px"
+     ]
+    },
+    "states": {
+     "interactiveCount": 20,
+     "hasHoverRules": true,
+     "hasFocusVisibleRules": true,
+     "stylesheetsReachable": true,
+     "sheetsSkipped": 0,
+     "noVisibleFocusCount": 0,
+     "noVisibleFocusExamples": []
+    },
+    "motion": {
+     "hasReducedMotionQuery": true,
+     "reducedMotionStatus": "present",
+     "activeAnimations": 2,
+     "tooShort": [
+      {
+       "selector": "*, ::after, ::before",
+       "sig": "*, ::after, ::before",
+       "ms": 0
+      }
+     ],
+     "tooLong": [],
+     "linearMovement": [],
+     "easeInEntrance": [],
+     "layoutAnimated": [
+      {
+       "selector": ".transition-\\[width\\]",
+       "sig": ".transition-\\[width\\]",
+       "props": [
+        "width"
+       ],
+       "kind": "transition"
+      }
+     ],
+     "infiniteLoops": [
+      {
+       "selector": ".animate-pulse",
+       "sig": ".animate-pulse"
+      }
+     ],
+     "sheetsSkipped": 0
+    },
+    "a11yLayout": {
+     "smallTargetCount": 11,
+     "smallTargets": [
+      {
+       "sig": "a.sr-only.focus:not-sr-only",
+       "tag": "a",
+       "w": 1,
+       "h": 1,
+       "sample": "Skip to content",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "exception": "spacing"
+      },
+      {
+       "sig": "a.font-semibold.text-navy",
+       "tag": "a",
+       "w": 42,
+       "h": 18,
+       "sample": "Cense",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       },
+       "exception": "inline"
+      },
+      {
+       "sig": "button.no-print.flex",
+       "tag": "button",
+       "w": 44,
+       "h": 44,
+       "sample": "Hide dollar amounts",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.min-h-[44px].rounded-full",
+       "tag": "button",
+       "w": 80,
+       "h": 44,
+       "sample": "LoansYour loans",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.min-h-[44px].rounded-full",
+       "tag": "button",
+       "w": 80,
+       "h": 44,
+       "sample": "PlansRepayment plans",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.min-h-[44px].rounded-full",
+       "tag": "button",
+       "w": 80,
+       "h": 44,
+       "sample": "PayoffPayoff",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.min-h-[44px].rounded-full",
+       "tag": "button",
+       "w": 80,
+       "h": 44,
+       "sample": "RecordsRecords2",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.inline-flex.items-center",
+       "tag": "button",
+       "w": 101,
+       "h": 40,
+       "sample": "Add a loan",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.-mx-2.inline-flex",
+       "tag": "button",
+       "w": 131,
+       "h": 44,
+       "sample": "Clear my data",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.inline-flex.items-center",
+       "tag": "button",
+       "w": 301,
+       "h": 40,
+       "sample": "Download as a spreadsheet",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      },
+      {
+       "sig": "button.inline-flex.items-center",
+       "tag": "button",
+       "w": 301,
+       "h": 40,
+       "sample": "Print one page",
+       "viewport": {
+        "width": 375,
+        "height": 812,
+        "dpr": 1,
+        "isMobile": true,
+        "w": 375,
+        "h": 812
+       }
+      }
+     ],
+     "undersizedCount": 0,
+     "belowComfortCount": 11,
+     "spacingExceptionChecked": true,
+     "spacingExceptionSkipReason": null,
+     "targetCount": 20,
+     "missingAltCount": 0,
+     "missingAlt": [],
+     "headingJumpCount": 0,
+     "headingJumps": [],
+     "h1Count": 1,
+     "missingLandmarks": []
+    }
+   },
+   "notAutoDetectable": [
+    "Spatial coherence — whether elements enter/exit from where they logically belong (a menu growing from its anchor, a sheet rising from the edge it docks to). The audit sees durations and easings, not spatial origin.",
+    "Clean fades — whether opacity transitions are free of mid-fade color shifts, banding, or double-compositing. Only a human eye (or pixel diff) can judge fade quality.",
+    "Jump cuts — abrupt state changes with no transition where one is expected (content swaps, route changes). Absence of animation is not itself in the DOM.",
+    "Unified direction — whether a group of elements animates along a consistent axis/choreography rather than each doing its own thing.",
+    "Perceived hierarchy / emphasis — whether motion draws the eye to the right thing at the right time.",
+    "Content-appropriate personality — expressive vs. standard scheme being the right call for the brand and context.",
+    "Interruptibility & continuity — whether in-flight animations respond gracefully to new input rather than snapping.",
+    "Real contrast under imagery/gradients — text over photos or gradient backgrounds (the audit samples solid computed backgrounds only).",
+    "Closed shadow roots — their internals are structurally unreachable from script and are not scanned."
+   ],
+   "meta": {
+    "url": "http://localhost:3100/",
+    "title": "Loan Desk by Cense — every student loan you have, in one place",
+    "timestamp": "2026-11-04T20:50:11.803Z",
+    "contentFingerprint": "w6cq0m",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "viewport": {
+     "width": 375,
+     "height": 812,
+     "dpr": 1,
+     "isMobile": true,
+     "w": 375,
+     "h": 812
+    },
+    "siteType": "saas",
+    "elementsScanned": 135,
+    "elementsTotal": 184,
+    "sampleCap": 1500,
+    "sampleCapped": false,
+    "sheetsSkipped": 0,
+    "openShadowRoots": 1,
+    "notes": [
+     "1 open shadow root(s) traversed. Closed shadow roots (if any) cannot be scanned."
+    ],
+    "durationMs": 10
+   }
+  },
+  "probes": {
+   "animationsAtLoad": {
+    "count": 2,
+    "running": 0,
+    "anims": [
+     {
+      "target": "div.rise",
+      "name": "rise",
+      "dur": 240,
+      "infinite": false,
+      "state": "finished"
+     },
+     {
+      "target": "div.rise",
+      "name": "rise",
+      "dur": 240,
+      "infinite": false,
+      "state": "finished"
+     }
+    ]
+   },
+   "animationsAfterScroll": {
+    "count": 2,
+    "running": 0,
+    "anims": [
+     {
+      "target": "div.rise",
+      "name": "rise",
+      "dur": 240,
+      "infinite": false,
+      "state": "finished"
+     },
+     {
+      "target": "div.rise",
+      "name": "rise",
+      "dur": 240,
+      "infinite": false,
+      "state": "finished"
+     }
+    ]
+   }
+  },
+  "durationMs": 2644
+ },
+ "extras": []
+}

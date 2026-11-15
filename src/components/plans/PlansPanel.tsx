@@ -7,18 +7,19 @@
 // two numbers that trade off against each other (what you pay a month, what
 // you pay in total), then the detail for anyone who wants to check our work.
 
-import { useState } from "react";
-import { Loan, PlanId, Profile, RankedPlan } from "@/types";
+import { useState, type ReactNode } from "react";
+import { Loan, PlanEstimate, PlanId, Profile, RankedPlan } from "@/types";
 import {
   ASSUMPTIONS,
   PARENT_PLUS_NOTE,
+  GRADUATED_PARTWAY,
   PLAN_META,
   POST_CUTOFF_WARNING,
   POST_CUTOFF_WARNING_PARENT_PLUS,
   SAME_PLAN_RULE,
 } from "@/data/plans";
 import { buildContext, estimatePlans, isPostCutoff, rankPlans } from "@/lib/calc";
-import { cn, years } from "@/lib/utils";
+import { cn, money, years } from "@/lib/utils";
 import {
   Badge,
   Button,
@@ -37,11 +38,24 @@ interface Props {
   onSelectPlan: (id: PlanId) => void;
 }
 
+/** Takes the borrower to the income question, which prices IBR and RAP. */
+function focusIncome() {
+  const el = document.getElementById("income");
+  el?.scrollIntoView({ block: "center" });
+  el?.focus({ preventScroll: true });
+}
+
 function PslfBadge({ plan }: { plan: RankedPlan }) {
   const s = plan.estimate.pslf;
   if (s === "counts") return <Badge tone="good">✓ Counts toward PSLF</Badge>;
   if (s === "partial") return <Badge tone="warn">~ Some months count</Badge>;
   return <Badge tone="neutral">✕ No PSLF credit</Badge>;
+}
+
+/** Graduated's last payment, when it reads higher than its first. */
+function peakOf(e: PlanEstimate): number | null {
+  const last = e.finalPayment ?? 0;
+  return last >= (e.monthlyPayment ?? 0) + 1 ? last : null;
 }
 
 /**
@@ -60,7 +74,7 @@ function Measure({
   value: number | null;
   max: number;
   emphasis: boolean;
-  note?: string;
+  note?: ReactNode;
 }) {
   const ratio = value !== null && max > 0 ? Math.max(0.02, value / max) : 0;
   return (
@@ -68,11 +82,14 @@ function Measure({
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm text-slate-700">{label}</span>
         <span className="text-base font-bold text-slate-900">
-          {value === null ? "—" : <Money value={value} />}
+          {value === null ? <span>—</span> : <Money value={value} />}
           {note && (
-            <span className="ml-1 text-xs font-normal text-slate-600">
-              {note}
-            </span>
+            <>
+              {" "}
+              <span className="text-xs font-normal text-slate-600">
+                {note}
+              </span>
+            </>
           )}
         </span>
       </div>
@@ -96,6 +113,7 @@ function PlanRow({
   publicService,
   selected,
   onSelect,
+  billNote,
 }: {
   plan: RankedPlan;
   maxMonthly: number;
@@ -103,11 +121,19 @@ function PlanRow({
   publicService: boolean;
   selected: boolean;
   onSelect: () => void;
+  /** On Standard only: the bill typed is above this estimate. */
+  billNote?: string;
 }) {
   const { estimate: e, isTopPick, isLowestPayment, isLowestInterest } = plan;
   const meta = PLAN_META[e.id];
+  // Partway through the 10 years, Graduated's card describes what is left.
+  const copy =
+    e.stepsLeft === undefined
+      ? meta
+      : GRADUATED_PARTWAY[e.stepsLeft === 1 ? "level" : "steps"];
   const [open, setOpen] = useState(false);
   const panelId = `plan-${e.id}`;
+  const peak = peakOf(e);
 
   return (
     <Card
@@ -124,23 +150,20 @@ function PlanRow({
           {selected && <Badge tone="brand">✓ Your plan</Badge>}
           {isTopPick && !selected && <Badge tone="accent">Our pick</Badge>}
         </div>
-        <p className="mt-0.5 text-sm text-slate-700">{meta.tagline}</p>
+        <p className="mt-0.5 text-sm text-slate-700">{copy.tagline}</p>
 
         {e.monthlyPayment === null && (
           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
             <p className="text-sm leading-relaxed text-slate-800">
               This plan is priced off what you earn, not what you owe. Add your
-              yearly income and we will work out the payment.
+              yearly income, or 0 if you are not earning, and we will work out
+              the payment.
             </p>
             <Button
               size="sm"
               variant="secondary"
               className="mt-3"
-              onClick={() => {
-                const el = document.getElementById("income");
-                el?.scrollIntoView({ block: "center" });
-                el?.focus({ preventScroll: true });
-              }}
+              onClick={focusIncome}
             >
               Add my income
             </Button>
@@ -150,10 +173,21 @@ function PlanRow({
         {e.monthlyPayment !== null && (
         <div className="mt-4 grid gap-3.5 sm:grid-cols-2 sm:gap-6">
           <Measure
-            label={e.id === "graduated" ? "Per month, to start" : "Per month"}
+            label={
+              e.id === "graduated" && e.stepsLeft !== 1
+                ? "Per month, to start"
+                : "Per month"
+            }
             value={e.monthlyPayment}
             max={maxMonthly}
             emphasis={selected || (isTopPick && !selected)}
+            note={
+              peak !== null && (
+                <>
+                  <span>rising to</span> <Money value={peak} />
+                </>
+              )
+            }
           />
           <Measure
             label={`In total, over ${years(e.years)}`}
@@ -162,6 +196,19 @@ function PlanRow({
             emphasis={selected || (isTopPick && !selected)}
           />
         </div>
+        )}
+        {e.id === "graduated" && e.monthlyPayment !== null && (
+          // 34 CFR 685.208(b)(6) sets only the 3x cap and the interest floor;
+          // each servicer picks its own steps.
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            An estimate: your servicer may step the payments differently.
+          </p>
+        )}
+
+        {billNote && e.monthlyPayment !== null && (
+          <Notice tone="info" className="mt-3.5">
+            {billNote}
+          </Notice>
         )}
 
         {(isLowestPayment || isLowestInterest) && e.monthlyPayment !== null && (
@@ -220,14 +267,14 @@ function PlanRow({
             )}
           >
             <Chevron open={open} />
-            {open ? "Hide the detail" : "How this plan works"}
+            <span>{open ? "Hide the detail" : "How this plan works"}</span>
           </button>
         </div>
 
         {open && (
           <div id={panelId} className="mt-4 space-y-4">
             <p className="text-base leading-relaxed text-slate-800">
-              {meta.summary}
+              {copy.summary}
             </p>
 
             <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
@@ -245,15 +292,34 @@ function PlanRow({
               </div>
             </dl>
 
+            {/* Keyed by what it shows, so React replaces the sentence whole: a
+                browser translator swaps the text React would edit in place. */}
             {e.forgivenAmount > 1 && (
-              <p className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800">
-                <strong>
-                  <Money value={e.forgivenAmount} />
-                </strong>{" "}
-                would still be left after {e.forgivenessYears} years and gets
-                forgiven. Outside of PSLF, a forgiven balance counts as taxable
-                income the year it is cancelled.
-              </p>
+              <div
+                key={`forgiven-${e.forgivenAmount}-${e.forgivenessYears}-${e.forgivenessTax}`}
+                className="space-y-1 rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800"
+              >
+                <p>
+                  <strong>
+                    <Money value={e.forgivenAmount} />
+                  </strong>{" "}
+                  would still be left after {e.forgivenessYears} years and gets
+                  forgiven. Outside of PSLF, a forgiven balance counts as
+                  taxable income the year it is cancelled.
+                </p>
+                {e.forgivenessTax !== undefined && (
+                  <p>
+                    <span>Estimated federal income tax on it: about </span>
+                    <strong>
+                      <Money value={e.forgivenessTax} />
+                    </strong>
+                    <span>
+                      , at today&apos;s brackets for your filing status, not
+                      counting state tax.
+                    </span>
+                  </p>
+                )}
+              </div>
             )}
 
             <div className="flex flex-wrap items-center gap-2">
@@ -265,7 +331,7 @@ function PlanRow({
               <div>
                 <Eyebrow className="text-emerald-800">Good</Eyebrow>
                 <ul className="mt-1.5 space-y-1.5">
-                  {meta.pros.map((p) => (
+                  {copy.pros.map((p) => (
                     <li
                       key={p}
                       className="flex gap-2 text-sm leading-snug text-slate-800"
@@ -279,7 +345,7 @@ function PlanRow({
               <div>
                 <Eyebrow className="text-amber-800">Bad</Eyebrow>
                 <ul className="mt-1.5 space-y-1.5">
-                  {meta.cons.map((c) => (
+                  {copy.cons.map((c) => (
                     <li
                       key={c}
                       className="flex gap-2 text-sm leading-snug text-slate-800"
@@ -308,6 +374,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
   const open = ranked.filter((r) => r.estimate.eligible);
   const closed = ranked.filter((r) => !r.estimate.eligible);
   const top = ranked.find((r) => r.isTopPick);
+  const topPeak = top ? peakOf(top.estimate) : null;
   const rapOpen = open.some((r) => r.estimate.id === "rap");
 
   const maxMonthly = Math.max(
@@ -316,12 +383,30 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
   );
   const maxTotal = Math.max(1, ...open.map((r) => r.estimate.totalPaid ?? 0));
 
+  // A bill well above a fresh 10-year payment is most likely Standard partway
+  // through its term, which this card prices from today unless told.
+  const standard = estimates.find((e) => e.id === "standard");
+  const billNote =
+    ctx.monthsUsed === 0 &&
+    standard?.eligible &&
+    standard.monthlyPayment !== null &&
+    ctx.bill > standard.monthlyPayment + Math.max(10, ctx.bill * 0.05)
+      ? `You entered ${money(ctx.bill)} a month. If that is your Standard bill, it is the real figure: fewer than 10 years are left and the total is lower than shown. Say so under "Already repaying on the Standard plan?" above to see the payments you have left.`
+      : undefined;
+
   return (
     <div className="space-y-5">
       {(ctx.postCutoff || ctx.parentPlus) && (
         <div className="space-y-3">
+          {/* Keyed by what it shows, so React replaces it whole: a browser
+              translator swaps the text React would edit in place. Undo can
+              change the loans while this tab is open. */}
           {ctx.postCutoff && (
-            <Notice tone="warn" title="One date decided this">
+            <Notice
+              key={`cutoff-${ctx.parentPlus}-${postLoans.map((l) => l.nickname).join(", ")}`}
+              tone="warn"
+              title="One date decided this"
+            >
               {ctx.parentPlus
                 ? POST_CUTOFF_WARNING_PARENT_PLUS
                 : POST_CUTOFF_WARNING}
@@ -339,7 +424,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
         </div>
       )}
 
-      {top && top.estimate.monthlyPayment !== null && (
+      {top && (
         <FadeIn>
           <div className="rounded-3xl bg-navy p-5 text-white shadow-lift sm:p-7">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/80">
@@ -349,18 +434,49 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
               <h2 className="font-display text-4xl font-bold leading-none sm:text-5xl">
                 {PLAN_META[top.estimate.id].name}
               </h2>
-              <p className="text-base text-white/90">
-                <span className="amt figure text-3xl font-bold text-white">
-                  <Money value={top.estimate.monthlyPayment} tabular={false} />
-                </span>{" "}
-                a month{top.estimate.id === "graduated" && ", to start"}
-              </p>
+              {top.estimate.monthlyPayment !== null && (
+                // Keyed so React replaces the amount whole: a browser
+                // translator swaps the text React would edit in place (RES-12).
+                <p
+                  key={`${top.estimate.id}-${top.estimate.monthlyPayment}-${topPeak}`}
+                  className="text-base text-white/90"
+                >
+                  <span className="amt figure text-3xl font-bold text-white">
+                    <Money value={top.estimate.monthlyPayment} tabular={false} />
+                  </span>{" "}
+                  {/* Every figure and every run of words sits in its own
+                      element, so a page translator never holds a text node
+                      that React later removes or rewrites. */}
+                  <span>
+                    {top.estimate.id === "graduated" &&
+                    top.estimate.stepsLeft !== 1
+                      ? "a month, to start"
+                      : "a month"}
+                  </span>
+                  {topPeak !== null && (
+                    <>
+                      <span>{", rising to "}</span>
+                      <Money value={topPeak} tabular={false} />
+                      <span>{" in its last two years"}</span>
+                    </>
+                  )}
+                </p>
+              )}
             </div>
             <p className="mt-4 text-base leading-relaxed text-white/95">
               {topPickReason}
             </p>
             <div className="mt-5">
-              {profile.selectedPlan === top.estimate.id ? (
+              {top.estimate.monthlyPayment === null ? (
+                // Picked for its forgiveness credit, but priced off income.
+                <button
+                  type="button"
+                  onClick={focusIncome}
+                  className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+                >
+                  Add my income
+                </button>
+              ) : profile.selectedPlan === top.estimate.id ? (
                 <p className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white/15 px-5 text-base font-semibold">
                   ✓ This is your plan
                 </p>
@@ -370,7 +486,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                   onClick={() => onSelectPlan(top.estimate.id)}
                   className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
                 >
-                  Use {PLAN_META[top.estimate.id].name} as my plan
+                  {`Use ${PLAN_META[top.estimate.id].name} as my plan`}
                 </button>
               )}
             </div>
@@ -390,7 +506,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
               : `All ${open.length} plans open to you`}
           </h2>
           <p className="text-sm text-slate-600">
-            {open.length} of 6 federal plans
+            {`${open.length} of 6 federal plans`}
           </p>
         </div>
         {open.length > 1 && (
@@ -409,6 +525,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                 publicService={ctx.publicService}
                 selected={profile.selectedPlan === p.estimate.id}
                 onSelect={() => onSelectPlan(p.estimate.id)}
+                billNote={p.estimate.id === "standard" ? billNote : undefined}
               />
             </FadeIn>
           ))}
@@ -420,7 +537,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
       {closed.length > 0 && (
         <Card className="border-dashed bg-slate-50/60 p-5 shadow-none sm:p-6">
           <h2 className="font-display text-xl font-bold text-slate-900">
-            {closed.length} plan{closed.length === 1 ? "" : "s"} not open to you
+            {`${closed.length} plan${closed.length === 1 ? "" : "s"} not open to you`}
           </h2>
           <ul className="mt-3 space-y-3">
             {closed.map((p) => (
@@ -429,10 +546,11 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                   {PLAN_META[p.estimate.id].name}
                 </p>
                 <p className="text-sm leading-relaxed text-slate-700">
-                  {p.estimate.ineligibleReason}
-                  {p.estimate.id === "tiered_standard" &&
-                    rapOpen &&
-                    " RAP, the other plan created in 2026, is open to you and is in the list above."}
+                  {`${p.estimate.ineligibleReason ?? ""}${
+                    p.estimate.id === "tiered_standard" && rapOpen
+                      ? " RAP, the other plan created in 2026, is open to you and is in the list above."
+                      : ""
+                  }`}
                 </p>
               </li>
             ))}
@@ -459,8 +577,13 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
             <Notice tone="info" title="One plan covers all of them">
               {SAME_PLAN_RULE}
             </Notice>
+            {/* Keyed by the clause it shows, like the cutoff notice above. */}
             {!ctx.postCutoff && (
-              <Notice tone="good" title="All your loans predate the cutoff">
+              <Notice
+                key={`before-cutoff-${ctx.parentPlus}`}
+                tone="good"
+                title="All your loans predate the cutoff"
+              >
                 Every loan you entered was disbursed before July 1, 2026, so the
                 older {ctx.parentPlus ? "fixed plans are" : "plan menu is"} still
                 open to you. Borrowing again on or after

@@ -30,8 +30,10 @@ import {
   PRIVACY_NOTE,
 } from "@/data/plans";
 import {
+  amortizedPayment,
   anyParentPlus,
   anyPostCutoff,
+  balancesAsOf,
   buildContext,
   estimatePlans,
   totalBalance,
@@ -44,7 +46,15 @@ import {
   snapshotStore,
 } from "@/lib/storage";
 import { exportLoans } from "@/lib/export";
-import { cn, formatWholeDollars, parseNumber, scrollBehavior } from "@/lib/utils";
+import {
+  cn,
+  daysSince,
+  formatDollarsInput,
+  moneyCents,
+  niceDate,
+  parseNumber,
+  scrollBehavior,
+} from "@/lib/utils";
 import {
   AffixInput,
   Button,
@@ -59,6 +69,7 @@ import {
   Notice,
   Toast,
   ToastState,
+  WholeDollarInput,
   inputClass,
 } from "@/components/shared/ui";
 import LoanForm, { LoanDefaults } from "@/components/loans/LoanForm";
@@ -115,6 +126,38 @@ function LockIcon() {
       <rect x="3" y="7" width="10" height="7" rx="1.8" />
       <path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" />
     </svg>
+  );
+}
+
+/**
+ * A dollar amount that may have cents. It keeps the text as typed, so
+ * "28,101.37" can be entered a key at a time, and reports the number.
+ */
+function DollarsInput({
+  value,
+  onValue,
+  ...rest
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & {
+  value: number;
+  onValue: (n: number) => void;
+}) {
+  const [text, setText] = useState(() =>
+    value ? formatDollarsInput(String(value)) : ""
+  );
+  return (
+    <AffixInput
+      prefix="$"
+      inputMode="decimal"
+      autoComplete="off"
+      placeholder="0"
+      {...rest}
+      value={text}
+      onChange={(e) => {
+        const next = formatDollarsInput(e.target.value);
+        setText(next);
+        onValue(parseNumber(next));
+      }}
+    />
   );
 }
 
@@ -192,15 +235,38 @@ export default function Page() {
   );
   // Derived from the same engine the Plans tab uses. Hardcoding "5 of 6" here
   // disagreed with the Plans tab whenever Extended was out on the $30k floor.
+  const ctx = useMemo(() => buildContext(loans, profile), [loans, profile]);
   const estimates = useMemo(
-    () => (loans.length ? estimatePlans(buildContext(loans, profile)) : []),
-    [loans, profile]
+    () => (loans.length ? estimatePlans(ctx) : []),
+    [loans, ctx]
   );
   const eligiblePlanCount = estimates.filter((e) => e.eligible).length;
   const selectedEstimate =
     estimates.find(
       (e) => e.id === profile.selectedPlan && e.eligible && e.monthlyPayment !== null
     ) ?? null;
+
+  // Balances are typed by hand, so every figure is as old as the oldest one.
+  // Projections still count from this month; the page says how old the
+  // balances are instead of quietly moving them.
+  const asOf = useMemo(() => balancesAsOf(loans), [loans]);
+  const staleNotice = asOf !== null && daysSince(asOf) > 45 && (
+    <Notice tone="warn" title="Your balances may be out of date">
+      {`These balances are from ${niceDate(
+        asOf
+      )}. Update them from your servicer before relying on the dates here, and retype any that have not changed.`}
+    </Notice>
+  );
+
+  // What the Standard question has to say back, so a yes never goes unused.
+  const standardHint = !profile.onStandardNow
+    ? "Standard's 10 years began when your loans entered repayment, not today. Say yes and the monthly bill on your loans sets how many payments are left."
+    : !ctx.bill
+      ? "Add your monthly bill to each loan to see the term you have left."
+      : ctx.monthsUsed === 0 &&
+          ctx.bill < amortizedPayment(ctx.balance, ctx.rate, 10) - 1
+        ? `Your bills add up to ${moneyCents(ctx.bill)} a month, less than a new 10-year Standard payment on what you owe, so they cannot be a Standard bill. Standard, Graduated and Extended are shown as if they started this month.`
+        : `Your ${moneyCents(ctx.bill)} bill clears what you owe in ${120 - ctx.monthsUsed} more payments. Standard, Graduated and Extended keep the term you are on, since switching does not restart it.`;
 
   const goTo = (next: Tab) => {
     setTab(next);
@@ -455,7 +521,12 @@ export default function Page() {
               <p className="figure mt-1 text-[3.5rem] font-bold leading-none text-slate-900 sm:text-7xl">
                 <Money value={balance} tabular={false} />
               </p>
-              <p className="mt-2 text-base text-slate-700">
+              {/* Keyed by what it shows, so React replaces the line whole: a
+                  browser translator swaps the text React would edit. */}
+              <p
+                key={`sum-${loans.length}-${servicerCount}-${selectedEstimate?.id}-${selectedEstimate?.monthlyPayment}`}
+                className="mt-2 text-base text-slate-700"
+              >
                 across {loans.length} loan{loans.length === 1 ? "" : "s"}
                 {servicerCount > 0 &&
                   ` with ${servicerCount} servicer${
@@ -465,12 +536,23 @@ export default function Page() {
                   <>
                     {" · "}
                     <strong className="font-semibold text-slate-900">
-                      <Money value={selectedEstimate.monthlyPayment} /> a month
+                      <Money value={selectedEstimate.monthlyPayment} />{" "}
+                      <span>
+                        {selectedEstimate.id === "graduated" &&
+                        selectedEstimate.stepsLeft !== 1
+                          ? "a month to start"
+                          : "a month"}
+                      </span>
                     </strong>{" "}
                     on {PLAN_META[selectedEstimate.id].name}
                   </>
                 )}
               </p>
+              {asOf && (
+                <p className="mt-1 text-sm text-slate-600">
+                  {`Balances as of ${niceDate(asOf)}`}
+                </p>
+              )}
 
               {interest > 0 && (
                 <div className="mt-5 max-w-md">
@@ -547,8 +629,14 @@ export default function Page() {
               {/* ---------- Loans ---------- */}
               {tab === "loans" && (
                 <div className="space-y-5">
+                  {/* Keyed by the clause it shows, so React replaces it whole: a
+                      browser translator swaps the text React would edit. */}
                   {postCutoff && (
-                    <Notice tone="warn" title="Check this before anything else">
+                    <Notice
+                      key={`cutoff-${parentPlus}`}
+                      tone="warn"
+                      title="Check this before anything else"
+                    >
                       At least one loan was disbursed on or after July 1, 2026.
                       {parentPlus
                         ? " That limits your entire portfolio to RAP and Tiered Standard, and Parent PLUS loans cannot use RAP, so they are limited to Tiered Standard."
@@ -564,6 +652,7 @@ export default function Page() {
                       confirm with your servicer or studentaid.gov.
                     </Notice>
                   )}
+                  {staleNotice}
 
                   {(adding || editing) && (
                     <LoanForm
@@ -721,28 +810,32 @@ export default function Page() {
 
                       <div className="grid gap-5 sm:grid-cols-2">
                         <Field
-                          label="Yearly income, before tax"
-                          hint="Leave blank if you are not earning yet. We will skip the plans priced off income."
+                          label={
+                            profile.filesJointly
+                              ? "Combined income on your joint return"
+                              : "Adjusted gross income (AGI)"
+                          }
+                          hint={
+                            profile.filesJointly
+                              ? "Yours and your spouse's together: the adjusted gross income on your joint tax return."
+                              : "Roughly your yearly pay minus pre-tax deductions such as 401(k) and health premiums. It is the AGI on your latest tax return. Not earning right now? Enter 0 to see what you would pay today. Leave blank to skip the plans priced off income."
+                          }
                           htmlFor="income"
                         >
-                          <AffixInput
+                          <WholeDollarInput
                             id="income"
                             prefix="$"
                             inputMode="numeric"
                             autoComplete="off"
                             aria-describedby="income-msg"
-                            value={
-                              profile.income
-                                ? profile.income.toLocaleString("en-US")
-                                : ""
-                            }
-                            placeholder="0"
-                            onChange={(e) =>
+                            value={profile.income}
+                            known={profile.incomeKnown}
+                            onValueChange={(income, hasDigit) =>
+                              // A typed 0 is an answer. Text with no digit is blank.
                               setProfile((p) => ({
                                 ...p,
-                                income: parseNumber(
-                                  formatWholeDollars(e.target.value)
-                                ),
+                                income,
+                                incomeKnown: hasDigit,
                               }))
                             }
                           />
@@ -750,7 +843,7 @@ export default function Page() {
 
                         <Field
                           label="People in your household"
-                          hint="You, plus anyone you claim as a dependent."
+                          hint="You, plus anyone you claim as a dependent. Not your spouse: tick the box below if you file jointly."
                           htmlFor="household"
                         >
                           <select
@@ -774,6 +867,88 @@ export default function Page() {
                           </select>
                         </Field>
                       </div>
+
+                      <div>
+                        <label className="flex min-h-[48px] cursor-pointer items-center gap-3 text-sm font-bold text-slate-900">
+                          <input
+                            type="checkbox"
+                            className="h-6 w-6 flex-shrink-0 cursor-pointer accent-navy"
+                            checked={profile.filesJointly}
+                            aria-describedby="joint-msg"
+                            onChange={(e) =>
+                              setProfile((p) => ({
+                                ...p,
+                                filesJointly: e.target.checked,
+                              }))
+                            }
+                          />
+                          I am married and we file taxes jointly
+                        </label>
+                        <p id="joint-msg" className="text-sm leading-snug text-slate-600">
+                          IBR then counts your spouse in your family size, and
+                          both income-driven plans use your combined income.
+                          Filing separately? Leave this unticked.
+                        </p>
+                        {profile.filesJointly && (
+                          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                            <Field
+                              label="What your spouse owes in federal student loans"
+                              hint="Their own Direct and FFEL loans, not Parent PLUS loans taken out for a child. You are charged your share of what the two of you owe."
+                              htmlFor="spouseloans"
+                              optional
+                            >
+                              <DollarsInput
+                                id="spouseloans"
+                                aria-describedby="spouseloans-msg"
+                                value={profile.spouseLoanBalance}
+                                onValue={(n) =>
+                                  setProfile((p) => ({
+                                    ...p,
+                                    spouseLoanBalance: n,
+                                  }))
+                                }
+                              />
+                            </Field>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Only the older plans keep a term from the day the
+                          loans entered repayment. After the cutoff the menu
+                          is Tiered Standard and RAP. */}
+                      {!postCutoff && (
+                        <Disclosure
+                          summary="Already repaying on the Standard plan?"
+                          defaultOpen={profile.onStandardNow}
+                        >
+                          <ChoiceGroup
+                            label="Are you repaying on the Standard plan now?"
+                            value={profile.onStandardNow ? "yes" : "no"}
+                            onChange={(v: "yes" | "no") =>
+                              setProfile((p) => ({
+                                ...p,
+                                onStandardNow: v === "yes",
+                              }))
+                            }
+                            options={[
+                              { value: "yes", label: "Yes, on Standard now" },
+                              { value: "no", label: "No, or not sure" },
+                            ]}
+                          />
+                          <p className="mt-2 text-sm text-slate-600" aria-live="polite">
+                            {standardHint}
+                          </p>
+                          <p className="mt-2 text-sm text-slate-600">
+                            The payments left are read as if all your loans
+                            entered repayment in the same month, from balances
+                            typed just after a payment. If they started at
+                            different times, your last loan is likely paid off
+                            months later than shown, and a balance that includes
+                            much of a month&apos;s interest built up since your
+                            last payment can be off by one payment.
+                          </p>
+                        </Disclosure>
+                      )}
                     </div>
                   </Card>
 
@@ -804,6 +979,7 @@ export default function Page() {
               {/* ---------- Payoff ---------- */}
               {tab === "order" && (
                 <div className="space-y-5">
+                  {staleNotice}
                   <RankingPanel
                     loans={loans}
                     profile={profile}
@@ -826,11 +1002,14 @@ export default function Page() {
 
               {/* ---------- Records ---------- */}
               {tab === "history" && (
-                <HistoryPanel
-                  loans={loans}
-                  snapshots={snapshots}
-                  onSaveSnapshot={saveSnapshot}
-                />
+                <div className="space-y-5">
+                  {staleNotice}
+                  <HistoryPanel
+                    loans={loans}
+                    snapshots={snapshots}
+                    onSaveSnapshot={saveSnapshot}
+                  />
+                </div>
               )}
             </div>
           </div>

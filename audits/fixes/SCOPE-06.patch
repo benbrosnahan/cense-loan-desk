@@ -1,0 +1,834 @@
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..a356006 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -30,8 +30,10 @@ import {
+   PRIVACY_NOTE,
+ } from "@/data/plans";
+ import {
++  amortizedPayment,
+   anyParentPlus,
+   anyPostCutoff,
++  balancesAsOf,
+   buildContext,
+   estimatePlans,
+   totalBalance,
+@@ -44,7 +46,15 @@ import {
+   snapshotStore,
+ } from "@/lib/storage";
+ import { exportLoans } from "@/lib/export";
+-import { cn, formatWholeDollars, parseNumber, scrollBehavior } from "@/lib/utils";
++import {
++  cn,
++  daysSince,
++  formatWholeDollars,
++  moneyCents,
++  niceDate,
++  parseNumber,
++  scrollBehavior,
++} from "@/lib/utils";
+ import {
+   AffixInput,
+   Button,
+@@ -192,9 +202,10 @@ export default function Page() {
+   );
+   // Derived from the same engine the Plans tab uses. Hardcoding "5 of 6" here
+   // disagreed with the Plans tab whenever Extended was out on the $30k floor.
++  const ctx = useMemo(() => buildContext(loans, profile), [loans, profile]);
+   const estimates = useMemo(
+-    () => (loans.length ? estimatePlans(buildContext(loans, profile)) : []),
+-    [loans, profile]
++    () => (loans.length ? estimatePlans(ctx) : []),
++    [loans, ctx]
+   );
+   const eligiblePlanCount = estimates.filter((e) => e.eligible).length;
+   const selectedEstimate =
+@@ -202,6 +213,28 @@ export default function Page() {
+       (e) => e.id === profile.selectedPlan && e.eligible && e.monthlyPayment !== null
+     ) ?? null;
+ 
++  // Balances are typed by hand, so every figure is as old as the oldest one.
++  // Projections still count from this month; the page says how old the
++  // balances are instead of quietly moving them.
++  const asOf = useMemo(() => balancesAsOf(loans), [loans]);
++  const staleNotice = asOf !== null && daysSince(asOf) > 45 && (
++    <Notice tone="warn" title="Your balances may be out of date">
++      {`These balances are from ${niceDate(
++        asOf
++      )}. Update them from your servicer before relying on the dates here, and retype any that have not changed.`}
++    </Notice>
++  );
++
++  // What the Standard question has to say back, so a yes never goes unused.
++  const standardHint = !profile.onStandardNow
++    ? "Standard's 10 years began when your loans entered repayment, not today. Say yes and the monthly bill on your loans sets how many payments are left."
++    : !ctx.bill
++      ? "Add your monthly bill to each loan to see the term you have left."
++      : ctx.monthsUsed === 0 &&
++          ctx.bill < amortizedPayment(ctx.balance, ctx.rate, 10) - 1
++        ? `Your bills add up to ${moneyCents(ctx.bill)} a month, less than a new 10-year Standard payment on what you owe, so they cannot be a Standard bill. Standard, Graduated and Extended are shown as if they started this month.`
++        : `Your ${moneyCents(ctx.bill)} bill clears what you owe in ${120 - ctx.monthsUsed} more payments. Standard, Graduated and Extended keep the term you are on, since switching does not restart it.`;
++
+   const goTo = (next: Tab) => {
+     setTab(next);
+     setAdding(false);
+@@ -471,6 +504,11 @@ export default function Page() {
+                   </>
+                 )}
+               </p>
++              {asOf && (
++                <p className="mt-1 text-sm text-slate-600">
++                  {`Balances as of ${niceDate(asOf)}`}
++                </p>
++              )}
+ 
+               {interest > 0 && (
+                 <div className="mt-5 max-w-md">
+@@ -564,6 +602,7 @@ export default function Page() {
+                       confirm with your servicer or studentaid.gov.
+                     </Notice>
+                   )}
++                  {staleNotice}
+ 
+                   {(adding || editing) && (
+                     <LoanForm
+@@ -774,6 +813,43 @@ export default function Page() {
+                           </select>
+                         </Field>
+                       </div>
++
++                      {/* Only the older plans keep a term from the day the
++                          loans entered repayment. After the cutoff the menu
++                          is Tiered Standard and RAP. */}
++                      {!postCutoff && (
++                        <Disclosure
++                          summary="Already repaying on the Standard plan?"
++                          defaultOpen={profile.onStandardNow}
++                        >
++                          <ChoiceGroup
++                            label="Are you repaying on the Standard plan now?"
++                            value={profile.onStandardNow ? "yes" : "no"}
++                            onChange={(v: "yes" | "no") =>
++                              setProfile((p) => ({
++                                ...p,
++                                onStandardNow: v === "yes",
++                              }))
++                            }
++                            options={[
++                              { value: "yes", label: "Yes, on Standard now" },
++                              { value: "no", label: "No, or not sure" },
++                            ]}
++                          />
++                          <p className="mt-2 text-sm text-slate-600" aria-live="polite">
++                            {standardHint}
++                          </p>
++                          <p className="mt-2 text-sm text-slate-600">
++                            The payments left are read as if all your loans
++                            entered repayment in the same month, from balances
++                            typed just after a payment. If they started at
++                            different times, your last loan is likely paid off
++                            months later than shown, and a balance that includes
++                            interest built up since your last payment can show
++                            one payment more than you have left.
++                          </p>
++                        </Disclosure>
++                      )}
+                     </div>
+                   </Card>
+ 
+@@ -804,6 +880,7 @@ export default function Page() {
+               {/* ---------- Payoff ---------- */}
+               {tab === "order" && (
+                 <div className="space-y-5">
++                  {staleNotice}
+                   <RankingPanel
+                     loans={loans}
+                     profile={profile}
+@@ -826,11 +903,14 @@ export default function Page() {
+ 
+               {/* ---------- Records ---------- */}
+               {tab === "history" && (
+-                <HistoryPanel
+-                  loans={loans}
+-                  snapshots={snapshots}
+-                  onSaveSnapshot={saveSnapshot}
+-                />
++                <div className="space-y-5">
++                  {staleNotice}
++                  <HistoryPanel
++                    loans={loans}
++                    snapshots={snapshots}
++                    onSaveSnapshot={saveSnapshot}
++                  />
++                </div>
+               )}
+             </div>
+           </div>
+diff --git a/src/components/charts/PayoffRunway.tsx b/src/components/charts/PayoffRunway.tsx
+index 9c3dc5c..38227fc 100644
+--- a/src/components/charts/PayoffRunway.tsx
++++ b/src/components/charts/PayoffRunway.tsx
+@@ -23,6 +23,12 @@ interface Props {
+   /** Same, paying only the required amount. Null when there is no extra. */
+   requiredOnly: number[] | null;
+   extra: number;
++  /**
++   * What the first row is called. "Today" unless the balances were typed on
++   * an earlier day, when it is that date, so an old balance never reads as
++   * today's.
++   */
++  startLabel?: string;
+   className?: string;
+ }
+ 
+@@ -71,6 +77,7 @@ export default function PayoffRunway({
+   withExtra,
+   requiredOnly,
+   extra,
++  startLabel = "Today",
+   className,
+ }: Props) {
+   const [wrapRef, width] = useWidth<HTMLDivElement>();
+@@ -333,7 +340,7 @@ export default function PayoffRunway({
+               {rows.map((m) => (
+                 <tr key={m}>
+                   <th scope="row" className="tnum px-3.5 py-2.5 font-normal text-slate-800">
+-                    {m === 0 ? "Today" : shortMonthYearFromNow(m, now)}
++                    {m === 0 ? startLabel : shortMonthYearFromNow(m, now)}
+                   </th>
+                   <td className="px-3.5 py-2.5 text-right font-semibold text-slate-900">
+                     <Money value={at(withExtra, m)} />
+diff --git a/src/components/loans/LoanForm.tsx b/src/components/loans/LoanForm.tsx
+index 4a2cdd7..7a9dbba 100644
+--- a/src/components/loans/LoanForm.tsx
++++ b/src/components/loans/LoanForm.tsx
+@@ -24,6 +24,7 @@ import {
+   formatDollarsInput,
+   parseNumber,
+   scrollBehavior,
++  todayIso,
+   uid,
+ } from "@/lib/utils";
+ import {
+@@ -125,6 +126,8 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+     rate: false,
+   });
+   const [tried, setTried] = useState(false);
++  // Typing the balance, even the same figure again, confirms it as of today.
++  const [balanceTyped, setBalanceTyped] = useState(false);
+ 
+   useEffect(() => {
+     const el = formRef.current;
+@@ -212,6 +215,8 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+         rate,
+         disbursementDate: f.disbursementDate,
+         minPayment: parseNumber(f.minPayment),
++        balanceAsOf:
++          !initial || balanceTyped ? todayIso() : initial.balanceAsOf,
+       },
+       { addAnother }
+     );
+@@ -340,9 +345,10 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
+               placeholder="0"
+               aria-invalid={!!show("balance")}
+               aria-describedby="balance-msg"
+-              onChange={(e) =>
+-                set("balance", formatDollarsInput(e.target.value))
+-              }
++              onChange={(e) => {
++                setBalanceTyped(true);
++                set("balance", formatDollarsInput(e.target.value));
++              }}
+               onBlur={() => setTouched((t) => ({ ...t, balance: true }))}
+             />
+           </Field>
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..45049c0 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -12,13 +12,14 @@ import { Loan, PlanId, Profile, RankedPlan } from "@/types";
+ import {
+   ASSUMPTIONS,
+   PARENT_PLUS_NOTE,
++  GRADUATED_PARTWAY,
+   PLAN_META,
+   POST_CUTOFF_WARNING,
+   POST_CUTOFF_WARNING_PARENT_PLUS,
+   SAME_PLAN_RULE,
+ } from "@/data/plans";
+ import { buildContext, estimatePlans, isPostCutoff, rankPlans } from "@/lib/calc";
+-import { cn, years } from "@/lib/utils";
++import { cn, money, years } from "@/lib/utils";
+ import {
+   Badge,
+   Button,
+@@ -96,6 +97,7 @@ function PlanRow({
+   publicService,
+   selected,
+   onSelect,
++  billNote,
+ }: {
+   plan: RankedPlan;
+   maxMonthly: number;
+@@ -103,9 +105,16 @@ function PlanRow({
+   publicService: boolean;
+   selected: boolean;
+   onSelect: () => void;
++  /** On Standard only: the bill typed is above this estimate. */
++  billNote?: string;
+ }) {
+   const { estimate: e, isTopPick, isLowestPayment, isLowestInterest } = plan;
+   const meta = PLAN_META[e.id];
++  // Partway through the 10 years, Graduated's card describes what is left.
++  const copy =
++    e.stepsLeft === undefined
++      ? meta
++      : GRADUATED_PARTWAY[e.stepsLeft === 1 ? "level" : "steps"];
+   const [open, setOpen] = useState(false);
+   const panelId = `plan-${e.id}`;
+ 
+@@ -124,7 +133,7 @@ function PlanRow({
+           {selected && <Badge tone="brand">✓ Your plan</Badge>}
+           {isTopPick && !selected && <Badge tone="accent">Our pick</Badge>}
+         </div>
+-        <p className="mt-0.5 text-sm text-slate-700">{meta.tagline}</p>
++        <p className="mt-0.5 text-sm text-slate-700">{copy.tagline}</p>
+ 
+         {e.monthlyPayment === null && (
+           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+@@ -150,7 +159,11 @@ function PlanRow({
+         {e.monthlyPayment !== null && (
+         <div className="mt-4 grid gap-3.5 sm:grid-cols-2 sm:gap-6">
+           <Measure
+-            label={e.id === "graduated" ? "Per month, to start" : "Per month"}
++            label={
++              e.id === "graduated" && e.stepsLeft !== 1
++                ? "Per month, to start"
++                : "Per month"
++            }
+             value={e.monthlyPayment}
+             max={maxMonthly}
+             emphasis={selected || (isTopPick && !selected)}
+@@ -164,6 +177,12 @@ function PlanRow({
+         </div>
+         )}
+ 
++        {billNote && e.monthlyPayment !== null && (
++          <Notice tone="info" className="mt-3.5">
++            {billNote}
++          </Notice>
++        )}
++
+         {(isLowestPayment || isLowestInterest) && e.monthlyPayment !== null && (
+           <div className="mt-3.5 flex flex-wrap gap-1.5">
+             {/* Graduated's figure is a STARTING payment that steps up every two
+@@ -227,7 +246,7 @@ function PlanRow({
+         {open && (
+           <div id={panelId} className="mt-4 space-y-4">
+             <p className="text-base leading-relaxed text-slate-800">
+-              {meta.summary}
++              {copy.summary}
+             </p>
+ 
+             <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
+@@ -265,7 +284,7 @@ function PlanRow({
+               <div>
+                 <Eyebrow className="text-emerald-800">Good</Eyebrow>
+                 <ul className="mt-1.5 space-y-1.5">
+-                  {meta.pros.map((p) => (
++                  {copy.pros.map((p) => (
+                     <li
+                       key={p}
+                       className="flex gap-2 text-sm leading-snug text-slate-800"
+@@ -279,7 +298,7 @@ function PlanRow({
+               <div>
+                 <Eyebrow className="text-amber-800">Bad</Eyebrow>
+                 <ul className="mt-1.5 space-y-1.5">
+-                  {meta.cons.map((c) => (
++                  {copy.cons.map((c) => (
+                     <li
+                       key={c}
+                       className="flex gap-2 text-sm leading-snug text-slate-800"
+@@ -316,6 +335,17 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+   );
+   const maxTotal = Math.max(1, ...open.map((r) => r.estimate.totalPaid ?? 0));
+ 
++  // A bill well above a fresh 10-year payment is most likely Standard partway
++  // through its term, which this card prices from today unless told.
++  const standard = estimates.find((e) => e.id === "standard");
++  const billNote =
++    ctx.monthsUsed === 0 &&
++    standard?.eligible &&
++    standard.monthlyPayment !== null &&
++    ctx.bill > standard.monthlyPayment + Math.max(10, ctx.bill * 0.05)
++      ? `You entered ${money(ctx.bill)} a month. If that is your Standard bill, it is the real figure: fewer than 10 years are left and the total is lower than shown. Say so under "Already repaying on the Standard plan?" above to see the payments you have left.`
++      : undefined;
++
+   return (
+     <div className="space-y-5">
+       {(ctx.postCutoff || ctx.parentPlus) && (
+@@ -409,6 +439,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+                 publicService={ctx.publicService}
+                 selected={profile.selectedPlan === p.estimate.id}
+                 onSelect={() => onSelectPlan(p.estimate.id)}
++                billNote={p.estimate.id === "standard" ? billNote : undefined}
+               />
+             </FadeIn>
+           ))}
+diff --git a/src/components/ranking/RankingPanel.tsx b/src/components/ranking/RankingPanel.tsx
+index ed23f5c..4032969 100644
+--- a/src/components/ranking/RankingPanel.tsx
++++ b/src/components/ranking/RankingPanel.tsx
+@@ -16,7 +16,7 @@
+ import { useEffect, useMemo, useState } from "react";
+ import { Loan, PlanId, Profile, Strategy } from "@/types";
+ import { PLAN_META } from "@/data/plans";
+-import { buildContext, estimatePlans } from "@/lib/calc";
++import { balancesAsOf, buildContext, estimatePlans } from "@/lib/calc";
+ import { compareStrategies, projectPayoff, rankLoans } from "@/lib/ranking";
+ import {
+   cn,
+@@ -25,9 +25,11 @@ import {
+   monthYearFromNow,
+   monthsInWords,
+   monthsLabel,
++  niceDate,
+   parseNumber,
+   pct,
+   shortMonthYearFromNow,
++  todayIso,
+ } from "@/lib/utils";
+ import {
+   AffixInput,
+@@ -52,6 +54,9 @@ interface Props {
+   onGoToPlans: () => void;
+ }
+ 
++/** Plans whose term runs from the day the loans entered repayment. */
++const KEEPS_TERM: PlanId[] = ["standard", "graduated", "extended"];
++
+ const STRATEGY_COPY: Record<Strategy, { name: string; sub: string; blurb: string }> = {
+   avalanche: {
+     name: "Highest rate first",
+@@ -85,6 +90,7 @@ export default function RankingPanel({
+ 
+   const ctx = useMemo(() => buildContext(loans, profile), [loans, profile]);
+   const estimates = useMemo(() => estimatePlans(ctx), [ctx]);
++  const asOf = useMemo(() => balancesAsOf(loans), [loans]);
+   const eligible = estimates.filter(
+     (e) => e.eligible && e.monthlyPayment !== null
+   );
+@@ -298,6 +304,7 @@ export default function RankingPanel({
+                   withExtra={main.balanceByMonth}
+                   requiredOnly={base && base.paidOff ? base.balanceByMonth : null}
+                   extra={extra}
++                  startLabel={asOf && asOf !== todayIso() ? niceDate(asOf) : undefined}
+                 />
+               )}
+ 
+@@ -330,14 +337,29 @@ export default function RankingPanel({
+                 </dl>
+               )}
+ 
+-              <p className="mt-4 text-sm leading-relaxed text-slate-600">
++              {/* Keyed on everything its sentences depend on, so a change
++                  replaces the paragraph whole: a page translator's copies
++                  are never left holding text React edits or removes. */}
++              <p
++                key={`assume-${selected!.id}-${selected!.stepsLeft}-${ctx.monthsUsed > 0}-${profile.onStandardNow}-${comparison.requiredPayment}`}
++                className="mt-4 text-sm leading-relaxed text-slate-600"
++              >
+                 What this assumes: payments start this month, and your required
+                 payment stays at <Money value={comparison.requiredPayment} />{" "}
+                 the whole way.
+                 {selected!.id === "graduated" &&
+-                  " On Graduated it steps up every two years, so you would finish sooner than shown."}
++                  selected!.stepsLeft !== 1 &&
++                  (selected!.stepsLeft === undefined
++                    ? " On Graduated it steps up every two years, so you would finish sooner than shown."
++                    : " On Graduated it steps up before your 10 years end, so you would finish sooner than shown.")}
+                 {PLAN_META[selected!.id].incomeDriven &&
+                   " On an income-driven plan it moves with your income each year."}
++                {KEEPS_TERM.includes(selected!.id) &&
++                  (ctx.monthsUsed > 0
++                    ? " It counts only the payments left of the term that began when you entered repayment."
++                    : " If you are already repaying, Standard, Graduated and Extended keep the term that began when you entered repayment, so your servicer's bill and end date are the real ones.")}
++                {!profile.onStandardNow &&
++                  " If you are in school or your six-month grace period, nothing is due until grace ends, so payments start later than this."}
+               </p>
+ 
+               {/* Progressive disclosure: the plan switcher is hidden until
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..6ea8527 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -206,6 +206,42 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
+ };
+ 
+ /** Plans open when every loan was disbursed before July 1, 2026. */
++/**
++ * Graduated's card for a borrower partway through the 10 years that began
++ * when the loans entered repayment, where PLAN_META's copy describes the
++ * whole 10. "level" is for two years or less left, when no step is left.
++ */
++export const GRADUATED_PARTWAY: Record<
++  "steps" | "level",
++  Pick<PlanMeta, "tagline" | "summary" | "pros" | "cons">
++> = {
++  steps: {
++    tagline: "Starts low, steps up over the years you have left",
++    summary:
++      "Your 10 years began when your loans entered repayment, and switching plans keeps them, so Graduated is priced over what is left. It starts at roughly half your Standard bill and steps up at even intervals, at most two years apart, to as much as three times where it starts, ending when your 10 years do. More total interest than Standard.",
++    pros: [
++      "Starts at roughly half your Standard bill",
++      "Still ends when your 10 years do",
++    ],
++    cons: [
++      "Early payments are below the PSLF threshold, so those months earn no credit",
++      "More total interest than Standard",
++      "Payments step up whether your income did or not",
++      "The step schedule shown is a model. Regulation caps the largest payment at three times the smallest, but your servicer sets the exact steps",
++    ],
++  },
++  level: {
++    tagline: "No step left: the same level payment as Standard",
++    summary:
++      "Graduated steps up over the 10 years that began when your loans entered repayment. With two years or less of them left, no step is left, so it is the same level payment as Standard, ending on the same date.",
++    pros: [
++      "The same payment and end date as Standard",
++      "Earns Public Service Loan Forgiveness credit, as Standard does",
++    ],
++    cons: ["No lower start this late in your 10 years"],
++  },
++};
++
+ export const LEGACY_PLANS: PlanId[] = [
+   "standard",
+   "graduated",
+@@ -276,7 +312,7 @@ export const NO_LATE_FEES_NOTE =
+   "The Department of Education does not charge late fees on Direct Loans. What missing a payment actually costs: you are delinquent the day after the due date, it is reported to the credit bureaus at 90 days, and the loan defaults at 270 days.";
+ 
+ export const ASSUMPTIONS =
+-  "Two things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. And like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens.";
++  "Three things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. Like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens. And unless you tell us you are repaying on Standard now, they start every plan this month. If you are already repaying, Standard, Graduated and Extended keep the term that began when you entered repayment, and switching plans does not restart it, so your servicer's bill and end date are the real ones. If you are in school or your six-month grace period, nothing is due until grace ends, so payments start later and unsubsidized interest keeps building until then.";
+ 
+ export const NOT_ADVICE =
+   "These are estimates, not financial advice. The right plan depends on things this tool does not know, like whether your income is about to change or what else you owe. Your servicer sets your actual payment, and studentaid.gov is the authority on your account.";
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..54c96aa 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -29,6 +29,15 @@ export function totalBalance(loans: Loan[]): number {
+   return loans.reduce((s, l) => s + (l.balance || 0), 0);
+ }
+ 
++/**
++ * The date the oldest balance was typed, which is how current the figures
++ * are. Null when any loan has no date, rather than claim one we do not know.
++ */
++export function balancesAsOf(loans: Loan[]): string | null {
++  if (!loans.length || loans.some((l) => !l.balanceAsOf)) return null;
++  return loans.map((l) => l.balanceAsOf!).sort()[0];
++}
++
+ export function totalPrincipal(loans: Loan[]): number {
+   return loans.reduce((s, l) => s + (l.principal || 0), 0);
+ }
+@@ -132,6 +141,69 @@ function graduatedTotals(balance: number, ratePct: number) {
+   };
+ }
+ 
++/**
++ * Graduated for a borrower partway through the 10 years that began when the
++ * loans entered repayment, which switching plans does not restart (34 CFR
++ * 685.210(b)(2)(ii)(A)). MONEY-04's closed form for the 120-month schedule,
++ * generalised to the months left: ceil(months / 24) payment levels split
++ * evenly over what is left, so a step at least every two years, each level
++ * 3^(1/(levels - 1)) times the one before, so the last payment is three times
++ * the first, the most 685.208(b)(6)(iii) allows. The start is solved in
++ * closed form to repay on time ((b)(6)(i)), or is the month's interest with a
++ * smaller step when that is higher. With one level left there is no step, so
++ * it is Standard's level payment for the months left.
++ */
++export function graduatedLeft(balance: number, ratePct: number, months: number) {
++  const levels = Math.ceil(months / 24);
++  if (levels <= 1) {
++    const t = fixedTotals(balance, ratePct, months / 12);
++    return { ...t, finalPayment: t.monthlyPayment, levels: 1 };
++  }
++  const r = ratePct / 100 / 12;
++  const levelAt = (m: number) => Math.floor((m * levels) / months);
++  const maxGrowth = Math.pow(3, 1 / (levels - 1));
++
++  // Present value of a dollar a month at the first level, rising by
++  // maxGrowth each level: the start that repays exactly in `months`.
++  let perDollar = 0;
++  for (let m = 0; m < months; m++) {
++    perDollar += Math.pow(maxGrowth, levelAt(m)) / Math.pow(1 + r, m + 1);
++  }
++  const start = Math.max(balance / perDollar, balance * r);
++  let growth = maxGrowth;
++  if (start > balance / perDollar) {
++    const remainingAfter = (g: number) => {
++      let bal = balance;
++      for (let m = 0; m < months; m++) bal = bal * (1 + r) - start * Math.pow(g, levelAt(m));
++      return bal;
++    };
++    let lo = 1;
++    let hi = maxGrowth;
++    for (let i = 0; i < 60; i++) {
++      const mid = (lo + hi) / 2;
++      if (remainingAfter(mid) > 0) lo = mid;
++      else hi = mid;
++    }
++    growth = hi;
++  }
++
++  let bal = balance;
++  let totalPaid = 0;
++  for (let m = 0; m < months && bal > 0; m++) {
++    const interest = bal * r;
++    const applied = Math.min(start * Math.pow(growth, levelAt(m)), bal + interest);
++    bal = bal + interest - applied;
++    totalPaid += applied;
++  }
++  return {
++    monthlyPayment: start,
++    finalPayment: start * Math.pow(growth, levels - 1),
++    totalPaid,
++    totalInterest: Math.max(0, totalPaid - balance),
++    levels,
++  };
++}
++
+ /**
+  * Simulate an income-driven plan at a flat income.
+  *
+@@ -217,25 +289,71 @@ export interface PlanContext {
+   /** The 10-year Standard payment. The statutory yardstick for PSLF credit. */
+   pslfBenchmark: number;
+   publicService: boolean;
++  /** The monthly bills typed on every loan, added up. 0 if any loan has none. */
++  bill: number;
++  /**
++   * Payments already used of a term that began when the loans entered
++   * repayment. Read from the Standard bill, and 0 unless the borrower says
++   * they are repaying on Standard now and the bill can be a Standard one.
++   */
++  monthsUsed: number;
+ }
+ 
+ export function buildContext(loans: Loan[], profile: Profile): PlanContext {
+   const balance = totalBalance(loans);
+   const rate = weightedRate(loans);
++  const postCutoff = anyPostCutoff(loans);
++  const bill =
++    loans.length && loans.every((l) => l.minPayment > 0)
++      ? loans.reduce((sum, l) => sum + l.minPayment, 0)
++      : 0;
++  const monthsUsed =
++    profile.onStandardNow && !postCutoff
++      ? standardMonthsUsed(balance, rate, bill)
++      : 0;
+   return {
+     loans,
+     profile,
+     hasIncome: profile.income > 0,
+-    postCutoff: anyPostCutoff(loans),
++    postCutoff,
+     parentPlus: anyParentPlus(loans),
+     balance,
+     rate,
+-    pslfBenchmark: amortizedPayment(balance, rate, 10),
++    // The Standard payment set when the loans entered repayment, which is
++    // the bill itself for someone already repaying on it.
++    pslfBenchmark: amortizedPayment(balance, rate, (120 - monthsUsed) / 12),
+     publicService:
+       profile.employment === "government" || profile.employment === "nonprofit",
++    bill,
++    monthsUsed,
+   };
+ }
+ 
++/**
++ * How many of Standard's 120 payments are behind a borrower, read from the
++ * bill they pay now. Standard runs ten years from the day the loan entered
++ * repayment, not counting deferment or forbearance (34 CFR
++ * 685.208(b)(1)(i) and (iv)), and the servicer's bill already reflects both,
++ * so the payments left are the ones that bill takes to clear today's balance.
++ *
++ * Trusted only when it can be a Standard bill: one is never below a fresh
++ * 10-year payment on today's balance, and always above the month's interest.
++ * Anything else, such as an income-driven bill, leaves the term whole.
++ */
++export function standardMonthsUsed(
++  balance: number,
++  ratePct: number,
++  bill: number
++): number {
++  const r = ratePct / 1200;
++  if (balance <= 0 || bill < amortizedPayment(balance, ratePct, 10) - 1) return 0;
++  if (bill <= balance * r) return 0;
++  const left =
++    r > 0 ? -Math.log(1 - (balance * r) / bill) / Math.log(1 + r) : balance / bill;
++  // A bill rounded down to the cent leaves a sliver of a month, not a payment.
++  return 120 - Math.min(120, Math.max(1, Math.ceil(left - 0.02)));
++}
++
+ /**
+  * Decide PSLF credit for a legacy fixed-payment plan (Graduated, Extended).
+  *
+@@ -271,6 +389,11 @@ function pslfForFixedPlan(
+ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+   const { balance, rate, profile, postCutoff, hasIncome, pslfBenchmark } = ctx;
+   const available: PlanId[] = postCutoff ? POST_CUTOFF_PLANS : LEGACY_PLANS;
++  // Standard and Graduated run 10 years and Extended 25 from the day the loans
++  // entered repayment (685.208(b)(1)(i), (b)(6)(i) and (b)(4)(i)), and
++  // switching between them keeps the time used (685.210(b)(2)(ii)(A)).
++  const tenYearLeft = 120 - ctx.monthsUsed;
++  const extendedLeft = 300 - ctx.monthsUsed;
+ 
+   const build = (id: PlanId): PlanEstimate => {
+     const meta = PLAN_META[id];
+@@ -337,11 +460,11 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+ 
+     // ---- Fixed plans -------------------------------------------------
+     if (id === "standard") {
+-      const t = fixedTotals(balance, rate, 10);
++      const t = fixedTotals(balance, rate, tenYearLeft / 12);
+       return {
+         ...base,
+         eligible: true,
+-        years: 10,
++        years: tenYearLeft / 12,
+         forgivenAmount: 0,
+         pslf: "counts",
+         pslfNote:
+@@ -351,18 +474,32 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     if (id === "graduated") {
+-      const t = graduatedTotals(balance, rate);
+-      // Payments start below the benchmark and rise past it, so credit is
+-      // genuinely partial rather than all-or-nothing.
+-      const endsAbove = t.finalPayment >= pslfBenchmark - 1;
+-      return {
++      // Partway through the 10 years, only the levels left are priced.
++      const t =
++        ctx.monthsUsed > 0
++          ? graduatedLeft(balance, rate, tenYearLeft)
++          : { ...graduatedTotals(balance, rate), levels: 5 };
++      const priced = {
+         ...base,
+         eligible: true,
+-        years: 10,
++        years: tenYearLeft / 12,
+         forgivenAmount: 0,
+         monthlyPayment: t.monthlyPayment,
+         totalPaid: t.totalPaid,
+         totalInterest: t.totalInterest,
++        ...(ctx.monthsUsed > 0 ? { stepsLeft: t.levels } : {}),
++      };
++      // With no level left to step up to, it is Standard's payment and
++      // counts like it.
++      if (t.levels === 1) {
++        const p = pslfForFixedPlan(t.monthlyPayment, pslfBenchmark, "Graduated");
++        return { ...priced, pslf: p.status, pslfNote: p.note };
++      }
++      // Payments start below the benchmark and rise past it, so credit is
++      // genuinely partial rather than all-or-nothing.
++      const endsAbove = t.finalPayment >= pslfBenchmark - 1;
++      return {
++        ...priced,
+         pslf: endsAbove ? "partial" : "does_not_count",
+         pslfNote: endsAbove
+           ? "Graduated starts below the 10-year Standard payment and steps above it later. Only the later, larger payments count toward forgiveness."
+@@ -371,12 +508,12 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+     }
+ 
+     if (id === "extended") {
+-      const t = fixedTotals(balance, rate, 25);
++      const t = fixedTotals(balance, rate, extendedLeft / 12);
+       const p = pslfForFixedPlan(t.monthlyPayment, pslfBenchmark, "Extended");
+       return {
+         ...base,
+         eligible: true,
+-        years: 25,
++        years: extendedLeft / 12,
+         forgivenAmount: 0,
+         pslf: p.status,
+         pslfNote: p.note,
+diff --git a/src/lib/utils.ts b/src/lib/utils.ts
+index 9041921..3d50087 100644
+--- a/src/lib/utils.ts
++++ b/src/lib/utils.ts
+@@ -59,6 +59,21 @@ export function niceDate(iso: string): string {
+   });
+ }
+ 
++/** Today's local date as yyyy-mm-dd, the way a balance's as-of date is stored. */
++export function todayIso(now: Date = new Date()): string {
++  const mm = String(now.getMonth() + 1).padStart(2, "0");
++  const dd = String(now.getDate()).padStart(2, "0");
++  return `${now.getFullYear()}-${mm}-${dd}`;
++}
++
++/** Whole calendar days from a yyyy-mm-dd date to today, local time. */
++export function daysSince(iso: string, now: Date = new Date()): number {
++  const [y, m, d] = iso.split("-").map(Number);
++  const then = new Date(y, m - 1, d);
++  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
++  return Math.round((today.getTime() - then.getTime()) / 86400000);
++}
++
+ export function uid(): string {
+   return `l_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-4)}`;
+ }
+diff --git a/src/types/index.ts b/src/types/index.ts
+index c2a694d..2ba6936 100644
+--- a/src/types/index.ts
++++ b/src/types/index.ts
+@@ -38,6 +38,11 @@ export interface Loan {
+   disbursementDate: string;
+   /** Minimum monthly payment, if known. 0 = unknown. */
+   minPayment: number;
++  /**
++   * Local yyyy-mm-dd the balance was last typed. Absent on loans saved before
++   * this was recorded, and on the example loans.
++   */
++  balanceAsOf?: string;
+ }
+ 
+ export type Strategy = "avalanche" | "snowball";
+@@ -79,6 +84,11 @@ export interface PlanEstimate {
+   forgivenAmount: number;
+   /** Set when ineligible, explaining exactly why. */
+   ineligibleReason?: string;
++  /**
++   * Graduated only, for a borrower partway through the 10 years: the payment
++   * levels left. 1 means no step is left, so it is Standard's level payment.
++   */
++  stepsLeft?: number;
+ }
+ 
+ /** A ranked plan plus the reason it was or was not the pick. */
+@@ -117,6 +127,11 @@ export interface Profile {
+   extraPerMonth: number;
+   /** The plan the borrower has chosen or is modelling. Null until they pick. */
+   selectedPlan: PlanId | null;
++  /**
++   * Repaying on the 10-year Standard plan now. Its term runs from the day the
++   * loan entered repayment, so the bill they typed sets the payments left.
++   */
++  onStandardNow: boolean;
+ }
+ 
+ export const DEFAULT_PROFILE: Profile = {
+@@ -127,6 +142,7 @@ export const DEFAULT_PROFILE: Profile = {
+   // Starts at zero on purpose. A pre-filled amount anchors what people pay.
+   extraPerMonth: 0,
+   selectedPlan: null,
++  onStandardNow: false,
+ };
+ 
+ export const LOAN_KIND_LABELS: Record<LoanKind, string> = {

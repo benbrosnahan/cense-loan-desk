@@ -1,0 +1,188 @@
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..f98d624 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -37,6 +37,13 @@ interface Props {
+   onSelectPlan: (id: PlanId) => void;
+ }
+ 
++/** Takes the borrower to the income question, which prices IBR and RAP. */
++function focusIncome() {
++  const el = document.getElementById("income");
++  el?.scrollIntoView({ block: "center" });
++  el?.focus({ preventScroll: true });
++}
++
+ function PslfBadge({ plan }: { plan: RankedPlan }) {
+   const s = plan.estimate.pslf;
+   if (s === "counts") return <Badge tone="good">✓ Counts toward PSLF</Badge>;
+@@ -136,11 +143,7 @@ function PlanRow({
+               size="sm"
+               variant="secondary"
+               className="mt-3"
+-              onClick={() => {
+-                const el = document.getElementById("income");
+-                el?.scrollIntoView({ block: "center" });
+-                el?.focus({ preventScroll: true });
+-              }}
++              onClick={focusIncome}
+             >
+               Add my income
+             </Button>
+@@ -339,7 +342,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+         </div>
+       )}
+ 
+-      {top && top.estimate.monthlyPayment !== null && (
++      {top && (
+         <FadeIn>
+           <div className="rounded-3xl bg-navy p-5 text-white shadow-lift sm:p-7">
+             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/80">
+@@ -349,18 +352,29 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+               <h2 className="font-display text-4xl font-bold leading-none sm:text-5xl">
+                 {PLAN_META[top.estimate.id].name}
+               </h2>
+-              <p className="text-base text-white/90">
+-                <span className="amt figure text-3xl font-bold text-white">
+-                  <Money value={top.estimate.monthlyPayment} tabular={false} />
+-                </span>{" "}
+-                a month{top.estimate.id === "graduated" && ", to start"}
+-              </p>
++              {top.estimate.monthlyPayment !== null && (
++                <p className="text-base text-white/90">
++                  <span className="amt figure text-3xl font-bold text-white">
++                    <Money value={top.estimate.monthlyPayment} tabular={false} />
++                  </span>{" "}
++                  a month{top.estimate.id === "graduated" && ", to start"}
++                </p>
++              )}
+             </div>
+             <p className="mt-4 text-base leading-relaxed text-white/95">
+               {topPickReason}
+             </p>
+             <div className="mt-5">
+-              {profile.selectedPlan === top.estimate.id ? (
++              {top.estimate.monthlyPayment === null ? (
++                // Picked for its forgiveness credit, but priced off income.
++                <button
++                  type="button"
++                  onClick={focusIncome}
++                  className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
++                >
++                  Add my income
++                </button>
++              ) : profile.selectedPlan === top.estimate.id ? (
+                 <p className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white/15 px-5 text-base font-semibold">
+                   ✓ This is your plan
+                 </p>
+@@ -370,7 +384,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+                   onClick={() => onSelectPlan(top.estimate.id)}
+                   className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+                 >
+-                  Use {PLAN_META[top.estimate.id].name} as my plan
++                  {`Use ${PLAN_META[top.estimate.id].name} as my plan`}
+                 </button>
+               )}
+             </div>
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..795d805 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -523,18 +523,49 @@ export function rankPlans(
+   const { goal } = ctx.profile;
+   const pslfOk = (e: PlanEstimate) => e.pslf === "counts";
+ 
++  // Open plans we cannot price yet: IBR and RAP while income is blank. At
++  // zero income IBR is $0 and RAP $10 (34 CFR 685.209(b)(4), (f)(2)(i),
++  // (g)(3)(ii)), so no pick may claim a minimum over them. Names come from
++  // the estimates, so a closed plan is never named.
++  const unpriced = estimates.filter(
++    (e) => e.eligible && e.monthlyPayment === null
++  );
++  const unpricedNames = unpriced.map((e) => e.name).join(" and ");
++  const scope = unpriced.length ? "we can price" : "open to you";
++  const ibrUnpriced = unpriced.some((e) => e.id === "ibr");
++  const rapUnpriced = unpriced.some((e) => e.id === "rap");
++  const floors =
++    ibrUnpriced && rapUnpriced
++      ? `IBR can be $0 a month and RAP $${RAP_MIN_MONTHLY}`
++      : ibrUnpriced
++        ? "IBR can be $0 a month"
++        : `RAP can be as little as $${RAP_MIN_MONTHLY} a month`;
++  const notEarning = `Not earning right now? ${floors}.`;
++  const addIncome = unpriced.length
++    ? ` ${unpricedNames} could cost less, so add your income. ${notEarning}`
++    : "";
++
+   let top: PlanEstimate;
+   let reason: string;
+ 
+   if (goal === "forgiveness" || (ctx.publicService && goal === "unsure")) {
+     const qualifying = eligible.filter(pslfOk);
++    const unpricedCredit = unpriced.filter(pslfOk);
+     if (qualifying.length) {
+       top = qualifying.reduce((a, b) =>
+         (a.monthlyPayment ?? Infinity) <= (b.monthlyPayment ?? Infinity) ? a : b
+       );
+-      reason = ctx.publicService
+-        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
+-        : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
++      reason = unpricedCredit.length
++        ? `Of the plans we can price, this is the lowest payment that earns forgiveness credit. ${unpricedCredit.map((e) => e.name).join(" and ")} earn it too and could cost less, so add your income. ${notEarning}`
++        : ctx.publicService
++          ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
++          : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
++    } else if (unpricedCredit.length) {
++      // Only a plan priced off income earns credit (RAP after the 2026
++      // cutoff). Pick it and ask for income, rather than a plan that never
++      // counts.
++      top = unpricedCredit[0];
++      reason = `${top.name} is the plan open to you that earns forgiveness credit, and it is priced off your income. Add yours and we will work out the payment. ${notEarning}`;
+     } else {
+       top = lowestInterest;
+       reason =
+@@ -544,21 +575,28 @@ export function rankPlans(
+     top = lowestPayment;
+     reason =
+       top.id === "graduated"
+-        ? "You said the monthly number matters most, and this starts smaller than anything else open to you. Be careful with it though: Graduated is the one plan whose payment climbs, stepping up every two years, so the figure above is only what you pay at the start."
+-        : "You said the monthly number matters most, and this is the smallest payment of the plans open to you.";
++        ? `You said the monthly number matters most, and this starts smaller than anything else ${scope}. Be careful with it though: Graduated is the one plan whose payment climbs, stepping up every two years, so the figure above is only what you pay at the start.${addIncome}`
++        : `You said the monthly number matters most, and this is the smallest payment of the plans ${scope}.${addIncome}`;
+   } else {
+     // least_total, and the default for "unsure"
+     top = lowestInterest;
+     reason =
+       goal === "unsure"
+-        ? "You have not told us a goal yet, so we are recommending on total cost, which is the safe default. This plan hands over the least money overall."
+-        : "You want to pay the least overall, and this plan costs you the least in total interest.";
++        ? `You have not told us a goal yet, so we are recommending on total cost, which is the safe default. ${unpriced.length ? "Of the plans we can price, this one" : "This plan"} hands over the least money overall.${addIncome}`
++        : `You want to pay the least overall, and ${unpriced.length ? "of the plans we can price, this one" : "this plan"} costs you the least in total interest.${addIncome}`;
+   }
+ 
+   const whyNotFor = (e: PlanEstimate): string => {
+     if (e.id === top.id) return "";
+     if (!e.eligible) return "";
+     if (e.monthlyPayment === null) return "Add your income to compare this one.";
++    // An unpriced pick has no figures to compare. It was picked because it
++    // earns forgiveness credit and no priced plan does.
++    if (top.monthlyPayment === null) {
++      return e.pslf === "partial"
++        ? "Not picked because it only earns forgiveness credit on some months."
++        : "Not picked because it earns no forgiveness credit.";
++    }
+ 
+     const parts: string[] = [];
+     const dMonthly = (e.monthlyPayment ?? 0) - (top.monthlyPayment ?? 0);
+@@ -599,8 +637,9 @@ export function rankPlans(
+     .map((e) => ({
+       estimate: e,
+       isTopPick: e.id === top.id,
+-      isLowestPayment: e.id === lowestPayment.id,
+-      isLowestInterest: e.id === lowestInterest.id,
++      // No "lowest" or "least" badge while an open plan has no price.
++      isLowestPayment: !unpriced.length && e.id === lowestPayment.id,
++      isLowestInterest: !unpriced.length && e.id === lowestInterest.id,
+       whyNot: whyNotFor(e),
+     }))
+     .sort((a, b) => {

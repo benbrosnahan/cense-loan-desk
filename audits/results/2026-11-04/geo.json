@@ -1,0 +1,519 @@
+{
+ "url": "http://localhost:3100/",
+ "geoScore": 44,
+ "measurementValid": true,
+ "categories": {
+  "crawlAccess": {
+   "score": 20,
+   "max": 20
+  },
+  "serverContent": {
+   "score": 12,
+   "max": 30
+  },
+  "structuredData": {
+   "score": 0,
+   "max": 20
+  },
+  "socialMeta": {
+   "score": 7,
+   "max": 15
+  },
+  "discovery": {
+   "score": 0,
+   "max": 10
+  },
+  "indexability": {
+   "score": 5,
+   "max": 5
+  }
+ },
+ "contentParity": 0,
+ "ssrWordCount": 0,
+ "csrWordCount": 236,
+ "checks": [
+  {
+   "category": "LLM Crawl Access",
+   "name": "AI Bot Access in robots.txt",
+   "score": 20,
+   "maxScore": 20,
+   "status": "pass",
+   "detail": "No robots.txt (HTTP 404) — all 14 LLM bots unrestricted"
+  },
+  {
+   "category": "Server-Side Content",
+   "name": "Title in SSR",
+   "score": 5,
+   "maxScore": 5,
+   "status": "pass",
+   "detail": "\"Loan Desk by Cense — every student loan you have, in one place\""
+  },
+  {
+   "category": "Server-Side Content",
+   "name": "Meta Description in SSR",
+   "score": 7,
+   "maxScore": 7,
+   "status": "pass",
+   "detail": "\"Put all your federal student loans on one screen: balances, rates, which repayment plans you actually qualify for, and w\""
+  },
+  {
+   "category": "Server-Side Content",
+   "name": "H1 Tag in SSR",
+   "score": 0,
+   "maxScore": 5,
+   "status": "fail",
+   "detail": "H1 only renders via JavaScript"
+  },
+  {
+   "category": "Server-Side Content",
+   "name": "Heading Hierarchy",
+   "score": 0,
+   "maxScore": 3,
+   "status": "fail",
+   "detail": "0 headings in SSR (2 in CSR)"
+  },
+  {
+   "category": "Server-Side Content",
+   "name": "Body Text Parity (SSR vs CSR)",
+   "score": 0,
+   "maxScore": 10,
+   "status": "fail",
+   "detail": "CSR has 236 more words than SSR (236 vs 0, parity 0%) — that delta is JS-injected content invisible to LLM crawlers. Move it into the SSR template."
+  },
+  {
+   "category": "Structured Data",
+   "name": "JSON-LD in SSR",
+   "score": 0,
+   "maxScore": 12,
+   "status": "fail",
+   "detail": "No JSON-LD structured data in SSR — LLMs rely heavily on this"
+  },
+  {
+   "category": "Structured Data",
+   "name": "Rich Schema Types",
+   "score": 0,
+   "maxScore": 8,
+   "status": "fail",
+   "detail": "No schema types detected"
+  },
+  {
+   "category": "Social & Meta Tags",
+   "name": "Open Graph Tags",
+   "score": 3,
+   "maxScore": 7,
+   "status": "warn",
+   "detail": "Missing OG: og:image"
+  },
+  {
+   "category": "Social & Meta Tags",
+   "name": "Twitter Card",
+   "score": 4,
+   "maxScore": 4,
+   "status": "pass",
+   "detail": "Card type: summary_large_image"
+  },
+  {
+   "category": "Social & Meta Tags",
+   "name": "Canonical URL",
+   "score": 0,
+   "maxScore": 4,
+   "status": "warn",
+   "detail": "No canonical URL"
+  },
+  {
+   "category": "LLM Discovery",
+   "name": "llms.txt",
+   "score": 0,
+   "maxScore": 5,
+   "status": "info",
+   "detail": "No /llms.txt — consider adding one for AI crawlers"
+  },
+  {
+   "category": "LLM Discovery",
+   "name": "Markdown Content Negotiation",
+   "score": 0,
+   "maxScore": 3,
+   "status": "info",
+   "detail": "No markdown via content negotiation"
+  },
+  {
+   "category": "LLM Discovery",
+   "name": "AI Plugin / MCP Discovery",
+   "score": 0,
+   "maxScore": 2,
+   "status": "info",
+   "detail": "No AI plugin manifest"
+  },
+  {
+   "category": "Indexability",
+   "name": "Meta Robots",
+   "score": 5,
+   "maxScore": 5,
+   "status": "pass",
+   "detail": "No restrictive meta robots"
+  }
+ ],
+ "recommendations": [
+  {
+   "severity": "high",
+   "title": "Add JSON-LD structured data",
+   "detail": "Structured data gives LLMs machine-readable context about your content (product details, pricing, reviews). Without it, LLMs must infer meaning from unstructured text."
+  },
+  {
+   "severity": "high",
+   "title": "Move JS-injected page body into the server response",
+   "detail": "Parity 0% — CSR contains 236 more words than SSR (236 vs 0). That delta is JS-injected content invisible to LLM crawlers (ChatGPT, Claude, Perplexity all fetch the raw HTML).\n\nExamples of content only visible after JS executes:\n  • \"Every loan you have, on one screen.\"\n  • \"Four years of school usually means eight separate federal loans, and nowhere that shows them together. Add yours once to see what you owe, w…\"\n  • \"For each loan: what you owe, the interest rate, and the date it was paid out. All three are at studentaid.gov under My Aid.\""
+  },
+  {
+   "severity": "medium",
+   "title": "Render H1 heading server-side",
+   "detail": "The page H1 only appears after JavaScript execution. Ensure it is in the initial server response for AI crawlers."
+  },
+  {
+   "severity": "medium",
+   "title": "Complete Open Graph tags",
+   "detail": "OG tags provide AI systems with canonical title, description, and image. Missing tags mean LLMs must guess what to show users."
+  },
+  {
+   "severity": "low",
+   "title": "Add canonical URL",
+   "detail": "A canonical URL prevents LLMs from indexing duplicate versions of this page."
+  },
+  {
+   "severity": "low",
+   "title": "Create /llms.txt",
+   "detail": "The llms.txt convention (like robots.txt for AI) provides a structured summary of your site for LLM crawlers. See llmstxt.org for the spec."
+  },
+  {
+   "severity": "low",
+   "title": "Serve markdown via Accept header",
+   "detail": "Some AI crawlers request text/markdown. Serving a markdown version improves content extraction quality. Cloudflare and some CDNs can automate this."
+  }
+ ],
+ "comparison": {
+  "title": {
+   "status": "match",
+   "ssr": "Loan Desk by Cense — every student loan you have, in one place",
+   "csr": "Loan Desk by Cense — every student loan you have, in one place"
+  },
+  "description": {
+   "status": "match",
+   "ssr": "Put all your federal student loans on one screen: balances, rates, which repayment plans you actually qualify for, and which loan to attack first. Free, private, and nothing to sell.",
+   "csr": "Put all your federal student loans on one screen: balances, rates, which repayment plans you actually qualify for, and which loan to attack first. Free, private, and nothing to sell."
+  },
+  "og": [
+   {
+    "key": "og:title",
+    "ssr": "Loan Desk by Cense",
+    "csr": "Loan Desk by Cense",
+    "match": true
+   },
+   {
+    "key": "og:description",
+    "ssr": "Every federal student loan you have, on one screen. Balances, rates, eligible repayment plans, and payoff order.",
+    "csr": "Every federal student loan you have, on one screen. Balances, rates, eligible repayment plans, and payoff order.",
+    "match": true
+   },
+   {
+    "key": "og:type",
+    "ssr": "website",
+    "csr": "website",
+    "match": true
+   }
+  ],
+  "twitter": [
+   {
+    "key": "twitter:card",
+    "ssr": "summary_large_image",
+    "csr": "summary_large_image",
+    "match": true
+   },
+   {
+    "key": "twitter:title",
+    "ssr": "Loan Desk by Cense",
+    "csr": "Loan Desk by Cense",
+    "match": true
+   },
+   {
+    "key": "twitter:description",
+    "ssr": "Every federal student loan you have, on one screen.",
+    "csr": "Every federal student loan you have, on one screen.",
+    "match": true
+   }
+  ],
+  "h1": {
+   "status": "missing-ssr",
+   "ssr": [],
+   "csr": [
+    "Loan Desk"
+   ]
+  },
+  "parity": {
+   "ssrWords": 0,
+   "csrWords": 236,
+   "pct": 0,
+   "gapDirection": "csrLarger",
+   "ssrChunkCount": 0,
+   "csrChunkCount": 9,
+   "onlyInSSR": [],
+   "onlyInCSR": [
+    "Every loan you have, on one screen.",
+    "Four years of school usually means eight separate federal loans, and nowhere that shows them together. Add yours once to see what you owe, which repayment plans you can actually use, and what extra money would change.",
+    "For each loan: what you owe, the interest rate, and the date it was paid out. All three are at studentaid.gov under My Aid.",
+    "Not near your login? Start with the example loans and swap in your own numbers later.",
+    "All of it. There is no account and no server. What you type is saved in this browser and goes nowhere else.",
+    "Nothing here is for sale, and nothing is trying to refinance you.",
+    "Everything you type stays in this browser. There is no account, no server, and no analytics. Nothing you enter is transmitted anywhere, and closing the tab does not send it either. The math here is ordinary arithmetic run on your device, not an AI model.",
+    "These are estimates, not financial advice. The right plan depends on things this tool does not know, like whether your income is about to change or what else you owe. Your servicer sets your actual payment, and studentaid.gov is the authority on your account.",
+    "Built by Cense, a free weekly personal finance newsletter for people who did not get taught this."
+   ]
+  },
+  "structuredData": {
+   "ssrTypes": [],
+   "csrTypes": [],
+   "onlyCSR": [],
+   "onlySSR": [],
+   "match": true
+  },
+  "headingsOnlyCSR": [
+   {
+    "level": 1,
+    "text": "Loan Desk"
+   },
+   {
+    "level": 2,
+    "text": "Every loan you have, on one screen."
+   }
+  ],
+  "headingsOnlySSR": [],
+  "canonical": {
+   "ssr": "",
+   "csr": ""
+  },
+  "robotsMeta": {
+   "ssr": "",
+   "csr": ""
+  },
+  "lang": {
+   "ssr": "en",
+   "csr": "en"
+  }
+ },
+ "robots": {
+  "found": false,
+  "bots": [
+   {
+    "name": "GPTBot",
+    "owner": "OpenAI",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "ChatGPT-User",
+    "owner": "OpenAI",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "ClaudeBot",
+    "owner": "Anthropic",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "anthropic-ai",
+    "owner": "Anthropic",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "CCBot",
+    "owner": "Common Crawl",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "Google-Extended",
+    "owner": "Google",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "GoogleOther",
+    "owner": "Google",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "PerplexityBot",
+    "owner": "Perplexity",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "cohere-ai",
+    "owner": "Cohere",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "Bytespider",
+    "owner": "ByteDance",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "Amazonbot",
+    "owner": "Amazon",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "Meta-ExternalAgent",
+    "owner": "Meta",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "Applebot-Extended",
+    "owner": "Apple",
+    "status": "no-robots-txt"
+   },
+   {
+    "name": "Diffbot",
+    "owner": "Diffbot",
+    "status": "no-robots-txt"
+   }
+  ]
+ },
+ "discovery": {
+  "llmsTxt": {
+   "found": false
+  },
+  "llmsFullTxt": {
+   "found": false
+  },
+  "markdown": {
+   "served": false,
+   "contentType": "text/html; charset=utf-8"
+  },
+  "aiPlugin": {
+   "found": false
+  }
+ },
+ "metaResult": {
+  "url": "http://localhost:3100/",
+  "tags": [
+   {
+    "name": "title",
+    "content": "Loan Desk by Cense — every student loan you have, in one place",
+    "status": "warning",
+    "recommendation": "Title is 62 chars. Keep under 60 for best display in search results."
+   },
+   {
+    "name": "meta description",
+    "content": "Put all your federal student loans on one screen: balances, rates, which repayment plans you actually qualify for, and which loan to attack first. Free, private, and nothing to sell.",
+    "status": "warning",
+    "recommendation": "Description is 182 chars. Keep under 160."
+   },
+   {
+    "name": "viewport",
+    "content": "width=device-width, initial-scale=1",
+    "status": "good",
+    "recommendation": "Viewport is set."
+   },
+   {
+    "name": "canonical",
+    "content": null,
+    "status": "warning",
+    "recommendation": "Add a canonical URL to prevent duplicate content issues."
+   },
+   {
+    "name": "og:title",
+    "content": "Loan Desk by Cense",
+    "status": "good",
+    "recommendation": "Set to: Loan Desk by Cense"
+   },
+   {
+    "name": "og:description",
+    "content": "Every federal student loan you have, on one screen. Balances, rates, eligible repayment plans, and payoff order.",
+    "status": "good",
+    "recommendation": "Set to: Every federal student loan you have, on one screen. Balances, rates, eligible re..."
+   },
+   {
+    "name": "og:image",
+    "content": null,
+    "status": "missing",
+    "recommendation": "Add og:image for better social media sharing."
+   },
+   {
+    "name": "og:url",
+    "content": null,
+    "status": "missing",
+    "recommendation": "Add og:url for better social media sharing."
+   },
+   {
+    "name": "og:type",
+    "content": "website",
+    "status": "good",
+    "recommendation": "Set to: website"
+   },
+   {
+    "name": "twitter:card",
+    "content": "summary_large_image",
+    "status": "good",
+    "recommendation": "Set to: summary_large_image"
+   },
+   {
+    "name": "twitter:title",
+    "content": "Loan Desk by Cense",
+    "status": "good",
+    "recommendation": "Set to: Loan Desk by Cense"
+   },
+   {
+    "name": "twitter:description",
+    "content": "Every federal student loan you have, on one screen.",
+    "status": "good",
+    "recommendation": "Set to: Every federal student loan you have, on one screen."
+   },
+   {
+    "name": "twitter:image",
+    "content": null,
+    "status": "warning",
+    "recommendation": "Add twitter:image for Twitter card previews."
+   },
+   {
+    "name": "lang attribute",
+    "content": "en",
+    "status": "good",
+    "recommendation": "Language: en"
+   },
+   {
+    "name": "favicon",
+    "content": "/icon.svg?497578d03306b208",
+    "status": "good",
+    "recommendation": "Favicon found: /icon.svg?497578d03306b208"
+   }
+  ],
+  "preview": {
+   "title": "Loan Desk by Cense",
+   "description": "Every federal student loan you have, on one screen. Balances, rates, eligible repayment plans, and payoff order.",
+   "image": null,
+   "url": "http://localhost:3100/",
+   "siteName": "localhost"
+  },
+  "summary": {
+   "good": 9,
+   "warnings": 4,
+   "missing": 2,
+   "total": 15
+  },
+  "score": 60
+ },
+ "structuredDataResult": {
+  "url": "http://localhost:3100/",
+  "totalSchemas": 0,
+  "items": [],
+  "summary": {
+   "total": 0,
+   "valid": 0,
+   "withErrors": 0,
+   "totalErrors": 0,
+   "totalWarnings": 0,
+   "jsonLd": 0,
+   "microdata": 0
+  },
+  "richResultEligibility": {
+   "eligible": false,
+   "types": []
+  }
+ }
+}

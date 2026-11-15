@@ -38,6 +38,11 @@ export interface Loan {
   disbursementDate: string;
   /** Minimum monthly payment, if known. 0 = unknown. */
   minPayment: number;
+  /**
+   * Local yyyy-mm-dd the balance was last typed. Absent on loans saved before
+   * this was recorded, and on the example loans.
+   */
+  balanceAsOf?: string;
 }
 
 export type Strategy = "avalanche" | "snowball";
@@ -68,6 +73,8 @@ export interface PlanEstimate {
   eligible: boolean;
   /** Null when the plan needs income the borrower has not supplied. */
   monthlyPayment: number | null;
+  /** Graduated only: the last step, where monthlyPayment is the first. */
+  finalPayment?: number;
   totalPaid: number | null;
   totalInterest: number | null;
   years: number;
@@ -77,8 +84,37 @@ export interface PlanEstimate {
   forgivenessYears: number | null;
   /** Balance written off at the end of an income-driven term. 0 for fixed plans. */
   forgivenAmount: number;
+  /**
+   * IBR and RAP: the estimated federal income tax on forgivenAmount, at the
+   * 2026 brackets for the borrower's filing status, on their AGI. 0 when nothing is
+   * forgiven; absent for plans that never forgive.
+   */
+  forgivenessTax?: number;
   /** Set when ineligible, explaining exactly why. */
   ineligibleReason?: string;
+  /**
+   * Graduated only, for a borrower partway through the 10 years: the payment
+   * levels left. 1 means no step is left, so it is Standard's level payment.
+   */
+  stepsLeft?: number;
+}
+
+/**
+ * The selected plan's own payment rules, which the Payoff projection runs.
+ * Built from the same figures as the plan's card on the Repayment plans tab.
+ */
+export interface PlanSchedule {
+  /** Required payment in month `month`, counting from 0. Steps up on Graduated, flat otherwise. */
+  paymentAt: (month: number) => number;
+  /** Payments the plan runs for: its term on a fixed plan, 240 on IBR, 360 on RAP. */
+  termMonths: number;
+  /** IBR and RAP: whatever is still owed after the last payment is forgiven. */
+  forgivesAtTerm: boolean;
+  /**
+   * The rules each month runs under, passed to idrMonth in calc.ts. On RAP the
+   * 34 CFR 685.209(h)(4)(i) interest waiver and (o)(2)(i) $50 matching principal.
+   */
+  rules: { waiveUnpaidInterest: boolean; matchPrincipal: boolean };
 }
 
 /** A ranked plan plus the reason it was or was not the pick. */
@@ -108,25 +144,53 @@ export interface LoanDiffRow {
 }
 
 export interface Profile {
-  /** Annual gross income. 0 = not supplied, which hides income-driven estimates. */
+  /**
+   * Annual adjusted gross income (AGI), the income IBR and RAP are priced on.
+   * 0 without incomeKnown = not supplied, which hides income-driven estimates;
+   * 0 with incomeKnown = a real $0.
+   */
   income: number;
+  /** True once an income has been typed, including 0. Cleared with the field. */
+  incomeKnown?: boolean;
+  /** You plus your tax dependents. A spouse is never counted here. */
   householdSize: number;
+  /**
+   * Married and filing a joint federal tax return. Then `income` is the
+   * couple's combined income, and the spouse counts in IBR's family size only
+   * (34 CFR 685.209(b)(9)(i)(B)); RAP counts tax dependents, which a spouse
+   * never is ((b)(3)).
+   */
+  filesJointly: boolean;
+  /**
+   * The spouse's own eligible federal student loans, used only while
+   * filesJointly. 0 = none. IBR and RAP are scaled by this borrower's share of
+   * the couple's balance (685.209(g)(1)(i), (g)(3)(i)).
+   */
+  spouseLoanBalance: number;
   employment: Employment;
   goal: Goal;
   /** Extra dollars per month above the required payment. */
   extraPerMonth: number;
   /** The plan the borrower has chosen or is modelling. Null until they pick. */
   selectedPlan: PlanId | null;
+  /**
+   * Repaying on the 10-year Standard plan now. Its term runs from the day the
+   * loan entered repayment, so the bill they typed sets the payments left.
+   */
+  onStandardNow: boolean;
 }
 
 export const DEFAULT_PROFILE: Profile = {
   income: 0,
   householdSize: 1,
+  filesJointly: false,
+  spouseLoanBalance: 0,
   employment: "unsure",
   goal: "unsure",
   // Starts at zero on purpose. A pre-filled amount anchors what people pay.
   extraPerMonth: 0,
   selectedPlan: null,
+  onStandardNow: false,
 };
 
 export const LOAN_KIND_LABELS: Record<LoanKind, string> = {

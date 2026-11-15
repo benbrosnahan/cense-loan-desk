@@ -1,0 +1,131 @@
+{
+ "url": "https://cense-loan-desk.vercel.app/",
+ "lighthouseChecks": "skipped: the lighthouse step did not run in this invocation, so mixed content, CSP, external scripts and noopener were not checked",
+ "score": 71,
+ "categories": {
+  "https": 100,
+  "headers": 27,
+  "cookies": 100,
+  "content": 80,
+  "deps": null
+ },
+ "findings": [
+  {
+   "id": "cert-valid",
+   "category": "https",
+   "severity": "info",
+   "title": "SSL certificate is valid",
+   "description": "Certificate expires in 87 days (Jan 29 11:46:09 2027 GMT).",
+   "recommendation": "",
+   "details": {
+    "certExpiry": "Jan 29 11:46:09 2027 GMT",
+    "daysUntilExpiry": 87,
+    "certIssuer": "Google Trust Services"
+   }
+  },
+  {
+   "id": "tls-1-3",
+   "category": "https",
+   "severity": "info",
+   "title": "Using TLS 1.3",
+   "description": "The latest and most secure TLS version is in use.",
+   "recommendation": ""
+  },
+  {
+   "id": "missing-content-security-policy",
+   "category": "headers",
+   "severity": "critical",
+   "title": "Missing Content-Security-Policy",
+   "description": "No CSP header. Add a Content-Security-Policy to prevent XSS and data injection attacks.",
+   "recommendation": "No CSP header. Add a Content-Security-Policy to prevent XSS and data injection attacks.",
+   "maxPoints": 10,
+   "pointsEarned": 0
+  },
+  {
+   "id": "header-strict-transport-security",
+   "category": "headers",
+   "severity": "info",
+   "title": "Strict-Transport-Security: configured",
+   "description": "HSTS is fully configured with includeSubDomains and preload.",
+   "recommendation": "",
+   "maxPoints": 8,
+   "pointsEarned": 8
+  },
+  {
+   "id": "missing-x-content-type-options",
+   "category": "headers",
+   "severity": "warning",
+   "title": "Missing X-Content-Type-Options",
+   "description": "Missing X-Content-Type-Options header. Add \"nosniff\" to prevent MIME-type sniffing.",
+   "recommendation": "Missing X-Content-Type-Options header. Add \"nosniff\" to prevent MIME-type sniffing.",
+   "maxPoints": 4,
+   "pointsEarned": 0
+  },
+  {
+   "id": "missing-x-frame-options",
+   "category": "headers",
+   "severity": "warning",
+   "title": "Missing X-Frame-Options",
+   "description": "Missing X-Frame-Options. Add \"DENY\" or \"SAMEORIGIN\" to prevent clickjacking.",
+   "recommendation": "Missing X-Frame-Options. Add \"DENY\" or \"SAMEORIGIN\" to prevent clickjacking.",
+   "maxPoints": 4,
+   "pointsEarned": 0
+  },
+  {
+   "id": "missing-referrer-policy",
+   "category": "headers",
+   "severity": "info",
+   "title": "Missing Referrer-Policy",
+   "description": "No Referrer-Policy header. Consider adding one to control referrer information.",
+   "recommendation": "No Referrer-Policy header. Consider adding one to control referrer information.",
+   "maxPoints": 2,
+   "pointsEarned": 0
+  },
+  {
+   "id": "missing-permissions-policy",
+   "category": "headers",
+   "severity": "info",
+   "title": "Missing Permissions-Policy",
+   "description": "No Permissions-Policy header. Consider restricting browser features.",
+   "recommendation": "No Permissions-Policy header. Consider restricting browser features.",
+   "maxPoints": 2,
+   "pointsEarned": 0
+  },
+  {
+   "id": "cors-wildcard",
+   "category": "content",
+   "severity": "warning",
+   "title": "CORS allows all origins",
+   "description": "Access-Control-Allow-Origin is set to \"*\", allowing any website to make requests.",
+   "recommendation": "Restrict CORS to specific trusted origins instead of using a wildcard."
+  },
+  {
+   "id": "vulnerable-libs-check-skipped",
+   "category": "deps",
+   "severity": "info",
+   "maxPoints": 0,
+   "pointsEarned": 0,
+   "title": "JavaScript dependency check not run",
+   "description": "The Lighthouse report contained no verdict for the dependency audit — Lighthouse removed `no-vulnerable-libraries` after v11 and the version in use does not ship it. Nothing about this page's JavaScript libraries was verified.",
+   "recommendation": "This category is reported as unmeasured and excluded from the overall score — it is NOT counted as passing."
+  }
+ ],
+ "scanData": {
+  "tls": {
+   "version": "TLSv1.3",
+   "cipher": "TLS_AES_128_GCM_SHA256",
+   "certIssuer": "Google Trust Services",
+   "certExpiry": "Jan 29 11:46:09 2027 GMT",
+   "certValid": true
+  },
+  "headers": {
+   "content-security-policy": "",
+   "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+   "x-content-type-options": "",
+   "x-frame-options": "",
+   "referrer-policy": "",
+   "permissions-policy": ""
+  },
+  "cookies": []
+ }
+}

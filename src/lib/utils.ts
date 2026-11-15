@@ -59,6 +59,21 @@ export function niceDate(iso: string): string {
   });
 }
 
+/** Today's local date as yyyy-mm-dd, the way a balance's as-of date is stored. */
+export function todayIso(now: Date = new Date()): string {
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${mm}-${dd}`;
+}
+
+/** Whole calendar days from a yyyy-mm-dd date to today, local time. */
+export function daysSince(iso: string, now: Date = new Date()): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  const then = new Date(y, m - 1, d);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((today.getTime() - then.getTime()) / 86400000);
+}
+
 export function uid(): string {
   return `l_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-4)}`;
 }
@@ -107,13 +122,6 @@ export function monthsInWords(n: number): string {
   const yPart = y ? `${y} year${y === 1 ? "" : "s"}` : "";
   const mPart = m ? `${m} month${m === 1 ? "" : "s"}` : "";
   return [yPart, mPart].filter(Boolean).join(" ");
-}
-
-/** Thousands separators while typing. Digits only, so the caret never fights it. */
-export function formatWholeDollars(raw: string): string {
-  const digits = raw.replace(/[^\d]/g, "");
-  if (!digits) return "";
-  return Number(digits).toLocaleString("en-US");
 }
 
 /** Dollars and optional cents while typing, e.g. "2,256.40". */

@@ -1,0 +1,163 @@
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 6d7641f..00456ac 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -66,6 +66,20 @@ body {
+   animation: unfold 0.2s ease-out both;
+ }
+ 
++/* Until the app has read this browser's storage, a borrower with saved loans
++   sees the loading bars instead of the server-rendered first-run screen.
++   layout.tsx sets data-returning; page.tsx drops .prerendered and the bars
++   once hydrated. */
++.returning-skeleton {
++  display: none;
++}
++html[data-returning] .prerendered > .returning-skeleton {
++  display: block;
++}
++html[data-returning] .prerendered > :not(.returning-skeleton) {
++  display: none;
++}
++
+ /* "Hide amounts" blurs every dollar figure, for checking your loans somewhere
+    public or when the total is not what you want to look at today. The text is
+    still there for screen readers. */
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index fc98cd7..57f452e 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -1,7 +1,19 @@
+ import type { Metadata, Viewport } from "next";
+ import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
++import { LOANS_KEY } from "@/lib/storage";
+ import "./globals.css";
+ 
++// Runs before first paint. The server HTML is the first-run screen; in a
++// browser with saved loans this marks <html> so globals.css shows the loading
++// bars instead, and the first-run screen never flashes before the borrower's
++// own loans. Only a non-empty array counts, as in loanStore.load(). It only
++// reads, sends nothing, and the function scope keeps the loans off window.
++const RETURNING_SCRIPT =
++  "(function(){try{" +
++  `var v=JSON.parse(localStorage.getItem(${JSON.stringify(LOANS_KEY)}));` +
++  'if(Array.isArray(v)&&v.length)document.documentElement.setAttribute("data-returning","")' +
++  "}catch(e){}})()";
++
+ // Two faces, shared with Decode so the Cense tools read as one family.
+ // Bricolage carries headlines and headline figures. Instrument Sans carries
+ // everything that gets read or compared, and has true tabular figures.
+@@ -42,15 +54,14 @@ export const viewport: Viewport = {
+ export default function RootLayout({
+   children,
+ }: Readonly<{ children: React.ReactNode }>) {
++  // suppressHydrationWarning: RETURNING_SCRIPT may add data-returning to
++  // <html> before React hydrates it.
+   return (
+-    <html lang="en">
++    <html lang="en" suppressHydrationWarning>
++      <head>
++        <script dangerouslySetInnerHTML={{ __html: RETURNING_SCRIPT }} />
++      </head>
+       <body className={`${display.variable} ${sans.variable} font-sans`}>
+-        <noscript>
+-          <div style={{ padding: "2rem", textAlign: "center" }}>
+-            Loan Desk needs JavaScript to run. Please enable it in your browser
+-            settings.
+-          </div>
+-        </noscript>
+         {children}
+       </body>
+     </html>
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 27df1da..e6853c8 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -291,28 +291,31 @@ export default function Page() {
+     setAdding(true);
+   };
+ 
+-  if (!hydrated) {
+-    return (
+-      <main className="min-h-screen bg-page">
+-        <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+-          <div className="h-7 w-32 animate-pulse rounded-full bg-slate-200" />
+-          <div className="mt-8 h-44 animate-pulse rounded-3xl bg-slate-200/70" />
+-        </div>
+-      </main>
+-    );
+-  }
+-
+   const empty = loans.length === 0;
+   const example = isExample(loans);
+   const interest = Math.max(0, balance - principal);
+ 
++  // Before hydration this is the first-run screen, and it is what the server
++  // sends, so crawlers and a first visit get real words. In a browser with
++  // saved loans, globals.css shows only the bars until those loans are read.
+   return (
+     <main
+       className={cn(
+         "min-h-screen bg-page pb-28",
+-        hideAmounts && "amounts-hidden"
++        hideAmounts && "amounts-hidden",
++        !hydrated && "prerendered"
+       )}
+     >
++      {!hydrated && (
++        <div
++          aria-hidden
++          className="returning-skeleton mx-auto max-w-3xl px-4 py-10 sm:px-6"
++        >
++          <div className="h-7 w-32 animate-pulse rounded-full bg-slate-200" />
++          <div className="mt-8 h-44 animate-pulse rounded-3xl bg-slate-200/70" />
++        </div>
++      )}
++
+       <a
+         href="#main"
+         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-navy focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+@@ -365,11 +368,16 @@ export default function Page() {
+               extra money would change.
+             </p>
+ 
++            {/* Off until hydrated: a click before the saved data is read
++                would be lost, or overwritten by it. */}
+             {!adding && (
+               <div className="mt-7 flex flex-col gap-2.5 sm:flex-row">
+-                <Button onClick={startAdding}>Add my first loan</Button>
++                <Button disabled={!hydrated} onClick={startAdding}>
++                  Add my first loan
++                </Button>
+                 <Button
+                   variant="secondary"
++                  disabled={!hydrated}
+                   onClick={() => {
+                     setLoans(SEED_LOANS);
+                     window.scrollTo({ top: 0 });
+@@ -380,6 +388,12 @@ export default function Page() {
+                 </Button>
+               </div>
+             )}
++            <noscript>
++              <p className="mt-4 text-sm text-slate-700">
++                Adding loans needs JavaScript. Please enable it in your browser
++                settings.
++              </p>
++            </noscript>
+ 
+             {adding ? (
+               <div className="mt-8">
+diff --git a/src/lib/storage.ts b/src/lib/storage.ts
+index e41444f..62d339f 100644
+--- a/src/lib/storage.ts
++++ b/src/lib/storage.ts
+@@ -6,7 +6,7 @@
+ 
+ import { DEFAULT_PROFILE, Loan, LoanDiffRow, Profile, Snapshot } from "@/types";
+ 
+-const LOANS_KEY = "cense.loandesk.loans.v1";
++export const LOANS_KEY = "cense.loandesk.loans.v1";
+ // v2: the profile shape changed (householdSize, employment, goal,
+ // selectedPlan). Bumping the key avoids merging a stale v1 object.
+ const PROFILE_KEY = "cense.loandesk.profile.v2";

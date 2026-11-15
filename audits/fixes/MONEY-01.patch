@@ -1,0 +1,189 @@
+diff --git a/src/components/plans/PlansPanel.tsx b/src/components/plans/PlansPanel.tsx
+index 163669a..39a5ca8 100644
+--- a/src/components/plans/PlansPanel.tsx
++++ b/src/components/plans/PlansPanel.tsx
+@@ -349,11 +349,18 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+               <h2 className="font-display text-4xl font-bold leading-none sm:text-5xl">
+                 {PLAN_META[top.estimate.id].name}
+               </h2>
++              {/* The figure and the words each sit alone in their own element,
++                  so a page translator cannot leave the figure stale when the
++                  pick or the income changes. */}
+               <p className="text-base text-white/90">
+                 <span className="amt figure text-3xl font-bold text-white">
+                   <Money value={top.estimate.monthlyPayment} tabular={false} />
+                 </span>{" "}
+-                a month{top.estimate.id === "graduated" && ", to start"}
++                <span>
++                  {top.estimate.id === "graduated"
++                    ? "a month, to start"
++                    : "a month"}
++                </span>
+               </p>
+             </div>
+             <p className="mt-4 text-base leading-relaxed text-white/95">
+@@ -370,7 +377,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
+                   onClick={() => onSelectPlan(top.estimate.id)}
+                   className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+                 >
+-                  Use {PLAN_META[top.estimate.id].name} as my plan
++                  {`Use ${PLAN_META[top.estimate.id].name} as my plan`}
+                 </button>
+               )}
+             </div>
+diff --git a/src/data/plans.ts b/src/data/plans.ts
+index 27bd1fc..3bc16b7 100644
+--- a/src/data/plans.ts
++++ b/src/data/plans.ts
+@@ -69,6 +69,13 @@ export function rapAnnualBasePayment(agi: number): number {
+ /** Extended requires more than this in Direct Loans. Source: 34 CFR 685.208(e). */
+ export const EXTENDED_MIN_BALANCE = 30000;
+ 
++/**
++ * A planning assumption, not a rule: the income tax on a balance forgiven at
++ * the end of IBR or RAP outside PSLF. Used only when recommending on total
++ * cost, and named wherever it is used (the recommendation and ASSUMPTIONS).
++ */
++export const FORGIVENESS_TAX_ASSUMPTION = 0.22;
++
+ export interface PlanMeta {
+   name: string;
+   tagline: string;
+@@ -275,8 +282,7 @@ export const SAME_PLAN_RULE =
+ export const NO_LATE_FEES_NOTE =
+   "The Department of Education does not charge late fees on Direct Loans. What missing a payment actually costs: you are delinquent the day after the due date, it is reported to the credit bureaus at 90 days, and the loan defaults at 270 days.";
+ 
+-export const ASSUMPTIONS =
+-  "Two things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. And like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens.";
++export const ASSUMPTIONS = `Three things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. Like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens. And when we recommend on total cost, a balance forgiven at the end is counted with an assumed ${Math.round(FORGIVENESS_TAX_ASSUMPTION * 100)}% income tax.`;
+ 
+ export const NOT_ADVICE =
+   "These are estimates, not financial advice. The right plan depends on things this tool does not know, like whether your income is about to change or what else you owe. Your servicer sets your actual payment, and studentaid.gov is the authority on your account.";
+diff --git a/src/lib/calc.ts b/src/lib/calc.ts
+index fa1b69b..800b8de 100644
+--- a/src/lib/calc.ts
++++ b/src/lib/calc.ts
+@@ -11,6 +11,7 @@ import {
+ } from "@/types";
+ import {
+   EXTENDED_MIN_BALANCE,
++  FORGIVENESS_TAX_ASSUMPTION,
+   LEGACY_PLANS,
+   PARENT_PLUS_EXCLUDED_PLANS,
+   PARENT_PLUS_INELIGIBLE_REASON,
+@@ -149,6 +150,7 @@ function simulateIdr(
+   const r = ratePct / 100 / 12;
+   let bal = balance;
+   let totalPaid = 0;
++  let interestPaid = 0;
+   const maxMonths = maxYears * 12;
+   let months = 0;
+ 
+@@ -179,12 +181,16 @@ function simulateIdr(
+       pay += bal;
+       bal = 0;
+     }
++    // 34 CFR 685.211(a)(1)(ii): each payment goes to accrued interest first.
++    // ED's RAP match and a forgiven balance are not interest the borrower paid.
++    interestPaid += Math.min(interestCharged, pay);
+     totalPaid += pay;
+     months++;
+   }
+ 
+   return {
+     totalPaid,
++    interestPaid,
+     forgiven: Math.max(0, bal),
+     months,
+     paidOff: bal <= 0.005,
+@@ -444,7 +450,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+         eligible: true,
+         monthlyPayment: pay,
+         totalPaid: sim.totalPaid,
+-        totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
++        totalInterest: sim.interestPaid,
+         years: sim.paidOff ? sim.months / 12 : 20,
+         forgivenAmount: sim.forgiven,
+         pslf: "counts",
+@@ -463,7 +469,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
+       eligible: true,
+       monthlyPayment: pay,
+       totalPaid: sim.totalPaid,
+-      totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
++      totalInterest: sim.interestPaid,
+       years: sim.paidOff ? sim.months / 12 : 30,
+       forgivenAmount: sim.forgiven,
+       pslf: "counts",
+@@ -519,6 +525,14 @@ export function rankPlans(
+   const lowestInterest = eligible.reduce((a, b) =>
+     (a.totalInterest ?? Infinity) <= (b.totalInterest ?? Infinity) ? a : b
+   );
++  // Total cost: what the borrower pays, plus an assumed income tax on any
++  // balance forgiven at the end. Forgiven dollars are not paid, so they are
++  // never counted as paid. A $1 tolerance keeps the earlier plan on a tie.
++  const costWithTax = (e: PlanEstimate) =>
++    (e.totalPaid ?? Infinity) + FORGIVENESS_TAX_ASSUMPTION * e.forgivenAmount;
++  const lowestCost = eligible.reduce((a, b) =>
++    costWithTax(b) < costWithTax(a) - 1 ? b : a
++  );
+ 
+   const { goal } = ctx.profile;
+   const pslfOk = (e: PlanEstimate) => e.pslf === "counts";
+@@ -536,7 +550,7 @@ export function rankPlans(
+         ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
+         : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
+     } else {
+-      top = lowestInterest;
++      top = lowestCost;
+       reason =
+         "None of the plans open to you earn forgiveness credit, so this is the one that costs you the least overall.";
+     }
+@@ -548,11 +562,17 @@ export function rankPlans(
+         : "You said the monthly number matters most, and this is the smallest payment of the plans open to you.";
+   } else {
+     // least_total, and the default for "unsure"
+-    top = lowestInterest;
++    top = lowestCost;
+     reason =
+-      goal === "unsure"
+-        ? "You have not told us a goal yet, so we are recommending on total cost, which is the safe default. This plan hands over the least money overall."
+-        : "You want to pay the least overall, and this plan costs you the least in total interest.";
++      (goal === "unsure"
++        ? "You have not told us a goal yet, so we are recommending on total cost, which is the safe default. "
++        : "You want to pay the least overall. ") +
++      (eligible.some((e) => e.forgivenAmount > 1)
++        ? `Counting what you pay plus an assumed ${Math.round(FORGIVENESS_TAX_ASSUMPTION * 100)}% income tax on any balance forgiven at the end, this plan costs the least.`
++        : "This plan hands over the least money in total.") +
++      (top.forgivenAmount > 1
++        ? " Part of your balance is left at the end and forgiven, and outside PSLF that generally counts as taxable income."
++        : "");
+   }
+ 
+   const whyNotFor = (e: PlanEstimate): string => {
+@@ -562,7 +582,9 @@ export function rankPlans(
+ 
+     const parts: string[] = [];
+     const dMonthly = (e.monthlyPayment ?? 0) - (top.monthlyPayment ?? 0);
+-    const dInterest = (e.totalInterest ?? 0) - (top.totalInterest ?? 0);
++    // The gap between the two "In total" figures on the cards. A forgiven
++    // balance is said in words, never folded into this figure.
++    const dTotal = (e.totalPaid ?? 0) - (top.totalPaid ?? 0);
+ 
+     // Each fragment has to read as a verb phrase after "because it".
+     if (ctx.publicService && !pslfOk(e) && pslfOk(top)) {
+@@ -579,8 +601,13 @@ export function rankPlans(
+           : `costs ${money(dMonthly)} more a month`
+       );
+     }
+-    if (dInterest > 1) parts.push(`costs ${money(dInterest)} more overall`);
+-    if (dMonthly < -1 && dInterest > 1) {
++    if (dTotal > 1) parts.push(`costs ${money(dTotal)} more in total`);
++    if (dTotal < -1 && e.forgivenAmount > top.forgivenAmount + 1) {
++      parts.push(
++        `costs ${money(-dTotal)} less in total but leaves more to be forgiven, which outside PSLF is generally taxable income`
++      );
++    }
++    if (dMonthly < -1 && dTotal > 1) {
+       parts.push("buys a smaller payment now by charging you more in the end");
+     }
+ 

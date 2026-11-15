@@ -1,0 +1,907 @@
+{
+ "url": "http://localhost:3100/",
+ "quick": false,
+ "method": "Trusted input at a 412x823 viewport. Event Timing entries of 16 ms or more are bucketed by startTime into each step; main-thread time comes from CDP Performance.getMetrics. The page stops scrolling before every step, and each field is centred before it is typed into.",
+ "rows": [
+  {
+   "cpuThrottle": 1,
+   "loans": 8,
+   "run": 1,
+   "tabToPlans": {
+    "worstInteractionMs": 40,
+    "interactions": 1,
+    "taskMs": 56,
+    "scriptMs": 8,
+    "layoutMs": 6,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 16,
+    "interactions": 5,
+    "taskMs": 41,
+    "scriptMs": 11,
+    "layoutMs": 5,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 27,
+    "scriptMs": 12,
+    "layoutMs": 2,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 228,
+    "scriptMs": 150,
+    "layoutMs": 15,
+    "styleMs": 9,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 16,
+    "interactions": 4,
+    "taskMs": 38,
+    "scriptMs": 17,
+    "layoutMs": 2,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 16,
+    "scriptMs": 4,
+    "layoutMs": 1,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 16,
+    "scriptMs": 4,
+    "layoutMs": 1,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 1,
+   "loans": 8,
+   "run": 2,
+   "tabToPlans": {
+    "worstInteractionMs": 48,
+    "interactions": 1,
+    "taskMs": 61,
+    "scriptMs": 9,
+    "layoutMs": 6,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 16,
+    "interactions": 4,
+    "taskMs": 45,
+    "scriptMs": 13,
+    "layoutMs": 5,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 28,
+    "scriptMs": 13,
+    "layoutMs": 2,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 24,
+    "interactions": 1,
+    "taskMs": 261,
+    "scriptMs": 167,
+    "layoutMs": 19,
+    "styleMs": 11,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 24,
+    "interactions": 2,
+    "taskMs": 34,
+    "scriptMs": 16,
+    "layoutMs": 2,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 24,
+    "interactions": 1,
+    "taskMs": 16,
+    "scriptMs": 3,
+    "layoutMs": 2,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 16,
+    "scriptMs": 3,
+    "layoutMs": 1,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 1,
+   "loans": 25,
+   "run": 1,
+   "tabToPlans": {
+    "worstInteractionMs": 48,
+    "interactions": 1,
+    "taskMs": 61,
+    "scriptMs": 8,
+    "layoutMs": 6,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 16,
+    "interactions": 5,
+    "taskMs": 60,
+    "scriptMs": 15,
+    "layoutMs": 8,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 24,
+    "interactions": 1,
+    "taskMs": 34,
+    "scriptMs": 17,
+    "layoutMs": 3,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 296,
+    "scriptMs": 211,
+    "layoutMs": 17,
+    "styleMs": 8,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 24,
+    "interactions": 3,
+    "taskMs": 39,
+    "scriptMs": 21,
+    "layoutMs": 2,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 24,
+    "interactions": 1,
+    "taskMs": 15,
+    "scriptMs": 3,
+    "layoutMs": 1,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 17,
+    "scriptMs": 5,
+    "layoutMs": 1,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 1,
+   "loans": 25,
+   "run": 2,
+   "tabToPlans": {
+    "worstInteractionMs": 48,
+    "interactions": 1,
+    "taskMs": 58,
+    "scriptMs": 8,
+    "layoutMs": 6,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 16,
+    "interactions": 5,
+    "taskMs": 52,
+    "scriptMs": 13,
+    "layoutMs": 7,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 24,
+    "interactions": 1,
+    "taskMs": 32,
+    "scriptMs": 16,
+    "layoutMs": 3,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 299,
+    "scriptMs": 211,
+    "layoutMs": 17,
+    "styleMs": 8,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 16,
+    "interactions": 4,
+    "taskMs": 44,
+    "scriptMs": 25,
+    "layoutMs": 2,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 15,
+    "scriptMs": 4,
+    "layoutMs": 1,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 16,
+    "scriptMs": 5,
+    "layoutMs": 1,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 1,
+   "loans": 60,
+   "run": 1,
+   "tabToPlans": {
+    "worstInteractionMs": 48,
+    "interactions": 1,
+    "taskMs": 59,
+    "scriptMs": 10,
+    "layoutMs": 6,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 16,
+    "interactions": 3,
+    "taskMs": 58,
+    "scriptMs": 14,
+    "layoutMs": 8,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 32,
+    "interactions": 1,
+    "taskMs": 39,
+    "scriptMs": 22,
+    "layoutMs": 3,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 32,
+    "interactions": 1,
+    "taskMs": 391,
+    "scriptMs": 290,
+    "layoutMs": 19,
+    "styleMs": 8,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 24,
+    "interactions": 4,
+    "taskMs": 54,
+    "scriptMs": 36,
+    "layoutMs": 2,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 16,
+    "scriptMs": 4,
+    "layoutMs": 1,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 22,
+    "scriptMs": 9,
+    "layoutMs": 1,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 1,
+   "loans": 60,
+   "run": 2,
+   "tabToPlans": {
+    "worstInteractionMs": 40,
+    "interactions": 1,
+    "taskMs": 57,
+    "scriptMs": 10,
+    "layoutMs": 6,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 16,
+    "interactions": 5,
+    "taskMs": 64,
+    "scriptMs": 15,
+    "layoutMs": 9,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 32,
+    "interactions": 1,
+    "taskMs": 39,
+    "scriptMs": 22,
+    "layoutMs": 3,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 32,
+    "interactions": 1,
+    "taskMs": 373,
+    "scriptMs": 276,
+    "layoutMs": 17,
+    "styleMs": 7,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 24,
+    "interactions": 4,
+    "taskMs": 53,
+    "scriptMs": 35,
+    "layoutMs": 2,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 15,
+    "scriptMs": 4,
+    "layoutMs": 1,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 23,
+    "scriptMs": 9,
+    "layoutMs": 1,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 4,
+   "loans": 8,
+   "run": 1,
+   "tabToPlans": {
+    "worstInteractionMs": 72,
+    "interactions": 1,
+    "taskMs": 94,
+    "scriptMs": 23,
+    "layoutMs": 16,
+    "styleMs": 8,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 24,
+    "interactions": 4,
+    "taskMs": 83,
+    "scriptMs": 26,
+    "layoutMs": 8,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 32,
+    "interactions": 1,
+    "taskMs": 49,
+    "scriptMs": 25,
+    "layoutMs": 5,
+    "styleMs": 6,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 341,
+    "scriptMs": 203,
+    "layoutMs": 28,
+    "styleMs": 19,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 16,
+    "interactions": 3,
+    "taskMs": 43,
+    "scriptMs": 21,
+    "layoutMs": 3,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 20,
+    "scriptMs": 5,
+    "layoutMs": 2,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 14,
+    "scriptMs": 4,
+    "layoutMs": 1,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 4,
+   "loans": 8,
+   "run": 2,
+   "tabToPlans": {
+    "worstInteractionMs": 72,
+    "interactions": 1,
+    "taskMs": 97,
+    "scriptMs": 21,
+    "layoutMs": 17,
+    "styleMs": 10,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 24,
+    "interactions": 4,
+    "taskMs": 80,
+    "scriptMs": 25,
+    "layoutMs": 7,
+    "styleMs": 5,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 32,
+    "interactions": 1,
+    "taskMs": 51,
+    "scriptMs": 25,
+    "layoutMs": 5,
+    "styleMs": 6,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 333,
+    "scriptMs": 203,
+    "layoutMs": 28,
+    "styleMs": 17,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 16,
+    "interactions": 3,
+    "taskMs": 42,
+    "scriptMs": 19,
+    "layoutMs": 3,
+    "styleMs": 1,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 21,
+    "scriptMs": 7,
+    "layoutMs": 2,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 15,
+    "scriptMs": 4,
+    "layoutMs": 1,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 4,
+   "loans": 25,
+   "run": 1,
+   "tabToPlans": {
+    "worstInteractionMs": 72,
+    "interactions": 1,
+    "taskMs": 95,
+    "scriptMs": 25,
+    "layoutMs": 17,
+    "styleMs": 8,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 24,
+    "interactions": 6,
+    "taskMs": 90,
+    "scriptMs": 26,
+    "layoutMs": 11,
+    "styleMs": 7,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 48,
+    "interactions": 1,
+    "taskMs": 63,
+    "scriptMs": 34,
+    "layoutMs": 6,
+    "styleMs": 7,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 24,
+    "interactions": 1,
+    "taskMs": 530,
+    "scriptMs": 353,
+    "layoutMs": 33,
+    "styleMs": 20,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 24,
+    "interactions": 4,
+    "taskMs": 54,
+    "scriptMs": 31,
+    "layoutMs": 3,
+    "styleMs": 1,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 20,
+    "scriptMs": 6,
+    "layoutMs": 2,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 22,
+    "scriptMs": 9,
+    "layoutMs": 2,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 4,
+   "loans": 25,
+   "run": 2,
+   "tabToPlans": {
+    "worstInteractionMs": 72,
+    "interactions": 1,
+    "taskMs": 91,
+    "scriptMs": 21,
+    "layoutMs": 17,
+    "styleMs": 8,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 24,
+    "interactions": 5,
+    "taskMs": 84,
+    "scriptMs": 31,
+    "layoutMs": 8,
+    "styleMs": 5,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 40,
+    "interactions": 1,
+    "taskMs": 62,
+    "scriptMs": 35,
+    "layoutMs": 6,
+    "styleMs": 5,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 24,
+    "interactions": 1,
+    "taskMs": 522,
+    "scriptMs": 351,
+    "layoutMs": 35,
+    "styleMs": 19,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 24,
+    "interactions": 4,
+    "taskMs": 53,
+    "scriptMs": 30,
+    "layoutMs": 3,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 19,
+    "scriptMs": 6,
+    "layoutMs": 3,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 22,
+    "scriptMs": 9,
+    "layoutMs": 2,
+    "styleMs": 3,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 4,
+   "loans": 60,
+   "run": 1,
+   "tabToPlans": {
+    "worstInteractionMs": 72,
+    "interactions": 1,
+    "taskMs": 92,
+    "scriptMs": 21,
+    "layoutMs": 15,
+    "styleMs": 7,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 24,
+    "interactions": 4,
+    "taskMs": 85,
+    "scriptMs": 25,
+    "layoutMs": 9,
+    "styleMs": 6,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 64,
+    "interactions": 1,
+    "taskMs": 85,
+    "scriptMs": 50,
+    "layoutMs": 9,
+    "styleMs": 9,
+    "longTasks": 1,
+    "longTaskMaxMs": 61
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 40,
+    "interactions": 1,
+    "taskMs": 918,
+    "scriptMs": 645,
+    "layoutMs": 51,
+    "styleMs": 20,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 32,
+    "interactions": 4,
+    "taskMs": 76,
+    "scriptMs": 51,
+    "layoutMs": 4,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 21,
+    "scriptMs": 7,
+    "layoutMs": 2,
+    "styleMs": 2,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 32,
+    "interactions": 1,
+    "taskMs": 35,
+    "scriptMs": 16,
+    "layoutMs": 2,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  },
+  {
+   "cpuThrottle": 4,
+   "loans": 60,
+   "run": 2,
+   "tabToPlans": {
+    "worstInteractionMs": 72,
+    "interactions": 1,
+    "taskMs": 93,
+    "scriptMs": 23,
+    "layoutMs": 15,
+    "styleMs": 10,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeIncome5": {
+    "worstInteractionMs": 24,
+    "interactions": 5,
+    "taskMs": 90,
+    "scriptMs": 26,
+    "layoutMs": 10,
+    "styleMs": 7,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToPayoff": {
+    "worstInteractionMs": 64,
+    "interactions": 1,
+    "taskMs": 82,
+    "scriptMs": 45,
+    "layoutMs": 9,
+    "styleMs": 7,
+    "longTasks": 1,
+    "longTaskMaxMs": 55
+   },
+   "dragSlider30": {
+    "worstInteractionMs": 40,
+    "interactions": 1,
+    "taskMs": 938,
+    "scriptMs": 660,
+    "layoutMs": 52,
+    "styleMs": 21,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "typeExtra3": {
+    "worstInteractionMs": 32,
+    "interactions": 4,
+    "taskMs": 73,
+    "scriptMs": 52,
+    "layoutMs": 2,
+    "styleMs": 1,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToRecords": {
+    "worstInteractionMs": 16,
+    "interactions": 1,
+    "taskMs": 22,
+    "scriptMs": 7,
+    "layoutMs": 3,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   },
+   "tabToLoans": {
+    "worstInteractionMs": 32,
+    "interactions": 1,
+    "taskMs": 32,
+    "scriptMs": 17,
+    "layoutMs": 3,
+    "styleMs": 4,
+    "longTasks": 0,
+    "longTaskMaxMs": 0
+   }
+  }
+ ]
+}

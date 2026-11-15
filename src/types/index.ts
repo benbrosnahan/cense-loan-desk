@@ -108,8 +108,14 @@ export interface LoanDiffRow {
 }
 
 export interface Profile {
-  /** Annual adjusted gross income (AGI), the income IBR and RAP are priced on. 0 = not supplied, which hides income-driven estimates. */
+  /**
+   * Annual adjusted gross income (AGI), the income IBR and RAP are priced on.
+   * 0 without incomeKnown = not supplied, which hides income-driven estimates;
+   * 0 with incomeKnown = a real $0.
+   */
   income: number;
+  /** True once an income has been typed, including 0. Cleared with the field. */
+  incomeKnown?: boolean;
   /** You plus your tax dependents. A spouse is never counted here. */
   householdSize: number;
   /**

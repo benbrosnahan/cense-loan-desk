@@ -130,7 +130,8 @@ function PlanRow({
           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
             <p className="text-sm leading-relaxed text-slate-800">
               This plan is priced off what you earn, not what you owe. Add your
-              yearly income and we will work out the payment.
+              yearly income, or 0 if you are not earning, and we will work out
+              the payment.
             </p>
             <Button
               size="sm"

@@ -281,7 +281,6 @@ test('MONEY-08 with income blank, the pick and its badges never claim a minimum 
 });
 
 test('MONEY-09 typing 0 as income prices IBR at $0 and RAP at $10, and the 0 stays visible after a reload', async ({ page }) => {
-  knownIssue('MONEY-09');
   await openPlans(page, [loan('2024–25 unsubsidized', 30000, 6.53, '2024-09-01')]);
   const read = async () => ({
     field: await incomeField(page).inputValue(),

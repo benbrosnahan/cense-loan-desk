@@ -243,7 +243,7 @@ export function buildContext(loans: Loan[], profile: Profile): PlanContext {
   return {
     loans,
     profile,
-    hasIncome: profile.income > 0,
+    hasIncome: profile.income > 0 || profile.incomeKnown === true,
     postCutoff: anyPostCutoff(loans),
     parentPlus: anyParentPlus(loans),
     balance,

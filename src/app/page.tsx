@@ -767,7 +767,7 @@ export default function Page() {
                           hint={
                             profile.filesJointly
                               ? "Yours and your spouse's together: the adjusted gross income on your joint tax return."
-                              : "Use your adjusted gross income (AGI): your pay before tax, minus pre-tax 401(k), 403(b), health and HSA deductions. If your pay has not changed since you last filed, it is on your tax return. Leave blank if you are not earning yet. We will skip the plans priced off income."
+                              : "Use your adjusted gross income (AGI): your pay before tax, minus pre-tax 401(k), 403(b), health and HSA deductions. If your pay has not changed since you last filed, it is on your tax return. Not earning right now? Enter 0 to see what you would pay today. Leave blank to skip the plans priced off income."
                           }
                           htmlFor="income"
                         >
@@ -778,19 +778,19 @@ export default function Page() {
                             autoComplete="off"
                             aria-describedby="income-msg"
                             value={
-                              profile.income
+                              profile.income > 0 || profile.incomeKnown
                                 ? profile.income.toLocaleString("en-US")
                                 : ""
                             }
-                            placeholder="0"
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              // A typed 0 is an answer. Text with no digit is blank.
+                              const raw = formatWholeDollars(e.target.value);
                               setProfile((p) => ({
                                 ...p,
-                                income: parseNumber(
-                                  formatWholeDollars(e.target.value)
-                                ),
-                              }))
-                            }
+                                income: parseNumber(raw),
+                                incomeKnown: raw !== "",
+                              }));
+                            }}
                           />
                         </Field>
 

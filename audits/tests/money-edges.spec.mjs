@@ -74,7 +74,6 @@ test('MONEY-14 IBR applies the $5 and $10 rule: a calculated payment under $5 is
 });
 
 test('MONEY-15 Extended is closed at exactly $30,000 however the cents are split across loans, and open from $30,000.01', async ({ page, freshApp }) => {
-  knownIssue('MONEY-15');
   const portfolios = [
     { label: 'one loan of $30,000.00', balances: [30000], open: false },
     { label: 'three loans of $10,000.10, $9,999.95 and $9,999.95 ($30,000.00)', balances: [10000.1, 9999.95, 9999.95], open: false },

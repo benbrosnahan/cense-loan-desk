@@ -525,6 +525,11 @@ console.log("\n[15] Plan ranking / recommendation");
   const over = run("least_total", "private", 30001).ranked.find((r) => r.estimate.id === "extended");
   ok("Extended closed under $30k", !under.estimate.eligible);
   ok("Extended open above $30k", over.estimate.eligible);
+  // "More than $30,000": exactly $30,000 stays closed, a cent over opens it.
+  const exact = run("least_total", "private", 30000).ranked.find((r) => r.estimate.id === "extended");
+  const cent = run("least_total", "private", 30000.01).ranked.find((r) => r.estimate.id === "extended");
+  ok("Extended closed at exactly $30,000", !exact.estimate.eligible);
+  ok("Extended open at $30,000.01", cent.estimate.eligible);
 }
 
 // ============================================================ 16. invariants

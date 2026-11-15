@@ -338,7 +338,9 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
       };
     }
 
-    if (id === "extended" && balance < EXTENDED_MIN_BALANCE) {
+    // 34 CFR 685.208(b)(4)(i): more than $30,000. The balance is an unrounded
+    // float sum, so compare whole cents.
+    if (id === "extended" && Math.round(balance * 100) <= EXTENDED_MIN_BALANCE * 100) {
       return {
         ...base,
         eligible: false,

@@ -66,7 +66,7 @@ export function rapAnnualBasePayment(agi: number): number {
   return agi * 0.1;
 }
 
-/** Extended requires more than this in Direct Loans. Source: 34 CFR 685.208(e). */
+/** Extended requires more than this in Direct Loans. Source: 34 CFR 685.208(b)(4)(i). */
 export const EXTENDED_MIN_BALANCE = 30000;
 
 export interface PlanMeta {

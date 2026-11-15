@@ -47,7 +47,6 @@ import { exportLoans } from "@/lib/export";
 import {
   cn,
   formatDollarsInput,
-  formatWholeDollars,
   parseNumber,
   scrollBehavior,
 } from "@/lib/utils";
@@ -65,6 +64,7 @@ import {
   Notice,
   Toast,
   ToastState,
+  WholeDollarInput,
   inputClass,
 } from "@/components/shared/ui";
 import LoanForm, { LoanDefaults } from "@/components/loans/LoanForm";
@@ -771,26 +771,22 @@ export default function Page() {
                           }
                           htmlFor="income"
                         >
-                          <AffixInput
+                          <WholeDollarInput
                             id="income"
                             prefix="$"
                             inputMode="numeric"
                             autoComplete="off"
                             aria-describedby="income-msg"
-                            value={
-                              profile.income > 0 || profile.incomeKnown
-                                ? profile.income.toLocaleString("en-US")
-                                : ""
-                            }
-                            onChange={(e) => {
+                            value={profile.income}
+                            known={profile.incomeKnown}
+                            onValueChange={(income, hasDigit) =>
                               // A typed 0 is an answer. Text with no digit is blank.
-                              const raw = formatWholeDollars(e.target.value);
                               setProfile((p) => ({
                                 ...p,
-                                income: parseNumber(raw),
-                                incomeKnown: raw !== "",
-                              }));
-                            }}
+                                income,
+                                incomeKnown: hasDigit,
+                              }))
+                            }
                           />
                         </Field>
 

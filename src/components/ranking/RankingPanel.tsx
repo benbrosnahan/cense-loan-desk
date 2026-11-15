@@ -20,17 +20,14 @@ import { buildContext, estimatePlans } from "@/lib/calc";
 import { compareStrategies, projectPayoff, rankLoans } from "@/lib/ranking";
 import {
   cn,
-  formatWholeDollars,
   money,
   monthYearFromNow,
   monthsInWords,
   monthsLabel,
-  parseNumber,
   pct,
   shortMonthYearFromNow,
 } from "@/lib/utils";
 import {
-  AffixInput,
   Badge,
   Button,
   Card,
@@ -40,6 +37,7 @@ import {
   FadeIn,
   Money,
   Notice,
+  WholeDollarInput,
   inputClass,
 } from "@/components/shared/ui";
 import PayoffRunway from "@/components/charts/PayoffRunway";
@@ -95,7 +93,11 @@ export default function RankingPanel({
   const required =
     selected && selected.eligible ? selected.monthlyPayment : null;
 
-  const extra = Math.max(0, Math.min(EXTRA_MAX, profile.extraPerMonth || 0));
+  // Whole dollars, so an extra of 12.5 saved by the old field reads 12 everywhere.
+  const extra = Math.max(
+    0,
+    Math.min(EXTRA_MAX, Math.trunc(profile.extraPerMonth || 0))
+  );
 
   const ranked = useMemo(() => rankLoans(loans, strategy), [loans, strategy]);
   const comparison = useMemo(
@@ -236,18 +238,15 @@ export default function RankingPanel({
                       Extra each month
                     </label>
                     <div className="mt-1.5">
-                      <AffixInput
+                      <WholeDollarInput
                         id="extra"
                         prefix="$"
                         inputMode="numeric"
                         autoComplete="off"
-                        value={extra ? formatWholeDollars(String(extra)) : ""}
+                        value={extra}
+                        max={EXTRA_MAX}
                         placeholder="0"
-                        onChange={(e) =>
-                          onExtraChange(
-                            Math.min(EXTRA_MAX, parseNumber(e.target.value))
-                          )
-                        }
+                        onValueChange={onExtraChange}
                       />
                     </div>
                   </div>

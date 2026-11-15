@@ -109,13 +109,6 @@ export function monthsInWords(n: number): string {
   return [yPart, mPart].filter(Boolean).join(" ");
 }
 
-/** Thousands separators while typing. Digits only, so the caret never fights it. */
-export function formatWholeDollars(raw: string): string {
-  const digits = raw.replace(/[^\d]/g, "");
-  if (!digits) return "";
-  return Number(digits).toLocaleString("en-US");
-}
-
 /** Dollars and optional cents while typing, e.g. "2,256.40". */
 export function formatDollarsInput(raw: string): string {
   const cleaned = raw.replace(/[^\d.]/g, "");

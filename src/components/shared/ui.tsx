@@ -6,7 +6,7 @@
 // style choice: iOS Safari zooms the page on focus for anything smaller.
 
 import { useId, useState } from "react";
-import { cn, money } from "@/lib/utils";
+import { cn, formatDollarsInput, money, parseNumber } from "@/lib/utils";
 
 export function Card({
   className,
@@ -336,6 +336,48 @@ export function AffixInput({
         </span>
       )}
     </div>
+  );
+}
+
+/**
+ * A whole-dollar amount. A typed or pasted point reads as dollars and cents:
+ * the cents show while typing and are dropped, never appended as digits.
+ * The draft is shown only while it still means the stored number, so a cap,
+ * a preset or the slider always wins, and on blur the field shows the number
+ * the page uses.
+ */
+export function WholeDollarInput({
+  value,
+  onValueChange,
+  max = Infinity,
+  onBlur,
+  known = false,
+  ...rest
+}: Omit<React.ComponentProps<typeof AffixInput>, "value" | "onChange" | "max"> & {
+  value: number;
+  /** hasDigit is false when the text holds no digit at all, i.e. the field is blank. */
+  onValueChange: (n: number, hasDigit: boolean) => void;
+  max?: number;
+  /** Show a value of 0 as "0" instead of blank, because a typed 0 is an answer. */
+  known?: boolean;
+}) {
+  const [draft, setDraft] = useState("");
+  const whole = (t: string) => Math.trunc(parseNumber(t));
+  const settled = value || known ? value.toLocaleString("en-US") : "";
+  return (
+    <AffixInput
+      {...rest}
+      value={draft && whole(draft) === value ? draft : settled}
+      onChange={(e) => {
+        const t = formatDollarsInput(e.target.value);
+        setDraft(t);
+        onValueChange(Math.min(max, whole(t)), /\d/.test(t));
+      }}
+      onBlur={(e) => {
+        setDraft("");
+        onBlur?.(e);
+      }}
+    />
   );
 }
 

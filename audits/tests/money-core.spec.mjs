@@ -329,7 +329,6 @@ test('MONEY-10 a $0 IBR payment is a real plan: Payoff projects it and offers th
 });
 
 test('MONEY-11 a decimal point in income or extra is read as cents, never as more digits', async ({ page }) => {
-  knownIssue('MONEY-11');
   await openPlans(page, LOANS);
   const income = incomeField(page);
   const rapAt = Math.round(rapMonthly(52000)); // $217, the same at $52,000.50

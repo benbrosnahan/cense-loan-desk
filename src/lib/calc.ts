@@ -12,6 +12,7 @@ import {
 } from "@/types";
 import {
   EXTENDED_MIN_BALANCE,
+  FEDERAL_TAX_2026_SINGLE,
   LEGACY_PLANS,
   PARENT_PLUS_EXCLUDED_PLANS,
   PARENT_PLUS_INELIGIBLE_REASON,
@@ -165,6 +166,31 @@ function graduatedTotals(balance: number, ratePct: number) {
     totalPaid,
     totalInterest: Math.max(0, totalPaid - balance),
   };
+}
+
+/** Federal income tax on `taxable` dollars at the 2026 single-filer brackets. */
+function federalTax(taxable: number): number {
+  let tax = 0;
+  let lower = 0;
+  for (const { upTo, rate } of FEDERAL_TAX_2026_SINGLE.brackets) {
+    if (taxable <= lower) break;
+    tax += (Math.min(taxable, upTo) - lower) * rate;
+    lower = upTo;
+  }
+  return tax;
+}
+
+/**
+ * Estimated federal income tax on a balance forgiven at the end of IBR or
+ * RAP: the tax on the year's income with the forgiven balance added, less the
+ * tax on the income alone. `agi` is the borrower's AGI answer, held flat like
+ * every other figure here. PSLF forgiveness is never passed here: it is not
+ * taxed (IRC 108(f)(1)).
+ */
+export function forgivenessTax(agi: number, forgiven: number): number {
+  if (forgiven <= 0) return 0;
+  const taxable = Math.max(0, agi - FEDERAL_TAX_2026_SINGLE.standardDeduction);
+  return federalTax(taxable + forgiven) - federalTax(taxable);
 }
 
 /** RAP's interest waiver and $50 matching principal, or neither. */
@@ -338,6 +364,7 @@ function simulateIdr(
 ) {
   let state: IdrState = { principal: balance, unpaid: 0 };
   let totalPaid = 0;
+  let interestPaid = 0;
   const maxMonths = maxYears * 12;
   let months = 0;
 
@@ -346,12 +373,14 @@ function simulateIdr(
     const step = idrMonth(state, ratePct, monthlyPayment, opts);
     state = step.state;
     totalPaid += step.paid;
+    interestPaid += step.interestPaid;
     months++;
   }
 
   const left = state.principal + state.unpaid;
   return {
     totalPaid,
+    interestPaid,
     forgiven: Math.max(0, left),
     months,
     paidOff: left <= 0.005,
@@ -701,9 +730,10 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
         eligible: true,
         monthlyPayment: pay,
         totalPaid: sim.totalPaid,
-        totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
+        totalInterest: sim.interestPaid,
         years: sim.paidOff ? sim.months / 12 : 20,
         forgivenAmount: sim.forgiven,
+        forgivenessTax: forgivenessTax(profile.income, sim.forgiven),
         pslf: "counts",
         pslfNote:
           "IBR always counts toward Public Service Loan Forgiveness, even a $0 payment.",
@@ -721,9 +751,10 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
       eligible: true,
       monthlyPayment: pay,
       totalPaid: sim.totalPaid,
-      totalInterest: Math.max(0, sim.totalPaid - (balance - sim.forgiven)),
+      totalInterest: sim.interestPaid,
       years: sim.paidOff ? sim.months / 12 : 30,
       forgivenAmount: sim.forgiven,
+      forgivenessTax: forgivenessTax(profile.income, sim.forgiven),
       pslf: "counts",
       pslfNote:
         "RAP always counts toward Public Service Loan Forgiveness, even at the $10 minimum.",
@@ -776,6 +807,14 @@ export function rankPlans(
   );
   const lowestInterest = eligible.reduce((a, b) =>
     (a.totalInterest ?? Infinity) <= (b.totalInterest ?? Infinity) ? a : b
+  );
+  // Total cost: what the borrower pays, plus the estimated federal income tax
+  // on any balance forgiven at the end (forgivenessTax). Forgiven dollars are not paid, so they are
+  // never counted as paid. A $1 tolerance keeps the earlier plan on a tie.
+  const costWithTax = (e: PlanEstimate) =>
+    (e.totalPaid ?? Infinity) + (e.forgivenessTax ?? 0);
+  const lowestCost = eligible.reduce((a, b) =>
+    costWithTax(b) < costWithTax(a) - 1 ? b : a
   );
 
   const { goal } = ctx.profile;
@@ -832,7 +871,7 @@ export function rankPlans(
       top = unpricedCredit[0];
       reason = `${top.name} is the plan open to you that earns forgiveness credit, and it is priced off your income. Add yours and we will work out the payment. ${notEarning}`;
     } else {
-      top = lowestInterest;
+      top = lowestCost;
       reason =
         "None of the plans open to you earn forgiveness credit, so this is the one that costs you the least overall.";
     }
@@ -844,11 +883,18 @@ export function rankPlans(
         : `You said the monthly number matters most, and this is the smallest payment of the plans ${scope}.${addIncome}`;
   } else {
     // least_total, and the default for "unsure"
-    top = lowestInterest;
+    top = lowestCost;
     reason =
-      goal === "unsure"
-        ? `You have not told us a goal yet, so we are recommending on total cost, which is the safe default. ${unpriced.length ? "Of the plans we can price, this one" : "This plan"} hands over the least money overall.${addIncome}`
-        : `You want to pay the least overall, and ${unpriced.length ? "of the plans we can price, this one" : "this plan"} costs you the least in total interest.${addIncome}`;
+      (goal === "unsure"
+        ? "You have not told us a goal yet, so we are recommending on total cost, which is the safe default. "
+        : "You want to pay the least overall. ") +
+      (eligible.some((e) => e.forgivenAmount > 1)
+        ? `Counting what you pay plus the estimated federal income tax on any balance forgiven at the end, ${unpriced.length ? "of the plans we can price, this one" : "this plan"} costs the least.`
+        : `${unpriced.length ? "Of the plans we can price, this one" : "This plan"} hands over the least money in total.`) +
+      (top.forgivenAmount > 1
+        ? " Part of your balance is left at the end and forgiven. Outside PSLF that is taxable income, and the estimated tax is counted in."
+        : "") +
+      addIncome;
   }
 
   const whyNotFor = (e: PlanEstimate): string => {
@@ -865,7 +911,9 @@ export function rankPlans(
 
     const parts: string[] = [];
     const dMonthly = (e.monthlyPayment ?? 0) - (top.monthlyPayment ?? 0);
-    const dInterest = (e.totalInterest ?? 0) - (top.totalInterest ?? 0);
+    // The gap between the two "In total" figures on the cards. A forgiven
+    // balance is said in words, never folded into this figure.
+    const dTotal = (e.totalPaid ?? 0) - (top.totalPaid ?? 0);
 
     // Each fragment has to read as a verb phrase after "because it".
     if (ctx.publicService && !pslfOk(e) && pslfOk(top)) {
@@ -882,8 +930,13 @@ export function rankPlans(
           : `costs ${money(dMonthly)} more a month`
       );
     }
-    if (dInterest > 1) parts.push(`costs ${money(dInterest)} more overall`);
-    if (dMonthly < -1 && dInterest > 1) {
+    if (dTotal > 1) parts.push(`costs ${money(dTotal)} more in total`);
+    if (dTotal < -1 && e.forgivenAmount > top.forgivenAmount + 1) {
+      parts.push(
+        `costs ${money(-dTotal)} less in total but leaves more to be forgiven, which outside PSLF is generally taxable income`
+      );
+    }
+    if (dMonthly < -1 && dTotal > 1) {
       parts.push("buys a smaller payment now by charging you more in the end");
     }
 

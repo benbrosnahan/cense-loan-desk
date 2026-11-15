@@ -4,7 +4,7 @@
 // from the regulations, in ./support/money-core.mjs, never by calling the app's code.
 import { test, expect, openApp, goTo, stored, knownIssue, KEYS, LOANS } from './helpers.mjs';
 import {
-  amortized, blendedRate, browserMonth, cardFigures, described, dollars, extraField, fieldNumber, frames,
+  amortized, blendedRate, forgivenessTax2026, browserMonth, cardFigures, described, dollars, extraField, fieldNumber, frames,
   graduatedLowestStart, hero, ibrMonthly, ibrSimple, incomeField, loanByLoan, moneyOf, monthsUntilDate, openDetail,
   openPlanNames, payDown, payoff, planCard, povertyLine, rapMonthly, rapPath, sentencesWith, termMonths, totalOf,
   typeInto, usd, usdCents, useButton,
@@ -85,10 +85,26 @@ async function costContradictions(page, situation) {
   return out;
 }
 
+
+test('a balance forgiven at the end of IBR shows its federal income tax at the 2026 single-filer brackets', async ({ page }) => {
+  await openPlans(page, [loan('2024–25 unsubsidized', 60000, 6.53, '2024-09-01')]);
+  await choose(page, 'Pay the least overall');
+  await typeInto(page, incomeField(page), '30000');
+  const card = planCard(page, 'IBR');
+  await openDetail(card);
+  const text = await card.innerText();
+  const forgiven = moneyOf(text.match(/\$[\d,]+(?=\s+would still be left)/)?.[0]);
+  const shown = moneyOf(text.match(/federal income tax on it: about (\$[\d,]+)/i)?.[1]);
+  const expected = forgivenessTax2026(30000, forgiven ?? 0);
+  const why = `IBR on $60,000 at 6.53% with AGI $30,000 forgives ${usd(forgiven ?? 0)}; at the 2026 single-filer brackets that adds ${usd(expected)} of federal tax, and the card says ${shown === null ? 'nothing' : usd(shown)}`;
+  expect(forgiven, why).not.toBeNull();
+  expect(shown, why).not.toBeNull();
+  expect(Math.abs(shown - expected), why).toBeLessThanOrEqual(2);
+});
+
 // ------------------------------------------------------------------------------------------- known issues
 
 test('MONEY-01 every "more overall" figure is the gap between the totals on screen, and no plan shows more interest than it collects', async ({ page }) => {
-  knownIssue('MONEY-01');
   await openPlans(page, LOANS);
   await choose(page, 'Pay the least overall');
   await choose(page, 'Private sector');

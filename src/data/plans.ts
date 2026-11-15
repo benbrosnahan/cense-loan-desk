@@ -69,6 +69,34 @@ export function rapAnnualBasePayment(agi: number): number {
 /** Extended requires more than this in Direct Loans. Source: 34 CFR 685.208(b)(4)(i). */
 export const EXTENDED_MIN_BALANCE = 30000;
 
+/**
+ * 2026 federal income tax for a single filer, used to estimate the tax on a
+ * balance forgiven at the end of IBR or RAP. Source: Rev. Proc. 2025-32 (2026
+ * inflation adjustments, with the Pub. L. 119-21 changes): standard deduction
+ * $16,100 and the seven brackets below, each rate applying up to `upTo`.
+ *
+ * Why it is taxed: Pub. L. 119-21 sec. 70119 narrowed the IRC 108(f)(5)
+ * exclusion to death and disability discharges after December 31, 2025, so a
+ * balance forgiven at the end of IBR or RAP is taxable income again. PSLF
+ * forgiveness stays excluded under 108(f)(1), so it is never taxed here.
+ *
+ * A planning estimate, not a rule: today's brackets, a single filer, no state
+ * tax. Named wherever it is used (the recommendation, the plan card and
+ * ASSUMPTIONS).
+ */
+export const FEDERAL_TAX_2026_SINGLE = {
+  standardDeduction: 16100,
+  brackets: [
+    { upTo: 12400, rate: 0.1 },
+    { upTo: 50400, rate: 0.12 },
+    { upTo: 105700, rate: 0.22 },
+    { upTo: 201775, rate: 0.24 },
+    { upTo: 256225, rate: 0.32 },
+    { upTo: 640600, rate: 0.35 },
+    { upTo: Infinity, rate: 0.37 },
+  ],
+} as const;
+
 export interface PlanMeta {
   name: string;
   tagline: string;
@@ -312,7 +340,7 @@ export const NO_LATE_FEES_NOTE =
   "The Department of Education does not charge late fees on Direct Loans. What missing a payment actually costs: you are delinquent the day after the due date, it is reported to the credit bureaus at 90 days, and the loan defaults at 270 days.";
 
 export const ASSUMPTIONS =
-  "Three things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. Like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens. And unless you tell us you are repaying on Standard now, they start every plan this month. If you are already repaying, Standard, Graduated and Extended keep the term that began when you entered repayment, and switching plans does not restart it, so your servicer's bill and end date are the real ones. If you are in school or your six-month grace period, nothing is due until grace ends, so payments start later and unsubsidized interest keeps building until then.";
+  "Four things these estimates assume. Income-driven payments use the 2026 poverty guidelines for the 48 contiguous states and DC, so figures run low if you live in Alaska or Hawaii, where the guidelines are higher. Like the federal Loan Simulator, they hold your income flat for the whole term, which almost never happens. Unless you tell us you are repaying on Standard now, they start every plan this month. If you are already repaying, Standard, Graduated and Extended keep the term that began when you entered repayment, and switching plans does not restart it, so your servicer's bill and end date are the real ones. If you are in school or your six-month grace period, nothing is due until grace ends, so payments start later and unsubsidized interest keeps building until then. And a balance forgiven at the end of IBR or RAP is shown and ranked with its estimated federal income tax, at today's brackets for a single filer and without state tax. Forgiveness under Public Service Loan Forgiveness is not taxed.";
 
 export const NOT_ADVICE =
   "These are estimates, not financial advice. The right plan depends on things this tool does not know, like whether your income is about to change or what else you owe. Your servicer sets your actual payment, and studentaid.gov is the authority on your account.";

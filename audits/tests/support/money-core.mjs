@@ -122,6 +122,33 @@ export const moneyOf = text => dollars(text ?? '')[0] ?? null;
 /** A typed field's text as a number: "52,000.50" gives 52000.5, "" gives null. */
 export const fieldNumber = text => (/\d/.test(text) ? Number(String(text).replace(/[^\d.]/g, '')) : null);
 
+/**
+ * 2026 federal income tax for a single filer (Rev. Proc. 2025-32): the standard deduction and the seven brackets,
+ * each rate applying up to its bound. Written out here, never imported from the app.
+ */
+const TAX_2026_SINGLE = {
+  deduction: 16100,
+  brackets: [[12400, 0.1], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [640600, 0.35], [Infinity, 0.37]],
+};
+function federalTax2026(taxable) {
+  let tax = 0;
+  let lower = 0;
+  for (const [upTo, rate] of TAX_2026_SINGLE.brackets) {
+    if (taxable <= lower) break;
+    tax += (Math.min(taxable, upTo) - lower) * rate;
+    lower = upTo;
+  }
+  return tax;
+}
+/**
+ * Federal tax on a balance forgiven at the end of IBR or RAP: the year's tax with it added, less the tax without
+ * it. Taxable again from 2026 because Pub. L. 119-21 sec. 70119 limited IRC 108(f)(5) to death and disability.
+ */
+export const forgivenessTax2026 = (agi, forgiven) => {
+  const taxable = Math.max(0, agi - TAX_2026_SINGLE.deduction);
+  return federalTax2026(taxable + forgiven) - federalTax2026(taxable);
+};
+
 export const usd = n => `$${Math.round(n).toLocaleString('en-US')}`;
 export const usdCents = n => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 

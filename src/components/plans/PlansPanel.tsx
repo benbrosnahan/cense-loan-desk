@@ -295,17 +295,31 @@ function PlanRow({
             {/* Keyed by what it shows, so React replaces the sentence whole: a
                 browser translator swaps the text React would edit in place. */}
             {e.forgivenAmount > 1 && (
-              <p
-                key={`forgiven-${e.forgivenAmount}-${e.forgivenessYears}`}
-                className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800"
+              <div
+                key={`forgiven-${e.forgivenAmount}-${e.forgivenessYears}-${e.forgivenessTax}`}
+                className="space-y-1 rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800"
               >
-                <strong>
-                  <Money value={e.forgivenAmount} />
-                </strong>{" "}
-                would still be left after {e.forgivenessYears} years and gets
-                forgiven. Outside of PSLF, a forgiven balance counts as taxable
-                income the year it is cancelled.
-              </p>
+                <p>
+                  <strong>
+                    <Money value={e.forgivenAmount} />
+                  </strong>{" "}
+                  would still be left after {e.forgivenessYears} years and gets
+                  forgiven. Outside of PSLF, a forgiven balance counts as
+                  taxable income the year it is cancelled.
+                </p>
+                {e.forgivenessTax !== undefined && (
+                  <p>
+                    <span>Estimated federal income tax on it: about </span>
+                    <strong>
+                      <Money value={e.forgivenessTax} />
+                    </strong>
+                    <span>
+                      , at today&apos;s brackets for a single filer, not
+                      counting state tax.
+                    </span>
+                  </p>
+                )}
+              </div>
             )}
 
             <div className="flex flex-wrap items-center gap-2">

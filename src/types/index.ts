@@ -84,6 +84,12 @@ export interface PlanEstimate {
   forgivenessYears: number | null;
   /** Balance written off at the end of an income-driven term. 0 for fixed plans. */
   forgivenAmount: number;
+  /**
+   * IBR and RAP: the estimated federal income tax on forgivenAmount, at the
+   * 2026 single-filer brackets on the borrower's AGI. 0 when nothing is
+   * forgiven; absent for plans that never forgive.
+   */
+  forgivenessTax?: number;
   /** Set when ineligible, explaining exactly why. */
   ineligibleReason?: string;
   /**

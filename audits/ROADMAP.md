@@ -8,11 +8,11 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Priority 1: Price income-driven plans on the right income, including none** (Category: Money, Impact: High)
 
-- [ ] [SCOPE-03](issues/SCOPE-03.md) P0/S: Income asked as gross pay, plans priced on AGI
-- [ ] [MONEY-08](issues/MONEY-08.md) P0/S: Unpriced plans lose to priced ones when income is blank
-- [ ] [MONEY-09](issues/MONEY-09.md) P1/S: $0 income cannot be entered
-- [ ] [MONEY-11](issues/MONEY-11.md) P1/S: Dollar fields drop the decimal point
-- [ ] [MONEY-10](issues/MONEY-10.md) P2/S: $0 IBR payment sends Payoff into a pick-a-plan loop
+- [x] [SCOPE-03](issues/SCOPE-03.md) P0/S: Income asked as gross pay, plans priced on AGI (fixed 2026-11-15)
+- [x] [MONEY-08](issues/MONEY-08.md) P0/S: Unpriced plans lose to priced ones when income is blank (fixed 2026-11-15)
+- [x] [MONEY-09](issues/MONEY-09.md) P1/S: $0 income cannot be entered (fixed 2026-11-15)
+- [x] [MONEY-11](issues/MONEY-11.md) P1/S: Dollar fields drop the decimal point (fixed 2026-11-15)
+- [x] [MONEY-10](issues/MONEY-10.md) P2/S: $0 IBR payment sends Payoff into a pick-a-plan loop (fixed 2026-11-15)
 
 **Why:** IBR and RAP are priced from the income answer, and that answer goes wrong in four ways. The label asks for gross pay where the rules use adjusted gross income. A blank income drops IBR and RAP from the recommendation. A typed 0 is treated as blank. A pasted decimal point is dropped, so $52,000.50 is priced as $5,200,050. The borrowers hit hardest have the least money: they are told a $139 to $455 bill is their smallest option while a $0 or $10 payment is open to them. When IBR does come to exactly $0, Payoff treats it as no plan and sends the borrower back to Plans.
 
@@ -29,7 +29,7 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Priority 2: Compare plans on what the borrower actually pays** (Category: Money, Impact: High)
 
-- [ ] [MONEY-01](issues/MONEY-01.md) P0/M: Least-total pick compares unlike totals
+- [x] [MONEY-01](issues/MONEY-01.md) P0/M: Least-total pick compares unlike totals (fixed 2026-11-15)
 - [ ] [MONEY-16](issues/MONEY-16.md) P2/M: Card and reason copy contradicts the numbers
 
 **Why:** Plan comparisons count a forgiven balance as money the borrower paid. So an income-driven plan that takes less of their money is described as costing tens of thousands more, and the default recommendation can be the more expensive plan. Plan-card sentences then contradict the figures beside them.
@@ -42,7 +42,7 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Priority 3: Fix Graduated's step schedule** (Category: Money, Impact: High)
 
-- [ ] [MONEY-04](issues/MONEY-04.md) P0/M: Graduated breaks the 3x cap and hides its peak
+- [x] [MONEY-04](issues/MONEY-04.md) P0/M: Graduated breaks the 3x cap and hides its peak (fixed 2026-11-15)
 
 **Why:** Graduated's starting payment is up to 56% too low, because its step schedule breaks the rule that no payment may be more than three times another. The card never shows how high the payment climbs. Borrowers who choose on the monthly number, as the app invites, choose on a wrong one.
 
@@ -54,7 +54,7 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Priority 4: Make Payoff follow each plan's real schedule** (Category: Money, Impact: High)
 
-- [ ] [MONEY-06](issues/MONEY-06.md) P0/M: Payoff ignores the chosen plan's schedule and forgiveness
+- [x] [MONEY-06](issues/MONEY-06.md) P0/M: Payoff ignores the chosen plan's schedule and forgiveness (fixed 2026-11-15)
 - [ ] [MONEY-07](issues/MONEY-07.md) P1/M: Plans and Payoff price multi-rate portfolios differently
 - [ ] [MONEY-20](issues/MONEY-20.md) P3/S: Payoff start month off by one
 
@@ -70,7 +70,7 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Priority 5: Start from where the borrower already is** (Category: Money, Impact: High)
 
-- [ ] [SCOPE-06](issues/SCOPE-06.md) P0/M: Repayment clock assumed to start this month
+- [x] [SCOPE-06](issues/SCOPE-06.md) P0/M: Repayment clock assumed to start this month (fixed 2026-11-15)
 - [ ] [SCOPE-07](issues/SCOPE-07.md) P1/M: Payments already credited toward forgiveness ignored
 - [ ] [MONEY-13](issues/MONEY-13.md) P1/M: Pre-2014 IBR borrowers priced as new borrowers
 
@@ -127,10 +127,10 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 **Priority 8: Apply the remaining plan rules exactly** (Category: Money, Impact: Medium)
 
 - [ ] [MONEY-03](issues/MONEY-03.md) P1/S: $50 minimum payment missing
-- [ ] [MONEY-05](issues/MONEY-05.md) P1/S: IBR compounds unpaid interest
+- [x] [MONEY-05](issues/MONEY-05.md) P1/S: IBR compounds unpaid interest (fixed 2026-11-15)
 - [ ] [MONEY-21](issues/MONEY-21.md) P1/S: Households over 8 priced as 8
 - [ ] [MONEY-14](issues/MONEY-14.md) P2/S: IBR $5 and $10 rounding rule missing
-- [ ] [MONEY-15](issues/MONEY-15.md) P2/S: Extended opens at exactly $30,000
+- [x] [MONEY-15](issues/MONEY-15.md) P2/S: Extended opens at exactly $30,000 (fixed 2026-11-15)
 - [ ] [MONEY-17](issues/MONEY-17.md) P2/S: Rate table goes stale in July 2027
 
 **Why:** Each rule is small, but each one gives a recognizable group a wrong figure:
@@ -184,7 +184,7 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Priority 11: Price married and defaulted borrowers correctly** (Category: Eligibility, Impact: Medium)
 
-- [ ] [SCOPE-02](issues/SCOPE-02.md) P1/M: Married borrowers cannot be priced correctly
+- [x] [SCOPE-02](issues/SCOPE-02.md) P1/M: Married borrowers cannot be priced correctly (fixed 2026-11-15)
 - [ ] [SCOPE-05](issues/SCOPE-05.md) P1/M: Defaulted loans shown plans and dates that do not apply
 
 **Why:** Married borrowers who file jointly cannot be priced correctly: IBR or RAP is off by up to $71 a month, or by far more when both spouses borrowed, and the recommended plan can flip. Borrowers in default are steered to Standard, Graduated or Extended, plans they cannot use until the loan is out of default.
@@ -216,7 +216,7 @@ Every issue has its own file in [`issues/`](issues/) with the measurement, steps
 
 **Priority 13: Keep the app working when it is translated or its data is damaged** (Category: Data safety, Impact: Medium)
 
-- [ ] [RES-12](issues/RES-12.md) P1/M: Machine-translated pages show stale figures and crash
+- [x] [RES-12](issues/RES-12.md) P1/M: Machine-translated pages show stale figures and crash (fixed 2026-11-15)
 - [ ] [RES-07](issues/RES-07.md) P2/M: Malformed storage locks the borrower out
 - [ ] [RES-13](issues/RES-13.md) P3/S: Blank pulsing skeleton when JavaScript fails
 

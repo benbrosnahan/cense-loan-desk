@@ -320,7 +320,7 @@ test('UX-07 with Hide dollar amounts on, no figure about the borrower can be rea
 
   await visit(page, 'plans');
   leaks.Plans = await probe(page, 'readableFigures', RULES);
-  const income = page.getByLabel(/yearly income/i).first();
+  const income = page.getByLabel(/adjusted gross income/i).first();
   await income.focus();
   const typing = await income.evaluate(el => !window.__ux.concealed(el));
   await income.evaluate(el => el.blur());

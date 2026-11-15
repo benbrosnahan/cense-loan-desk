@@ -149,7 +149,7 @@ export const unblurredAmounts = locator => locator.evaluate(root => {
 });
 
 export async function setIncome(page, amount) {
-  const field = page.getByLabel('Yearly income, before tax');
+  const field = page.getByLabel('Adjusted gross income (AGI)');
   await field.fill(String(amount));
   await expect(field).toHaveValue(amount ? amount.toLocaleString('en-US') : '');
 }

@@ -207,7 +207,7 @@ test('A11Y-14 money and rate fields say their unit, field names read as words, r
   if (!(nudged >= 1900 && nudged <= 2000)) problems.push(`one ArrowLeft on the slider then turns $2,000 into $${nudged.toLocaleString('en-US')}`);
 
   await goTo(page, 'plans');
-  await hasUnit(page.getByRole('textbox', { name: /^Yearly income/ }), 'dollars', 'on Plans');
+  await hasUnit(page.getByRole('textbox', { name: /^Adjusted gross income/ }), 'dollars', 'on Plans');
 
   // The add form: units, names and required state, blank, after an empty save and once a school year fills the rate.
   await goTo(page, 'loans');
@@ -468,7 +468,7 @@ test('keyboard focus stays visible on section tabs, the chosen answer, fields, p
       ['the open section tab', currentSection(page)],
       ['the Payoff section tab', sections(page).getByRole('button', { name: SECTION_NAMES.payoff })],
       ['the chosen goal', page.getByRole('radiogroup', { name: 'What matters most to you?' }).getByRole('radio', { checked: true })],
-      ['the income field', page.getByRole('textbox', { name: /^Yearly income/ })],
+      ['the income field', page.getByRole('textbox', { name: /^Adjusted gross income/ })],
     ],
     payoff: () => [
       ['the extra-payment field', page.getByRole('textbox', { name: /^Extra each month/ })],

@@ -226,7 +226,7 @@ export async function typeInto(page, field, text) {
   await frames(page);
 }
 
-export const incomeField = page => page.getByLabel('Yearly income, before tax');
+export const incomeField = page => page.getByLabel('Adjusted gross income (AGI)');
 // The typed field, not the slider beside it, which may come to share its name (A11Y-14).
 export const extraField = page => page.getByRole('textbox', { name: /^Extra each month/ });
 

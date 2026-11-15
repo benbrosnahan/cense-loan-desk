@@ -83,7 +83,7 @@ test('RES-02 a loan saved in one tab survives a change made in another tab that 
   await countWrites(b);
   await switchTab(b, a);
   await goTo(a, 'plans');
-  const income = a.getByLabel('Yearly income, before tax');
+  const income = a.getByLabel('Adjusted gross income (AGI)');
   await income.fill('');
   await income.pressSequentially('61250', { delay: 40 });
   await expect.poll(async () => (await appData(a)).profile?.income).toBe(61250);
@@ -150,7 +150,7 @@ test('RES-04 after "Clear my data" nothing of the borrower is left for the next 
   const recordsTab = await textOf(sections(page).getByRole('button', { name: /^Records/ }));
   const summary = await textOf(page.getByRole('region', { name: 'Summary' }));
   await goTo(page, 'plans');
-  const income = await page.getByLabel('Yearly income, before tax').inputValue();
+  const income = await page.getByLabel('Adjusted gross income (AGI)').inputValue();
   expect({ recordsTab, summary, income }, "The next person sees the earlier borrower's records, plan or income")
     .toEqual({ recordsTab: 'Records', summary: expect.not.stringMatching(/a month on/), income: '' });
 });

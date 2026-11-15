@@ -218,7 +218,7 @@ test('RES-12 a translated page shows the same figures as the untranslated one an
       what: 'On Plans, typing a yearly income of 30000',
       profile: { ...noExtra, income: 0, selectedPlan: null },
       before: p => goTo(p, 'plans'),
-      act: p => p.getByLabel('Yearly income, before tax').pressSequentially('30000'),
+      act: p => p.getByLabel('Adjusted gross income (AGI)').pressSequentially('30000'),
       topPick: true,
     },
     {
@@ -446,7 +446,7 @@ test('switching sections and answering plan questions on a translated page keeps
   const [control, translated] = await Promise.all([0, 1].map(() => isolatedPage(browser, baseURL, { viewport: PHONE })));
   const steps = [
     ['opening Plans', p => goTo(p, 'plans')],
-    ['changing the yearly income to 38,000', p => p.getByLabel('Yearly income, before tax').fill('38000')],
+    ['changing the yearly income to 38,000', p => p.getByLabel('Adjusted gross income (AGI)').fill('38000')],
     ['answering "Not sure" for employer', p => p.getByRole('radiogroup', { name: 'Who do you work for?' }).getByRole('radio', { name: 'Not sure' }).click()],
     ['opening Payoff', p => goTo(p, 'payoff')],
     ['opening Records', p => goTo(p, 'records')],

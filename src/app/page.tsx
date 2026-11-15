@@ -762,12 +762,12 @@ export default function Page() {
                           label={
                             profile.filesJointly
                               ? "Combined income on your joint return"
-                              : "Yearly income, before tax"
+                              : "Adjusted gross income (AGI)"
                           }
                           hint={
                             profile.filesJointly
                               ? "Yours and your spouse's together: the adjusted gross income on your joint tax return."
-                              : "Use your adjusted gross income (AGI): your pay before tax, minus pre-tax 401(k), 403(b), health and HSA deductions. If your pay has not changed since you last filed, it is on your tax return. Not earning right now? Enter 0 to see what you would pay today. Leave blank to skip the plans priced off income."
+                              : "Roughly your yearly pay minus pre-tax deductions such as 401(k) and health premiums. It is the AGI on your latest tax return. Not earning right now? Enter 0 to see what you would pay today. Leave blank to skip the plans priced off income."
                           }
                           htmlFor="income"
                         >

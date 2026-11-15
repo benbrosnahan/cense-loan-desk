@@ -264,7 +264,7 @@ test('A11Y-06 each radio group is one Tab stop and the arrow keys move the answe
 
   // From the section bar to the income field: one stop per question.
   await sections(page).getByRole('button', { name: SECTION_NAMES.records }).focus();
-  const income = page.getByLabel('Yearly income, before tax');
+  const income = page.getByLabel('Adjusted gross income (AGI)');
   const stops = [];
   for (let i = 0; i < 40 && !(await income.evaluate(el => el === document.activeElement)); i++) {
     await page.keyboard.press('Tab');
@@ -308,7 +308,7 @@ test('A11Y-07 every text field and select has an outline of at least 3:1 at rest
     await measure(label, page.getByLabel(new RegExp(`^${label.replace('?', '\\?')}`)));
   }
   await goTo(page, 'plans');
-  for (const label of ['Yearly income, before tax', 'People in your household']) await measure(label, page.getByLabel(label, { exact: true }));
+  for (const label of ['Adjusted gross income (AGI)', 'People in your household']) await measure(label, page.getByLabel(label, { exact: true }));
   await goTo(page, 'payoff');
   await measure('Extra each month', page.getByLabel('Extra each month', { exact: true }));
   await page.getByRole('button', { name: 'See how a different plan changes this' }).click();

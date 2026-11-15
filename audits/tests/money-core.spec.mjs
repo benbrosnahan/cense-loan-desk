@@ -291,7 +291,7 @@ test('MONEY-09 typing 0 as income prices IBR at $0 and RAP at $10, and the 0 sta
 
   await typeInto(page, incomeField(page), '0');
   const typed = await read();
-  expect(typed, `Typed 0 in 'Yearly income, before tax': the field reads "${typed.field}" and IBR and RAP still say 'Add my income' (IBR ${typed.ibr ?? 'no price'}, RAP ${typed.rap ?? 'no price'}). With no income IBR is $0 a month and RAP $10 (34 CFR 685.209(f), (g)(3)(ii))`).toEqual(atZero);
+  expect(typed, `Typed 0 in 'Adjusted gross income (AGI)': the field reads "${typed.field}" and IBR and RAP still say 'Add my income' (IBR ${typed.ibr ?? 'no price'}, RAP ${typed.rap ?? 'no price'}). With no income IBR is $0 a month and RAP $10 (34 CFR 685.209(f), (g)(3)(ii))`).toEqual(atZero);
 
   await page.reload();
   await page.locator('#main').waitFor();

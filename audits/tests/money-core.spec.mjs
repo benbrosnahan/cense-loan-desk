@@ -102,6 +102,22 @@ test('a balance forgiven at the end of IBR shows its federal income tax at the 2
   expect(Math.abs(shown - expected), why).toBeLessThanOrEqual(2);
 });
 
+test('with no income, the tax on a forgiven balance uses the standard deduction the income left unused', async ({ page }) => {
+  await openPlans(page, [loan('2024–25 unsubsidized', 30000, 6, '2024-09-01')]);
+  await choose(page, 'Pay the least overall');
+  await typeInto(page, incomeField(page), '0');
+  const card = planCard(page, 'IBR');
+  await openDetail(card);
+  const text = await card.innerText();
+  const forgiven = moneyOf(text.match(/\$[\d,]+(?=\s+would still be left)/)?.[0]);
+  const shown = moneyOf(text.match(/federal income tax on it: about (\$[\d,]+)/i)?.[1]);
+  const expected = forgivenessTax2026(0, forgiven ?? 0);
+  const why = `IBR on $30,000 at 6% with a typed $0 income forgives ${usd(forgiven ?? 0)}; with the whole $16,100 deduction against it the 2026 tax is ${usd(expected)}, and the card says ${shown === null ? 'nothing' : usd(shown)}`;
+  expect(forgiven, why).not.toBeNull();
+  expect(shown, why).not.toBeNull();
+  expect(Math.abs(shown - expected), why).toBeLessThanOrEqual(2);
+});
+
 // ------------------------------------------------------------------------------------------- known issues
 
 test('MONEY-01 every "more overall" figure is the gap between the totals on screen, and no plan shows more interest than it collects', async ({ page }) => {

@@ -314,7 +314,7 @@ function PlanRow({
                       <Money value={e.forgivenessTax} />
                     </strong>
                     <span>
-                      , at today&apos;s brackets for a single filer, not
+                      , at today&apos;s brackets for your filing status, not
                       counting state tax.
                     </span>
                   </p>
@@ -448,7 +448,8 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                       element, so a page translator never holds a text node
                       that React later removes or rewrites. */}
                   <span>
-                    {top.estimate.id === "graduated"
+                    {top.estimate.id === "graduated" &&
+                    top.estimate.stepsLeft !== 1
                       ? "a month, to start"
                       : "a month"}
                   </span>
@@ -456,7 +457,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                     <>
                       <span>{", rising to "}</span>
                       <Money value={topPeak} tabular={false} />
-                      <span>{" by year 9"}</span>
+                      <span>{" in its last two years"}</span>
                     </>
                   )}
                 </p>

@@ -375,7 +375,7 @@ export function WholeDollarInput({
       onChange={(e) => {
         const t = formatDollarsInput(e.target.value);
         setDraft(t);
-        onValueChange(Math.min(max, whole(t)), /\d/.test(t));
+        onValueChange(Math.min(max, whole(t)), /\d/.test(e.target.value));
       }}
       onBlur={(e) => {
         setDraft("");

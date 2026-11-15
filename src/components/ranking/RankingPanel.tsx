@@ -25,7 +25,6 @@ import {
   monthsInWords,
   monthsLabel,
   niceDate,
-  parseNumber,
   pct,
   shortMonthYearFromNow,
   todayIso,
@@ -105,6 +104,8 @@ export default function RankingPanel({
     [selected, ctx]
   );
   const graduated = selected?.id === "graduated";
+  // Graduated with one level left pays the same every month: no "to start".
+  const stepsAhead = graduated && selected!.stepsLeft !== 1;
 
   // Whole dollars, so an extra of 12.5 saved by the old field reads 12 everywhere.
   const extra = Math.max(
@@ -275,7 +276,7 @@ export default function RankingPanel({
               <Eyebrow key={`eb-${selected!.id}-${comparison.requiredPayment}`}>
                 On {PLAN_META[selected!.id].name} ·{" "}
                 <Money value={comparison.requiredPayment} /> a month{" "}
-                {graduated ? "to start" : "required"}
+                {stepsAhead ? "to start" : "required"}
               </Eyebrow>
 
               {/* The headline is the takeaway, not a label. */}
@@ -490,7 +491,7 @@ export default function RankingPanel({
                   </div>
                   <div>
                     <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
-                      {graduated ? "Monthly, to start" : "Monthly"}
+                      {stepsAhead ? "Monthly, to start" : "Monthly"}
                     </dt>
                     <dd className="mt-1 text-base font-bold text-slate-900 sm:text-xl">
                       <Money value={comparison.budget} />
@@ -556,7 +557,7 @@ export default function RankingPanel({
                       {eligible.map((e) => (
                         <option key={e.id} value={e.id}>
                           {`${PLAN_META[e.id].name}, ${money(e.monthlyPayment!)} a month${
-                            e.id === "graduated" ? " to start" : ""
+                            e.id === "graduated" && e.stepsLeft !== 1 ? " to start" : ""
                           }`}
                         </option>
                       ))}

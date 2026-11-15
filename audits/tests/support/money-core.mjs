@@ -123,17 +123,23 @@ export const moneyOf = text => dollars(text ?? '')[0] ?? null;
 export const fieldNumber = text => (/\d/.test(text) ? Number(String(text).replace(/[^\d.]/g, '')) : null);
 
 /**
- * 2026 federal income tax for a single filer (Rev. Proc. 2025-32): the standard deduction and the seven brackets,
- * each rate applying up to its bound. Written out here, never imported from the app.
+ * 2026 federal income tax (Rev. Proc. 2025-32), single and married filing jointly: the standard deduction and the
+ * seven brackets, each rate applying up to its bound. Written out here, never imported from the app.
  */
-const TAX_2026_SINGLE = {
-  deduction: 16100,
-  brackets: [[12400, 0.1], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [640600, 0.35], [Infinity, 0.37]],
+const TAX_2026 = {
+  single: {
+    deduction: 16100,
+    brackets: [[12400, 0.1], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [640600, 0.35], [Infinity, 0.37]],
+  },
+  joint: {
+    deduction: 32200,
+    brackets: [[24800, 0.1], [100800, 0.12], [211400, 0.22], [403550, 0.24], [512450, 0.32], [768700, 0.35], [Infinity, 0.37]],
+  },
 };
-function federalTax2026(taxable) {
+function federalTax2026(taxable, table) {
   let tax = 0;
   let lower = 0;
-  for (const [upTo, rate] of TAX_2026_SINGLE.brackets) {
+  for (const [upTo, rate] of table.brackets) {
     if (taxable <= lower) break;
     tax += (Math.min(taxable, upTo) - lower) * rate;
     lower = upTo;
@@ -142,11 +148,13 @@ function federalTax2026(taxable) {
 }
 /**
  * Federal tax on a balance forgiven at the end of IBR or RAP: the year's tax with it added, less the tax without
- * it. Taxable again from 2026 because Pub. L. 119-21 sec. 70119 limited IRC 108(f)(5) to death and disability.
+ * it. The standard deduction comes off the combined total, so an unused part of it shelters forgiveness. Taxable again from 2026 because Pub. L. 119-21 sec. 70119 limited IRC 108(f)(5) to death and disability.
  */
-export const forgivenessTax2026 = (agi, forgiven) => {
-  const taxable = Math.max(0, agi - TAX_2026_SINGLE.deduction);
-  return federalTax2026(taxable + forgiven) - federalTax2026(taxable);
+export const forgivenessTax2026 = (agi, forgiven, joint = false) => {
+  const table = joint ? TAX_2026.joint : TAX_2026.single;
+  const before = Math.max(0, agi - table.deduction);
+  const after = Math.max(0, agi + forgiven - table.deduction);
+  return federalTax2026(after, table) - federalTax2026(before, table);
 };
 
 export const usd = n => `$${Math.round(n).toLocaleString('en-US')}`;

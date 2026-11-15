@@ -632,6 +632,34 @@ console.log("\n[17] Parent PLUS eligibility — 685.209(d)(2), (d)(4), 685.210(a
      direct === "extended,graduated,ibr,rap,standard", direct);
 }
 
+// ============================================================ 18. review fixes
+console.log("\n[18] Forgiveness tax and the Tiered Standard floor (review, 2026-11-15)");
+{
+  // Expected taxes worked by hand from the IRS 2026 tables. The standard
+  // deduction comes off income plus the forgiven balance, so an unused part of
+  // it shelters forgiveness for a low earner.
+  near("tax: AGI $0, $66,000 forgiven, single = $5,740", calc.forgivenessTax(0, 66000), 5740, 0.5);
+  near("tax: AGI $12,000, $40,000 forgiven, single = $4,060", calc.forgivenessTax(12000, 40000), 4060, 0.5);
+  near("tax: AGI $30,000, $50,000 forgiven, single = $7,350", calc.forgivenessTax(30000, 50000), 7350, 0.5);
+  near("tax: joint AGI $52,000, $30,000 forgiven = $3,500", calc.forgivenessTax(52000, 30000, true), 3500, 0.5);
+  ok("tax: nothing forgiven = 0", calc.forgivenessTax(40000, 0) === 0);
+
+  // Tiered Standard at its $50 floor: price the $50 actually charged. Closed
+  // form, not the app's loop: k full payments, then one partial payment.
+  const loans = [{ id: "t", nickname: "t", servicer: "X", kind: "direct_unsub", subsidy: "unsubsidized",
+    principal: 3500, balance: 3500, rate: 6.39, disbursementDate: "2026-08-15", minPayment: 0 }];
+  const p = { income: 0, incomeKnown: false, householdSize: 1, filesJointly: false, spouseLoanBalance: 0,
+    employment: "private", goal: "least_total", extraPerMonth: 0, selectedPlan: null };
+  const t = calc.estimatePlans(calc.buildContext(loans, p)).find((e) => e.id === "tiered_standard");
+  const r = 6.39 / 1200, B = 3500, P = 50;
+  const k = Math.floor(-Math.log(1 - (r * B) / P) / Math.log(1 + r));
+  const left = B * (1 + r) ** k - (P * ((1 + r) ** k - 1)) / r;
+  const total = P * k + left * (1 + r);
+  ok("Tiered floor: $50 a month", t.monthlyPayment === 50, `got ${t.monthlyPayment}`);
+  near("Tiered floor: total paid is for $50 a month", t.totalPaid, total, 0.5, "$");
+  near("Tiered floor: months to repay", t.years * 12, k + 1, 0.001);
+}
+
 // ============================================================ report
 console.log("\n" + "=".repeat(78));
 console.log(`PASS ${pass}   FAIL ${fail}`);

@@ -538,7 +538,8 @@ export default function Page() {
                     <strong className="font-semibold text-slate-900">
                       <Money value={selectedEstimate.monthlyPayment} />{" "}
                       <span>
-                        {selectedEstimate.id === "graduated"
+                        {selectedEstimate.id === "graduated" &&
+                        selectedEstimate.stepsLeft !== 1
                           ? "a month to start"
                           : "a month"}
                       </span>

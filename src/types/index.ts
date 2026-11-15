@@ -86,7 +86,7 @@ export interface PlanEstimate {
   forgivenAmount: number;
   /**
    * IBR and RAP: the estimated federal income tax on forgivenAmount, at the
-   * 2026 single-filer brackets on the borrower's AGI. 0 when nothing is
+   * 2026 brackets for the borrower's filing status, on their AGI. 0 when nothing is
    * forgiven; absent for plans that never forgive.
    */
   forgivenessTax?: number;

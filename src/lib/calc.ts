@@ -12,6 +12,7 @@ import {
 } from "@/types";
 import {
   EXTENDED_MIN_BALANCE,
+  FEDERAL_TAX_2026_JOINT,
   FEDERAL_TAX_2026_SINGLE,
   LEGACY_PLANS,
   PARENT_PLUS_EXCLUDED_PLANS,
@@ -168,11 +169,13 @@ function graduatedTotals(balance: number, ratePct: number) {
   };
 }
 
-/** Federal income tax on `taxable` dollars at the 2026 single-filer brackets. */
-function federalTax(taxable: number): number {
+type TaxTable = typeof FEDERAL_TAX_2026_SINGLE | typeof FEDERAL_TAX_2026_JOINT;
+
+/** Federal income tax on `taxable` dollars at one of the 2026 bracket tables. */
+function federalTax(taxable: number, table: TaxTable): number {
   let tax = 0;
   let lower = 0;
-  for (const { upTo, rate } of FEDERAL_TAX_2026_SINGLE.brackets) {
+  for (const { upTo, rate } of table.brackets) {
     if (taxable <= lower) break;
     tax += (Math.min(taxable, upTo) - lower) * rate;
     lower = upTo;
@@ -183,14 +186,38 @@ function federalTax(taxable: number): number {
 /**
  * Estimated federal income tax on a balance forgiven at the end of IBR or
  * RAP: the tax on the year's income with the forgiven balance added, less the
- * tax on the income alone. `agi` is the borrower's AGI answer, held flat like
- * every other figure here. PSLF forgiveness is never passed here: it is not
- * taxed (IRC 108(f)(1)).
+ * tax on the income alone. The standard deduction comes off the combined
+ * total, so a borrower earning less than the deduction uses what is left of it
+ * against the forgiven balance. `agi` is the borrower's AGI answer (the
+ * couple's when filing jointly), held flat like every other figure here. PSLF
+ * forgiveness is never passed here: it is not taxed (IRC 108(f)(1)).
  */
-export function forgivenessTax(agi: number, forgiven: number): number {
+export function forgivenessTax(agi: number, forgiven: number, filesJointly = false): number {
   if (forgiven <= 0) return 0;
-  const taxable = Math.max(0, agi - FEDERAL_TAX_2026_SINGLE.standardDeduction);
-  return federalTax(taxable + forgiven) - federalTax(taxable);
+  const table = filesJointly ? FEDERAL_TAX_2026_JOINT : FEDERAL_TAX_2026_SINGLE;
+  const before = Math.max(0, agi - table.standardDeduction);
+  const after = Math.max(0, agi + forgiven - table.standardDeduction);
+  return federalTax(after, table) - federalTax(before, table);
+}
+
+/**
+ * Totals for one fixed monthly payment held until the balance is gone:
+ * interest accrues each month, then the payment comes off, and the last
+ * payment is only what is left. Same order as Payoff's monthly step.
+ */
+function fixedPaymentTotals(balance: number, ratePct: number, payment: number) {
+  const r = ratePct / 100 / 12;
+  let bal = balance;
+  let paid = 0;
+  let months = 0;
+  while (bal > 0.005 && months < 1200) {
+    const due = bal * (1 + r);
+    const pay = Math.min(payment, due);
+    paid += pay;
+    bal = due - pay;
+    months += 1;
+  }
+  return { totalPaid: paid, totalInterest: Math.max(0, paid - balance), months };
 }
 
 /** RAP's interest waiver and $50 matching principal, or neither. */
@@ -672,6 +699,10 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
       const years = getTieredStandardYears(balance);
       const t = fixedTotals(balance, rate, years);
       const monthly = Math.max(t.monthlyPayment, TIERED_STANDARD_MIN_PAYMENT);
+      // At the $50 floor the borrower pays more than the amortised amount, so
+      // the balance clears early: price that payment, as Payoff does.
+      const floored =
+        monthly > t.monthlyPayment ? fixedPaymentTotals(balance, rate, monthly) : null;
       // Tiered Standard NEVER earns PSLF credit, including the 10-year tier.
       //
       // It is absent from the qualifying-plan list in 685.219(b)(28)(ii), which
@@ -688,11 +719,11 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
       return {
         ...base,
         eligible: true,
-        years,
+        years: floored ? floored.months / 12 : years,
         forgivenAmount: 0,
         monthlyPayment: monthly,
-        totalPaid: t.totalPaid,
-        totalInterest: t.totalInterest,
+        totalPaid: floored ? floored.totalPaid : t.totalPaid,
+        totalInterest: floored ? floored.totalInterest : t.totalInterest,
         pslf: "does_not_count",
         pslfNote:
           "Tiered Standard earns no Public Service Loan Forgiveness credit, in any tier. You can pay on time for years and move zero months closer to forgiveness.",
@@ -733,7 +764,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
         totalInterest: sim.interestPaid,
         years: sim.paidOff ? sim.months / 12 : 20,
         forgivenAmount: sim.forgiven,
-        forgivenessTax: forgivenessTax(profile.income, sim.forgiven),
+        forgivenessTax: forgivenessTax(profile.income, sim.forgiven, profile.filesJointly),
         pslf: "counts",
         pslfNote:
           "IBR always counts toward Public Service Loan Forgiveness, even a $0 payment.",
@@ -754,7 +785,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
       totalInterest: sim.interestPaid,
       years: sim.paidOff ? sim.months / 12 : 30,
       forgivenAmount: sim.forgiven,
-      forgivenessTax: forgivenessTax(profile.income, sim.forgiven),
+      forgivenessTax: forgivenessTax(profile.income, sim.forgiven, profile.filesJointly),
       pslf: "counts",
       pslfNote:
         "RAP always counts toward Public Service Loan Forgiveness, even at the $10 minimum.",

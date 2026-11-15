@@ -68,6 +68,8 @@ export interface PlanEstimate {
   eligible: boolean;
   /** Null when the plan needs income the borrower has not supplied. */
   monthlyPayment: number | null;
+  /** Graduated only: the last step, where monthlyPayment is the first. */
+  finalPayment?: number;
   totalPaid: number | null;
   totalInterest: number | null;
   years: number;

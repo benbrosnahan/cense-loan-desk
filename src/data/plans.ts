@@ -107,12 +107,12 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
     name: "Graduated",
     tagline: "Starts low, steps up every 2 years",
     summary:
-      "Payments start at roughly half the Standard amount and rise every two years, still finishing in 10. More total interest than Standard.",
+      "Payments start at a little over half the Standard amount and rise every two years, still finishing in 10. More total interest than Standard.",
     incomeDriven: false,
     forgivenessYears: null,
     postCutoff: false,
     pros: [
-      "Starts at roughly half the Standard payment",
+      "Starts at a little over half the Standard payment",
       "Still finishes in 10 years on a predictable schedule",
     ],
     cons: [

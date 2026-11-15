@@ -84,14 +84,18 @@ function fixedTotals(balance: number, ratePct: number, years: number) {
 
 /**
  * Graduated: starts low and steps up every 2 years over 10.
- * Modelled as a starting payment near interest-only with five step-ups, with
- * the growth factor solved numerically so the schedule actually amortises.
+ * Modelled as five levels, each 3^(1/4) times the last, so the last payment is
+ * three times the first, the most 34 CFR 685.208(b)(6)(iii) allows, with the
+ * start solved in closed form so the schedule repays in 120 months
+ * ((b)(6)(i)). Where that start would not cover the monthly interest, the
+ * start is the interest and a smaller step is solved numerically instead.
  * The Plans card and the Payoff projection both run this one schedule.
  */
 export function graduatedSchedule(balance: number, ratePct: number) {
   const r = ratePct / 100 / 12;
   const steps = 5;
   const monthsPerStep = 24;
+  const maxGrowth = Math.pow(3, 1 / (steps - 1));
 
   const remainingAfter = (base: number, g: number) => {
     let bal = balance;
@@ -105,9 +109,18 @@ export function graduatedSchedule(balance: number, ratePct: number) {
     return bal;
   };
 
-  const base = Math.max(balance * r, 25);
+  // Present value of one dollar a month at the first level, stepping up by
+  // maxGrowth every 24 months: the start that repays exactly at month 120.
+  const level =
+    r > 0 ? (1 - Math.pow(1 + r, -monthsPerStep)) / r : monthsPerStep;
+  let perDollar = 0;
+  for (let s = 0; s < steps; s++) {
+    perDollar +=
+      Math.pow(maxGrowth, s) * level * Math.pow(1 + r, -monthsPerStep * s);
+  }
+  const base = Math.max(balance / perDollar, balance * r);
   let lo = 1.0;
-  let hi = 2.0;
+  let hi = maxGrowth;
   for (let i = 0; i < 60; i++) {
     const mid = (lo + hi) / 2;
     if (remainingAfter(base, mid) > 0) lo = mid;
@@ -453,6 +466,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
         years: 10,
         forgivenAmount: 0,
         monthlyPayment: t.monthlyPayment,
+        finalPayment: t.finalPayment,
         totalPaid: t.totalPaid,
         totalInterest: t.totalInterest,
         pslf: endsAbove ? "partial" : "does_not_count",

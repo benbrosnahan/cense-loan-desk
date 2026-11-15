@@ -532,8 +532,9 @@ export default function RankingPanel({
                     >
                       {eligible.map((e) => (
                         <option key={e.id} value={e.id}>
-                          {PLAN_META[e.id].name}, {money(e.monthlyPayment!)} a
-                          month
+                          {`${PLAN_META[e.id].name}, ${money(e.monthlyPayment!)} a month${
+                            e.id === "graduated" ? " to start" : ""
+                          }`}
                         </option>
                       ))}
                     </select>

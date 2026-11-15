@@ -7,8 +7,8 @@
 // two numbers that trade off against each other (what you pay a month, what
 // you pay in total), then the detail for anyone who wants to check our work.
 
-import { useState } from "react";
-import { Loan, PlanId, Profile, RankedPlan } from "@/types";
+import { useState, type ReactNode } from "react";
+import { Loan, PlanEstimate, PlanId, Profile, RankedPlan } from "@/types";
 import {
   ASSUMPTIONS,
   PARENT_PLUS_NOTE,
@@ -51,6 +51,12 @@ function PslfBadge({ plan }: { plan: RankedPlan }) {
   return <Badge tone="neutral">✕ No PSLF credit</Badge>;
 }
 
+/** Graduated's last payment, when it reads higher than its first. */
+function peakOf(e: PlanEstimate): number | null {
+  const last = e.finalPayment ?? 0;
+  return last >= (e.monthlyPayment ?? 0) + 1 ? last : null;
+}
+
 /**
  * One measure, drawn as a bar against the largest value among the plans. The
  * number sits beside the bar in text, so the bar is never the only way to
@@ -67,7 +73,7 @@ function Measure({
   value: number | null;
   max: number;
   emphasis: boolean;
-  note?: string;
+  note?: ReactNode;
 }) {
   const ratio = value !== null && max > 0 ? Math.max(0.02, value / max) : 0;
   return (
@@ -77,9 +83,12 @@ function Measure({
         <span className="text-base font-bold text-slate-900">
           {value === null ? "—" : <Money value={value} />}
           {note && (
-            <span className="ml-1 text-xs font-normal text-slate-600">
-              {note}
-            </span>
+            <>
+              {" "}
+              <span className="text-xs font-normal text-slate-600">
+                {note}
+              </span>
+            </>
           )}
         </span>
       </div>
@@ -115,6 +124,7 @@ function PlanRow({
   const meta = PLAN_META[e.id];
   const [open, setOpen] = useState(false);
   const panelId = `plan-${e.id}`;
+  const peak = peakOf(e);
 
   return (
     <Card
@@ -158,6 +168,13 @@ function PlanRow({
             value={e.monthlyPayment}
             max={maxMonthly}
             emphasis={selected || (isTopPick && !selected)}
+            note={
+              peak !== null && (
+                <>
+                  <span>rising to</span> <Money value={peak} />
+                </>
+              )
+            }
           />
           <Measure
             label={`In total, over ${years(e.years)}`}
@@ -166,6 +183,13 @@ function PlanRow({
             emphasis={selected || (isTopPick && !selected)}
           />
         </div>
+        )}
+        {e.id === "graduated" && e.monthlyPayment !== null && (
+          // 34 CFR 685.208(b)(6) sets only the 3x cap and the interest floor;
+          // each servicer picks its own steps.
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            An estimate: your servicer may step the payments differently.
+          </p>
         )}
 
         {(isLowestPayment || isLowestInterest) && e.monthlyPayment !== null && (
@@ -312,6 +336,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
   const open = ranked.filter((r) => r.estimate.eligible);
   const closed = ranked.filter((r) => !r.estimate.eligible);
   const top = ranked.find((r) => r.isTopPick);
+  const topPeak = top ? peakOf(top.estimate) : null;
   const rapOpen = open.some((r) => r.estimate.id === "rap");
 
   const maxMonthly = Math.max(
@@ -358,7 +383,21 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                   <span className="amt figure text-3xl font-bold text-white">
                     <Money value={top.estimate.monthlyPayment} tabular={false} />
                   </span>{" "}
-                  a month{top.estimate.id === "graduated" && ", to start"}
+                  {/* Every figure and every run of words sits in its own
+                      element, so a page translator never holds a text node
+                      that React later removes or rewrites. */}
+                  <span>
+                    {top.estimate.id === "graduated"
+                      ? "a month, to start"
+                      : "a month"}
+                  </span>
+                  {topPeak !== null && (
+                    <>
+                      <span>{", rising to "}</span>
+                      <Money value={topPeak} tabular={false} />
+                      <span>{" by year 9"}</span>
+                    </>
+                  )}
                 </p>
               )}
             </div>

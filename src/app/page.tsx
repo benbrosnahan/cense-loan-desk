@@ -503,7 +503,12 @@ export default function Page() {
                   <>
                     {" · "}
                     <strong className="font-semibold text-slate-900">
-                      <Money value={selectedEstimate.monthlyPayment} /> a month
+                      <Money value={selectedEstimate.monthlyPayment} />{" "}
+                      <span>
+                        {selectedEstimate.id === "graduated"
+                          ? "a month to start"
+                          : "a month"}
+                      </span>
                     </strong>{" "}
                     on {PLAN_META[selectedEstimate.id].name}
                   </>

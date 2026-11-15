@@ -152,7 +152,6 @@ test('MONEY-03 Standard and Tiered Standard bill at least $50 a month and total 
 });
 
 test('MONEY-04 Graduated starts where a schedule within the 3x cap must start, and shows how high it climbs', async ({ page }) => {
-  knownIssue('MONEY-04');
   await openPlans(page, LOANS);
   const graduated = await cardFigures(planCard(page, 'Graduated'));
   const start = graduated.perMonth;

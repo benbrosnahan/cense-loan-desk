@@ -127,6 +127,8 @@ export default function RankingPanel({
     if (!main || !comparison) return "";
     if (!main.paidOff)
       return `At ${money(comparison.budget)} a month this balance does not reach zero.`;
+    if (extra > 0 && base && !base.paidOff)
+      return `On the required payment alone this balance would never reach zero. With ${money(extra)} extra it is gone in ${monthYearFromNow(main.months)}.`;
     if (extra > 0 && monthsSaved > 0)
       return `Paying ${money(extra)} extra a month, you are debt free in ${monthYearFromNow(
         main.months
@@ -136,7 +138,7 @@ export default function RankingPanel({
     return `Paying the required amount only, you are debt free in ${monthYearFromNow(
       main.months
     )}.`;
-  }, [main, comparison, extra, monthsSaved, interestSaved]);
+  }, [main, comparison, base, extra, monthsSaved, interestSaved]);
   const [announced, setAnnounced] = useState("");
   useEffect(() => {
     const t = setTimeout(() => setAnnounced(summary), 700);

@@ -434,8 +434,12 @@ console.log("\n[13] Strategy comparison");
   ok("cannot beat the zero-interest floor",
      cmp.avalanche.months >= Math.floor(total / 225),
      `${cmp.avalanche.months} vs floor ${Math.floor(total / 225)}`);
-  // No plan selected -> caller passes 0 -> no projection.
-  ok("zero required payment yields null", ranking.compareStrategies(port, 0, 100) === null);
+  // No plan selected: the caller passes null and never calls this. Exactly $0 is
+  // a real answer (IBR at or under 150% of poverty), so it must project.
+  const zero = ranking.compareStrategies(port, 0, 100);
+  ok("$0 required still projects the extra", !!zero && zero.requiredPayment === 0 && zero.budget === 100);
+  ok("$0 required and no extra never clears", ranking.compareStrategies(port, 0, 0)?.budgetTooLow === true);
+  ok("negative required payment yields null", ranking.compareStrategies(port, -1, 100) === null);
   ok("empty portfolio yields null", ranking.compareStrategies([], 125, 100) === null);
   // More extra must never be slower or costlier.
   const more = ranking.compareStrategies(port, 125, 400);

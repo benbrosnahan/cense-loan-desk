@@ -303,7 +303,6 @@ test('MONEY-09 typing 0 as income prices IBR at $0 and RAP at $10, and the 0 sta
 });
 
 test('MONEY-10 a $0 IBR payment is a real plan: Payoff projects it and offers the extra-payment control', async ({ page }) => {
-  knownIssue('MONEY-10');
   await openPlans(page, [loan('2024–25 unsubsidized', 5000, 6.53, '2024-09-01')]);
   await choose(page, 'Lowest monthly payment');
   await typeInto(page, incomeField(page), '20000');

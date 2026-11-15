@@ -167,7 +167,7 @@ export function projectPayoff(
   requiredPayment: number,
   extraPerMonth: number
 ): PayoffProjection | null {
-  if (!loans.length || requiredPayment <= 0) return null;
+  if (!loans.length || requiredPayment < 0) return null;
   return simulate(loans, strategy, requiredPayment, Math.max(0, extraPerMonth));
 }
 
@@ -196,7 +196,7 @@ export function compareStrategies(
   requiredPayment: number,
   extraPerMonth: number
 ): StrategyComparison | null {
-  if (!loans.length || requiredPayment <= 0) return null;
+  if (!loans.length || requiredPayment < 0) return null;
 
   const extra = Math.max(0, extraPerMonth);
   const budget = requiredPayment + extra;

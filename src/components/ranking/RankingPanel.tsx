@@ -16,7 +16,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loan, PlanId, Profile, Strategy } from "@/types";
 import { PLAN_META } from "@/data/plans";
-import { buildContext, estimatePlans } from "@/lib/calc";
+import { buildContext, estimatePlans, planSchedule } from "@/lib/calc";
 import { compareStrategies, projectPayoff, rankLoans } from "@/lib/ranking";
 import {
   cn,
@@ -92,6 +92,12 @@ export default function RankingPanel({
     : null;
   const required =
     selected && selected.eligible ? selected.monthlyPayment : null;
+  // The selected plan's own schedule, so Payoff runs the plan its card prices.
+  const plan = useMemo(
+    () => (selected ? planSchedule(selected, ctx) : null),
+    [selected, ctx]
+  );
+  const graduated = selected?.id === "graduated";
 
   // Whole dollars, so an extra of 12.5 saved by the old field reads 12 everywhere.
   const extra = Math.max(
@@ -101,20 +107,25 @@ export default function RankingPanel({
 
   const ranked = useMemo(() => rankLoans(loans, strategy), [loans, strategy]);
   const comparison = useMemo(
-    () => (required !== null ? compareStrategies(loans, required, extra) : null),
-    [loans, required, extra]
+    () =>
+      required !== null
+        ? compareStrategies(loans, required, extra, plan)
+        : null,
+    [loans, required, extra, plan]
   );
   const main = useMemo(
     () =>
-      required !== null ? projectPayoff(loans, strategy, required, extra) : null,
-    [loans, strategy, required, extra]
+      required !== null
+        ? projectPayoff(loans, strategy, required, extra, plan)
+        : null,
+    [loans, strategy, required, extra, plan]
   );
   const base = useMemo(
     () =>
       required !== null && extra > 0
-        ? projectPayoff(loans, strategy, required, 0)
+        ? projectPayoff(loans, strategy, required, 0, plan)
         : null,
-    [loans, strategy, required, extra]
+    [loans, strategy, required, extra, plan]
   );
 
   const monthsSaved = main && base && base.paidOff ? base.months - main.months : 0;
@@ -122,25 +133,104 @@ export default function RankingPanel({
     main && base && base.paidOff
       ? Math.max(0, base.totalInterest - main.totalInterest)
       : 0;
+  // On IBR and RAP the required payment alone may end in forgiveness. Then
+  // extra money ends nothing sooner and saves no interest that matters: what
+  // it changes is the total paid and what is left to forgive.
+  const forgiven = !!main && !main.paidOff && main.forgiven > 0;
+  const baseForgiven = !!base && !base.paidOff && base.forgiven > 0;
+  const paidMore = main && base ? main.totalPaid - base.totalPaid : 0;
+  const moreOrLess = paidMore >= 0 ? "more" : "less";
+  const costsMore = paidMore > 0.5;
+  const sameForgiven =
+    !!main && !!base && Math.abs(main.forgiven - base.forgiven) < 0.5;
+  // On RAP the extra can cost more in total: the engine counts it as part of
+  // the month's payment, so it first pays interest RAP would otherwise waive
+  // (34 CFR 685.209(h)(4)(i)) and then replaces ED's matching principal
+  // ((o)(2)(i)). The rule does not settle that reading, so the page says so.
+  const rapExtraNote =
+    selected?.id === "rap" && extra > 0 && costsMore
+      ? " On RAP, money you add goes first to any interest RAP would otherwise waive, then takes the place of the up to $50 ED puts toward your principal each month, and only after that brings your end date closer. That counts the extra as part of your payment for the month, one reading of 34 CFR 685.209(h)(4)(i) and (o)(2)(i); if your servicer applies it separately, it can do more."
+      : "";
+  // What forgiveness means for this borrower. Payoff does not model PSLF, so
+  // a public-service worker is not told the balance waits 20 or 30 years.
+  const forgivenNote = ctx.publicService
+    ? " Payoff does not count Public Service Loan Forgiveness: after 120 qualifying payments while you work in public service, what is left is cancelled then, tax free."
+    : " Outside Public Service Loan Forgiveness, a forgiven balance counts as taxable income the year it is cancelled.";
+  // Everything the headline and the sentence under it show. Both are keyed on
+  // it, so a change replaces them whole and a page translator's copies are
+  // never left holding text React edits or removes (RES-12).
+  const storyKey = [
+    selected?.id,
+    ctx.publicService,
+    extra,
+    comparison?.budget,
+    main?.paidOff,
+    main?.months,
+    Math.round(main?.totalPaid ?? 0),
+    Math.round(main?.forgiven ?? 0),
+    base?.paidOff,
+    base?.months,
+    Math.round(base?.totalPaid ?? 0),
+    Math.round(base?.forgiven ?? 0),
+    monthsSaved,
+    roughly(interestSaved),
+  ].join("|");
 
   // The sentence a screen reader hears. It waits for the slider to settle, so
   // dragging does not read out forty intermediate values.
   const summary = useMemo(() => {
     if (!main || !comparison) return "";
+    const ends = monthYearFromNow(main.months);
+    if (forgiven && extra > 0 && base && baseForgiven)
+      return `Paying ${money(extra)} extra a month does not end this any sooner. The rest is forgiven in ${ends}, and you pay ${money(
+        main.totalPaid
+      )} in total instead of ${money(base.totalPaid)}, with ${
+        sameForgiven
+          ? `the same ${money(main.forgiven)} forgiven`
+          : `${money(main.forgiven)} forgiven instead of ${money(base.forgiven)}`
+      }.${rapExtraNote}${forgivenNote}`;
+    if (forgiven)
+      return `The rest is forgiven in ${ends}. You pay ${money(
+        main.totalPaid
+      )} over ${monthsLabel(main.months)}, and the ${money(
+        main.forgiven
+      )} still owed after that is forgiven.${forgivenNote}`;
     if (!main.paidOff)
       return `At ${money(comparison.budget)} a month this balance does not reach zero.`;
+    if (extra > 0 && base && baseForgiven)
+      return `Paying ${money(extra)} extra a month, you are debt free in ${ends}. On the required payment alone ${money(
+        base.forgiven
+      )} would be forgiven in ${monthYearFromNow(base.months)}. You pay ${money(
+        Math.abs(paidMore)
+      )} ${moreOrLess} in total.${forgivenNote}`;
     if (extra > 0 && base && !base.paidOff)
-      return `On the required payment alone this balance would never reach zero. With ${money(extra)} extra it is gone in ${monthYearFromNow(main.months)}.`;
+      return `On the required payment alone this balance would never reach zero. With ${money(extra)} extra it is gone in ${ends}.`;
+    const cost = costsMore
+      ? `but you pay about ${money(roughly(paidMore))} more in total`
+      : `with about ${money(roughly(interestSaved))} less interest`;
     if (extra > 0 && monthsSaved > 0)
-      return `Paying ${money(extra)} extra a month, you are debt free in ${monthYearFromNow(
-        main.months
-      )}, ${monthsInWords(monthsSaved)} sooner, with about ${money(
-        roughly(interestSaved)
-      )} less interest.`;
-    return `Paying the required amount only, you are debt free in ${monthYearFromNow(
-      main.months
-    )}.`;
-  }, [main, comparison, base, extra, monthsSaved, interestSaved]);
+      return `Paying ${money(extra)} extra a month, you are debt free in ${ends}, ${monthsInWords(
+        monthsSaved
+      )} sooner, ${cost}.${rapExtraNote}`;
+    if (extra > 0)
+      return `Paying ${money(extra)} extra a month, you are debt free in ${ends}, the same month, ${cost}.${rapExtraNote}`;
+    return `Paying the required amount only, you are debt free in ${ends}.`;
+  }, [
+    main,
+    base,
+    comparison,
+    extra,
+    forgiven,
+    baseForgiven,
+    paidMore,
+    moreOrLess,
+    costsMore,
+    sameForgiven,
+    rapExtraNote,
+    forgivenNote,
+    monthsSaved,
+    interestSaved,
+  ]);
   const [announced, setAnnounced] = useState("");
   useEffect(() => {
     const t = setTimeout(() => setAnnounced(summary), 700);
@@ -173,12 +263,18 @@ export default function RankingPanel({
             <>
               <Eyebrow>
                 On {PLAN_META[selected!.id].name} ·{" "}
-                <Money value={comparison.requiredPayment} /> a month required
+                <Money value={comparison.requiredPayment} /> a month{" "}
+                {graduated ? "to start" : "required"}
               </Eyebrow>
 
               {/* The headline is the takeaway, not a label. */}
-              <h2 className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl">
-                {!main.paidOff ? (
+              <h2
+                key={`head-${storyKey}`}
+                className="mt-2 text-balance font-display text-[1.75rem] font-bold leading-[1.1] text-slate-900 sm:text-4xl"
+              >
+                {forgiven ? (
+                  <>The rest is forgiven in {monthYearFromNow(main.months)}</>
+                ) : !main.paidOff ? (
                   <>This payment does not clear the balance</>
                 ) : extra > 0 && monthsSaved > 0 ? (
                   <>
@@ -189,13 +285,56 @@ export default function RankingPanel({
                   <>Debt free in {monthYearFromNow(main.months)}</>
                 )}
               </h2>
-              <p className="mt-2 text-base leading-relaxed text-slate-700">
-                {!main.paidOff ? (
+              <p
+                key={`sub-${storyKey}`}
+                className="mt-2 text-base leading-relaxed text-slate-700"
+              >
+                {forgiven && extra > 0 && base && baseForgiven ? (
+                  <>
+                    Paying <Money value={extra} /> extra does not end this any
+                    sooner. You pay{" "}
+                    <strong className="font-semibold text-slate-900">
+                      <Money value={main.totalPaid} />
+                    </strong>{" "}
+                    in total instead of <Money value={base.totalPaid} />, and{" "}
+                    {sameForgiven ? (
+                      <>
+                        the same <Money value={main.forgiven} /> is forgiven.
+                      </>
+                    ) : (
+                      <>
+                        <Money value={main.forgiven} /> is forgiven instead of{" "}
+                        <Money value={base.forgiven} />.
+                      </>
+                    )}
+                    {rapExtraNote}
+                    {forgivenNote}
+                  </>
+                ) : forgiven ? (
+                  <>
+                    You pay <Money value={main.totalPaid} /> over{" "}
+                    {monthsLabel(main.months)}, and the{" "}
+                    <strong className="font-semibold text-slate-900">
+                      <Money value={main.forgiven} />
+                    </strong>{" "}
+                    still owed after that is forgiven.{forgivenNote}
+                  </>
+                ) : !main.paidOff ? (
                   <>
                     At <Money value={comparison.budget} /> a month these
-                    balances never reach zero. On an income-driven plan that is
-                    expected, and the remaining balance is forgiven at the end
-                    of the term instead.
+                    balances never reach zero.
+                  </>
+                ) : extra > 0 && base && baseForgiven ? (
+                  <>
+                    On the required payment alone,{" "}
+                    <Money value={base.forgiven} /> would be forgiven in{" "}
+                    {monthYearFromNow(base.months)}. With{" "}
+                    <Money value={extra} /> extra it is gone in{" "}
+                    {monthYearFromNow(main.months)}, and you pay{" "}
+                    <strong className="font-semibold text-slate-900">
+                      <Money value={Math.abs(paidMore)} /> {moreOrLess}
+                    </strong>{" "}
+                    in total.{forgivenNote}
                   </>
                 ) : extra > 0 && monthsSaved > 0 ? (
                   <>
@@ -203,17 +342,21 @@ export default function RankingPanel({
                     <strong className="font-semibold text-slate-900">
                       {monthYearFromNow(main.months)}
                     </strong>{" "}
-                    and pay about{" "}
+                    {costsMore ? "but pay about" : "and pay about"}{" "}
                     <strong className="font-semibold text-slate-900">
-                      <Money value={roughly(interestSaved)} />
+                      <Money
+                        value={roughly(costsMore ? paidMore : interestSaved)}
+                      />
                     </strong>{" "}
-                    less in interest.
+                    {costsMore ? <>more in total.{rapExtraNote}</> : <>less in interest.</>}
                   </>
-                ) : extra > 0 && base && !base.paidOff ? (
+                ) : extra > 0 ? (
                   <>
-                    On the required payment alone this balance would never
-                    reach zero. With <Money value={extra} /> extra it is gone
-                    in {monthYearFromNow(main.months)}.
+                    With <Money value={extra} /> extra you still finish in{" "}
+                    {monthYearFromNow(main.months)}, and pay about{" "}
+                    <Money value={roughly(costsMore ? paidMore : interestSaved)} />{" "}
+                    {costsMore ? "more in total" : "less in interest"}.
+                    {rapExtraNote}
                   </>
                 ) : (
                   <>
@@ -223,6 +366,19 @@ export default function RankingPanel({
                   </>
                 )}
               </p>
+              {/* RAP's matching principal payment only follows an on-time
+                  payment of the amount due; paying ahead can advance the due
+                  date and end it (34 CFR 685.209(o)(3)(i)). */}
+              {selected?.id === "rap" && extra > 0 && (
+                <p
+                  key={`rap-due-${storyKey}`}
+                  className="mt-2 text-sm leading-relaxed text-slate-600"
+                >
+                  To keep RAP&apos;s matching payment of up to $50 toward your
+                  principal, ask your servicer not to move your due date forward
+                  when you pay extra.
+                </p>
+              )}
               <output className="sr-only" aria-live="polite">
                 {announced}
               </output>
@@ -302,11 +458,11 @@ export default function RankingPanel({
                 />
               )}
 
-              {main.paidOff && (
+              {(main.paidOff || forgiven) && (
                 <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-5">
                   <div>
                     <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
-                      Done
+                      {forgiven ? "Forgiven" : "Done"}
                     </dt>
                     <dd className="tnum mt-1 text-base font-bold text-slate-900 sm:text-xl">
                       {shortMonthYearFromNow(main.months)}
@@ -322,7 +478,7 @@ export default function RankingPanel({
                   </div>
                   <div>
                     <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
-                      Monthly
+                      {graduated ? "Monthly, to start" : "Monthly"}
                     </dt>
                     <dd className="mt-1 text-base font-bold text-slate-900 sm:text-xl">
                       <Money value={comparison.budget} />
@@ -333,10 +489,19 @@ export default function RankingPanel({
 
               <p className="mt-4 text-sm leading-relaxed text-slate-600">
                 What this assumes: payments start this month, and your required
-                payment stays at <Money value={comparison.requiredPayment} />{" "}
-                the whole way.
-                {selected!.id === "graduated" &&
-                  " On Graduated it steps up every two years, so you would finish sooner than shown."}
+                payment{" "}
+                {graduated ? (
+                  <>
+                    starts at <Money value={comparison.requiredPayment} /> and
+                    steps up every two years, on the same schedule as the
+                    Repayment plans tab.
+                  </>
+                ) : (
+                  <>
+                    stays at <Money value={comparison.requiredPayment} /> the
+                    whole way.
+                  </>
+                )}
                 {PLAN_META[selected!.id].incomeDriven &&
                   " On an income-driven plan it moves with your income each year."}
               </p>

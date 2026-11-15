@@ -5,6 +5,7 @@ import {
   Loan,
   PlanEstimate,
   PlanId,
+  PlanSchedule,
   Profile,
   PslfStatus,
   RankedPlan,
@@ -85,8 +86,9 @@ function fixedTotals(balance: number, ratePct: number, years: number) {
  * Graduated: starts low and steps up every 2 years over 10.
  * Modelled as a starting payment near interest-only with five step-ups, with
  * the growth factor solved numerically so the schedule actually amortises.
+ * The Plans card and the Payoff projection both run this one schedule.
  */
-function graduatedTotals(balance: number, ratePct: number) {
+export function graduatedSchedule(balance: number, ratePct: number) {
   const r = ratePct / 100 / 12;
   const steps = 5;
   const monthsPerStep = 24;
@@ -113,22 +115,115 @@ function graduatedTotals(balance: number, ratePct: number) {
   }
   const g = hi;
 
+  return {
+    base,
+    finalPayment: base * Math.pow(g, steps - 1),
+    termMonths: steps * monthsPerStep,
+    /** The payment due in month `month`, counting from 0. */
+    paymentAt: (month: number) =>
+      base * Math.pow(g, Math.min(steps - 1, Math.floor(month / monthsPerStep))),
+  };
+}
+
+function graduatedTotals(balance: number, ratePct: number) {
+  const r = ratePct / 100 / 12;
+  const schedule = graduatedSchedule(balance, ratePct);
+
   let bal = balance;
   let totalPaid = 0;
-  for (let s = 0; s < steps && bal > 0; s++) {
-    const pay = base * Math.pow(g, s);
-    for (let m = 0; m < monthsPerStep && bal > 0; m++) {
-      const interest = bal * r;
-      const applied = Math.min(pay, bal + interest);
-      bal = bal + interest - applied;
-      totalPaid += applied;
-    }
+  for (let m = 0; m < schedule.termMonths && bal > 0; m++) {
+    const interest = bal * r;
+    const applied = Math.min(schedule.paymentAt(m), bal + interest);
+    bal = bal + interest - applied;
+    totalPaid += applied;
   }
   return {
-    monthlyPayment: base, // the starting payment, which is what people plan around
-    finalPayment: base * Math.pow(g, steps - 1),
+    monthlyPayment: schedule.base, // the starting payment, which is what people plan around
+    finalPayment: schedule.finalPayment,
     totalPaid,
     totalInterest: Math.max(0, totalPaid - balance),
+  };
+}
+
+/** RAP's interest waiver and $50 matching principal, or neither. */
+export interface IdrRules {
+  waiveUnpaidInterest: boolean;
+  matchPrincipal: boolean;
+}
+
+const IBR_RULES: IdrRules = { waiveUnpaidInterest: false, matchPrincipal: false };
+const RAP_RULES: IdrRules = { waiveUnpaidInterest: true, matchPrincipal: true };
+
+/**
+ * What is owed going into a month. `unpaid` is interest charged but not paid
+ * that earns no interest itself. Only IBR uses it: while a borrower stays on
+ * IBR, unpaid interest is not capitalized (34 CFR 685.209(j)(2)). Elsewhere it
+ * stays 0.
+ */
+export interface IdrState {
+  principal: number;
+  unpaid: number;
+}
+
+/**
+ * One month of repayment on one balance. The Plans card runs IBR and RAP
+ * month by month through this step, and Payoff runs every month of every plan
+ * through it, so a change to these rules moves both tabs together.
+ */
+export function idrMonth(
+  state: IdrState,
+  ratePct: number,
+  monthlyPayment: number,
+  opts: IdrRules
+): { state: IdrState; paid: number; interestPaid: number } {
+  const r = ratePct / 100 / 12;
+
+  if (!opts.waiveUnpaidInterest) {
+    // IBR, and every fixed plan: interest accrues in full on principal (the
+    // three-year subsidy for subsidized loans, 685.209(h)(2)(i), is not
+    // modelled), but unpaid interest is not capitalized while the borrower
+    // stays on IBR (685.209(j)(2), 685.202(b)). It sits beside principal and
+    // earns no interest, and each payment goes to accrued interest first
+    // (685.211(a)(1)(ii)). A fixed plan's payment always covers its interest,
+    // so for those plans this is ordinary amortization.
+    let principal = state.principal;
+    let unpaid = state.unpaid + principal * r;
+    const pay = Math.min(monthlyPayment, principal + unpaid);
+    const toInterest = Math.min(pay, unpaid);
+    unpaid -= toInterest;
+    principal = principal + toInterest - pay;
+    return { state: { principal, unpaid }, paid: pay, interestPaid: toInterest };
+  }
+
+  let bal = state.principal + state.unpaid;
+  const interest = bal * r;
+  let pay = Math.min(monthlyPayment, bal + interest);
+
+  // 34 CFR 685.209(h)(4)(i), verbatim: under RAP "the Secretary does not
+  // charge the borrower's account for any accrued interest that is not
+  // covered by the borrower's on-time payment of the amount due for that
+  // month." So the charge is capped at the payment; the shortfall is waived,
+  // NOT credited to principal. (IBR and the fixed plans return above.)
+  const interestCharged = Math.min(interest, pay);
+  bal = bal + interestCharged - pay;
+
+  // RAP's matching principal payment. 34 CFR 685.209(o)(2)(i): when an
+  // on-time payment reduces principal by less than $50, ED reduces principal
+  // by (the lesser of $50 or the payment) minus (what already hit principal).
+  const principalReduction = Math.max(0, pay - interestCharged);
+  if (opts.matchPrincipal && principalReduction < 50) {
+    bal -= Math.min(50, pay) - principalReduction;
+  }
+
+  if (bal < 0) {
+    pay += bal;
+    bal = 0;
+  }
+  // Each payment goes to the month's interest first (685.211(a)(1)).
+  return {
+    state: { principal: bal, unpaid: 0 },
+    paid: pay,
+    interestPaid: Math.min(pay, interestCharged),
   };
 }
 
@@ -144,78 +239,27 @@ function simulateIdr(
   ratePct: number,
   monthlyPayment: number,
   maxYears: number,
-  opts: { waiveUnpaidInterest: boolean; matchPrincipal: boolean }
+  opts: IdrRules
 ) {
-  const r = ratePct / 100 / 12;
-  let bal = balance;
+  let state: IdrState = { principal: balance, unpaid: 0 };
   let totalPaid = 0;
   const maxMonths = maxYears * 12;
   let months = 0;
 
-  if (!opts.waiveUnpaidInterest) {
-    // IBR: interest accrues in full (the three-year subsidy for subsidized
-    // loans, 685.209(h)(2)(i), is not modelled), but while the borrower stays
-    // on IBR the unpaid part is not capitalized (34 CFR 685.209(j)(2),
-    // 685.202(b)).
-    // It sits beside principal and earns no interest, and each payment goes
-    // to accrued interest first (685.211(a)(1)(ii)).
-    let principal = balance;
-    let unpaid = 0;
-    for (let m = 0; m < maxMonths; m++) {
-      if (principal + unpaid <= 0.005) break;
-      unpaid += principal * r;
-      const pay = Math.min(monthlyPayment, principal + unpaid);
-      const toInterest = Math.min(pay, unpaid);
-      unpaid -= toInterest;
-      // Same order of operations as the loop below, so wherever the payment
-      // covers the interest IBR computes exactly what it did before.
-      principal = principal + toInterest - pay;
-      totalPaid += pay;
-      months++;
-    }
-    const left = principal + unpaid;
-    return {
-      totalPaid,
-      forgiven: Math.max(0, left),
-      months,
-      paidOff: left <= 0.005,
-    };
-  }
-
   for (let m = 0; m < maxMonths; m++) {
-    if (bal <= 0.005) break;
-    const interest = bal * r;
-    let pay = Math.min(monthlyPayment, bal + interest);
-
-    // 34 CFR 685.209(h)(4)(i), verbatim: under RAP "the Secretary does not
-    // charge the borrower's account for any accrued interest that is not
-    // covered by the borrower's on-time payment of the amount due for that
-    // month." So the charge is capped at the payment; the shortfall is waived,
-    // NOT credited to principal. (IBR returns above.)
-    const interestCharged = Math.min(interest, pay);
-    bal = bal + interestCharged - pay;
-
-    // RAP's matching principal payment. 34 CFR 685.209(o)(2)(i): when an
-    // on-time payment reduces principal by less than $50, ED reduces principal
-    // by (the lesser of $50 or the payment) minus (what already hit principal).
-    const principalReduction = Math.max(0, pay - interestCharged);
-    if (opts.matchPrincipal && principalReduction < 50) {
-      bal -= Math.min(50, pay) - principalReduction;
-    }
-
-    if (bal < 0) {
-      pay += bal;
-      bal = 0;
-    }
-    totalPaid += pay;
+    if (state.principal + state.unpaid <= 0.005) break;
+    const step = idrMonth(state, ratePct, monthlyPayment, opts);
+    state = step.state;
+    totalPaid += step.paid;
     months++;
   }
 
+  const left = state.principal + state.unpaid;
   return {
     totalPaid,
-    forgiven: Math.max(0, bal),
+    forgiven: Math.max(0, left),
     months,
-    paidOff: bal <= 0.005,
+    paidOff: left <= 0.005,
   };
 }
 
@@ -488,10 +532,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
         ibrMonthly(profile) * jointShare(balance, profile),
         cap
       );
-      const sim = simulateIdr(balance, rate, pay, 20, {
-        waiveUnpaidInterest: false,
-        matchPrincipal: false,
-      });
+      const sim = simulateIdr(balance, rate, pay, 20, IBR_RULES);
       return {
         ...base,
         eligible: true,
@@ -511,10 +552,7 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
       RAP_MIN_MONTHLY,
       rapMonthly(profile) * jointShare(balance, profile)
     );
-    const sim = simulateIdr(balance, rate, pay, 30, {
-      waiveUnpaidInterest: true,
-      matchPrincipal: true,
-    });
+    const sim = simulateIdr(balance, rate, pay, 30, RAP_RULES);
     return {
       ...base,
       eligible: true,
@@ -717,6 +755,39 @@ export function rankPlans(
     });
 
   return { ranked, topPickReason: reason };
+}
+
+/**
+ * The selected plan's schedule for the Payoff projection, built from the same
+ * figures as its card so Plans and Payoff run one plan: Graduated's steps, a
+ * fixed plan's term, and IBR's and RAP's forgiveness. Null until it is priced.
+ */
+export function planSchedule(
+  e: PlanEstimate,
+  ctx: PlanContext
+): PlanSchedule | null {
+  if (!e.eligible || e.monthlyPayment === null) return null;
+  if (e.id === "graduated") {
+    const g = graduatedSchedule(ctx.balance, ctx.rate);
+    return {
+      paymentAt: g.paymentAt,
+      termMonths: g.termMonths,
+      forgivesAtTerm: false,
+      rules: IBR_RULES,
+    };
+  }
+  const payment = e.monthlyPayment;
+  const forgivesAtTerm = PLAN_META[e.id].incomeDriven;
+  return {
+    paymentAt: () => payment,
+    termMonths: Math.round(
+      (forgivesAtTerm ? e.forgivenessYears ?? e.years : e.years) * 12
+    ),
+    forgivesAtTerm,
+    // A fixed payment always covers its interest, so the IBR rules are plain
+    // amortisation for every plan but RAP.
+    rules: e.id === "rap" ? RAP_RULES : IBR_RULES,
+  };
 }
 
 /** The required monthly payment on the plan the borrower selected. */

@@ -185,7 +185,6 @@ test('MONEY-05 IBR leaves the balance that uncompounded unpaid interest gives af
 });
 
 test('MONEY-06 Payoff runs the chosen plan: Graduated ends within its 10 years and IBR never runs past forgiveness', async ({ page }) => {
-  knownIssue('MONEY-06');
   await openPlans(page, LOANS);
   await useButton(planCard(page, 'Graduated'), 'Graduated').click();
   await goTo(page, 'payoff');

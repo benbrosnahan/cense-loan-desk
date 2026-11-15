@@ -139,9 +139,11 @@ export default function PayoffRunway({
 
   return (
     <figure className={cn("m-0", className)}>
-      {/* Legend. Carries the dates, so the chart needs no labels that collide. */}
+      {/* Legend. Carries the dates, so the chart needs no labels that collide.
+          Each row is keyed by what it shows, so React replaces it whole: a
+          browser translator swaps the text React would edit in place. */}
       <ul className="flex flex-col gap-1.5 text-sm text-slate-800">
-        <li className="flex items-center gap-2.5">
+        <li key={`main-${extra}-${monthsMain}`} className="flex items-center gap-2.5">
           <svg aria-hidden width="28" height="10" className="flex-shrink-0">
             <line x1="1" y1="5" x2="27" y2="5" stroke={GREEN} strokeWidth="3" strokeLinecap="round" />
           </svg>
@@ -159,7 +161,7 @@ export default function PayoffRunway({
           </span>
         </li>
         {showBase && (
-          <li className="flex items-center gap-2.5">
+          <li key={`base-${monthsBase}`} className="flex items-center gap-2.5">
             <svg aria-hidden width="28" height="10" className="flex-shrink-0">
               <line x1="1" y1="5" x2="27" y2="5" stroke={BASELINE} strokeWidth="2" strokeDasharray="5 4" />
             </svg>

@@ -81,6 +81,24 @@ export interface PlanEstimate {
   ineligibleReason?: string;
 }
 
+/**
+ * The selected plan's own payment rules, which the Payoff projection runs.
+ * Built from the same figures as the plan's card on the Repayment plans tab.
+ */
+export interface PlanSchedule {
+  /** Required payment in month `month`, counting from 0. Steps up on Graduated, flat otherwise. */
+  paymentAt: (month: number) => number;
+  /** Payments the plan runs for: its term on a fixed plan, 240 on IBR, 360 on RAP. */
+  termMonths: number;
+  /** IBR and RAP: whatever is still owed after the last payment is forgiven. */
+  forgivesAtTerm: boolean;
+  /**
+   * The rules each month runs under, passed to idrMonth in calc.ts. On RAP the
+   * 34 CFR 685.209(h)(4)(i) interest waiver and (o)(2)(i) $50 matching principal.
+   */
+  rules: { waiveUnpaidInterest: boolean; matchPrincipal: boolean };
+}
+
 /** A ranked plan plus the reason it was or was not the pick. */
 export interface RankedPlan {
   estimate: PlanEstimate;

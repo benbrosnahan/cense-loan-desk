@@ -37,6 +37,13 @@ interface Props {
   onSelectPlan: (id: PlanId) => void;
 }
 
+/** Takes the borrower to the income question, which prices IBR and RAP. */
+function focusIncome() {
+  const el = document.getElementById("income");
+  el?.scrollIntoView({ block: "center" });
+  el?.focus({ preventScroll: true });
+}
+
 function PslfBadge({ plan }: { plan: RankedPlan }) {
   const s = plan.estimate.pslf;
   if (s === "counts") return <Badge tone="good">✓ Counts toward PSLF</Badge>;
@@ -137,11 +144,7 @@ function PlanRow({
               size="sm"
               variant="secondary"
               className="mt-3"
-              onClick={() => {
-                const el = document.getElementById("income");
-                el?.scrollIntoView({ block: "center" });
-                el?.focus({ preventScroll: true });
-              }}
+              onClick={focusIncome}
             >
               Add my income
             </Button>
@@ -340,7 +343,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
         </div>
       )}
 
-      {top && top.estimate.monthlyPayment !== null && (
+      {top && (
         <FadeIn>
           <div className="rounded-3xl bg-navy p-5 text-white shadow-lift sm:p-7">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/80">
@@ -350,18 +353,29 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
               <h2 className="font-display text-4xl font-bold leading-none sm:text-5xl">
                 {PLAN_META[top.estimate.id].name}
               </h2>
-              <p className="text-base text-white/90">
-                <span className="amt figure text-3xl font-bold text-white">
-                  <Money value={top.estimate.monthlyPayment} tabular={false} />
-                </span>{" "}
-                a month{top.estimate.id === "graduated" && ", to start"}
-              </p>
+              {top.estimate.monthlyPayment !== null && (
+                <p className="text-base text-white/90">
+                  <span className="amt figure text-3xl font-bold text-white">
+                    <Money value={top.estimate.monthlyPayment} tabular={false} />
+                  </span>{" "}
+                  a month{top.estimate.id === "graduated" && ", to start"}
+                </p>
+              )}
             </div>
             <p className="mt-4 text-base leading-relaxed text-white/95">
               {topPickReason}
             </p>
             <div className="mt-5">
-              {profile.selectedPlan === top.estimate.id ? (
+              {top.estimate.monthlyPayment === null ? (
+                // Picked for its forgiveness credit, but priced off income.
+                <button
+                  type="button"
+                  onClick={focusIncome}
+                  className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+                >
+                  Add my income
+                </button>
+              ) : profile.selectedPlan === top.estimate.id ? (
                 <p className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white/15 px-5 text-base font-semibold">
                   ✓ This is your plan
                 </p>
@@ -371,7 +385,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                   onClick={() => onSelectPlan(top.estimate.id)}
                   className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 text-base font-semibold text-navy transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
                 >
-                  Use {PLAN_META[top.estimate.id].name} as my plan
+                  {`Use ${PLAN_META[top.estimate.id].name} as my plan`}
                 </button>
               )}
             </div>

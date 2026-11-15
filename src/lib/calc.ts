@@ -550,18 +550,56 @@ export function rankPlans(
   const { goal } = ctx.profile;
   const pslfOk = (e: PlanEstimate) => e.pslf === "counts";
 
+  // Open plans we cannot price yet: IBR and RAP while income is blank. At
+  // zero income IBR is $0 and RAP $10 (34 CFR 685.209(b)(4), (f)(2)(i),
+  // (g)(3)(ii)), so no pick may claim a minimum over them. Names come from
+  // the estimates, so a closed plan is never named.
+  const unpriced = estimates.filter(
+    (e) => e.eligible && e.monthlyPayment === null
+  );
+  const unpricedNames = unpriced.map((e) => e.name).join(" and ");
+  const scope = unpriced.length ? "we can price" : "open to you";
+  const ibrUnpriced = unpriced.some((e) => e.id === "ibr");
+  const rapUnpriced = unpriced.some((e) => e.id === "rap");
+  const floors =
+    ibrUnpriced && rapUnpriced
+      ? `IBR can be $0 a month and RAP $${RAP_MIN_MONTHLY}`
+      : ibrUnpriced
+        ? "IBR can be $0 a month"
+        : `RAP can be as little as $${RAP_MIN_MONTHLY} a month`;
+  const notEarning = `Not earning right now? ${floors}.`;
+  const addIncome = unpriced.length
+    ? ` ${unpricedNames} could cost less, so add your income. ${notEarning}`
+    : "";
+
   let top: PlanEstimate;
   let reason: string;
 
   if (goal === "forgiveness" || (ctx.publicService && goal === "unsure")) {
     const qualifying = eligible.filter(pslfOk);
+    const unpricedCredit = unpriced.filter(pslfOk);
     if (qualifying.length) {
       top = qualifying.reduce((a, b) =>
         (a.monthlyPayment ?? Infinity) <= (b.monthlyPayment ?? Infinity) ? a : b
       );
-      reason = ctx.publicService
-        ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
-        : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
+      // IBR's payment is the lesser of its formula and the 10-year Standard
+      // amount (34 CFR 685.209(f)(2)), so it never costs more than Standard at
+      // any income. Say so rather than imply it could not be compared.
+      const creditNames = unpricedCredit.map((e) => e.name).join(" and ");
+      const waiting = unpricedCredit.some((e) => e.id === "ibr")
+        ? `${creditNames} earn it too. IBR never costs more than the 10-year Standard payment and is likely lower, so add your income.`
+        : `${creditNames} earn it too and could cost less, so add your income.`;
+      reason = unpricedCredit.length
+        ? `Of the plans we can price, this is the lowest payment that earns forgiveness credit. ${waiting} ${notEarning}`
+        : ctx.publicService
+          ? "You work in public service and want forgiveness on the table, so this is the lowest payment among the plans that actually earn Public Service Loan Forgiveness credit. After 120 qualifying payments the rest is cancelled, tax free."
+          : "This is the lowest payment among the plans that earn forgiveness credit. Outside public service, a forgiven balance is taxed as income in the year it is cancelled.";
+    } else if (unpricedCredit.length) {
+      // Only a plan priced off income earns credit (RAP after the 2026
+      // cutoff). Pick it and ask for income, rather than a plan that never
+      // counts.
+      top = unpricedCredit[0];
+      reason = `${top.name} is the plan open to you that earns forgiveness credit, and it is priced off your income. Add yours and we will work out the payment. ${notEarning}`;
     } else {
       top = lowestInterest;
       reason =
@@ -571,21 +609,28 @@ export function rankPlans(
     top = lowestPayment;
     reason =
       top.id === "graduated"
-        ? "You said the monthly number matters most, and this starts smaller than anything else open to you. Be careful with it though: Graduated is the one plan whose payment climbs, stepping up every two years, so the figure above is only what you pay at the start."
-        : "You said the monthly number matters most, and this is the smallest payment of the plans open to you.";
+        ? `You said the monthly number matters most, and this starts smaller than anything else ${scope}. Be careful with it though: Graduated is the one plan whose payment climbs, stepping up every two years, so the figure above is only what you pay at the start.${addIncome}`
+        : `You said the monthly number matters most, and this is the smallest payment of the plans ${scope}.${addIncome}`;
   } else {
     // least_total, and the default for "unsure"
     top = lowestInterest;
     reason =
       goal === "unsure"
-        ? "You have not told us a goal yet, so we are recommending on total cost, which is the safe default. This plan hands over the least money overall."
-        : "You want to pay the least overall, and this plan costs you the least in total interest.";
+        ? `You have not told us a goal yet, so we are recommending on total cost, which is the safe default. ${unpriced.length ? "Of the plans we can price, this one" : "This plan"} hands over the least money overall.${addIncome}`
+        : `You want to pay the least overall, and ${unpriced.length ? "of the plans we can price, this one" : "this plan"} costs you the least in total interest.${addIncome}`;
   }
 
   const whyNotFor = (e: PlanEstimate): string => {
     if (e.id === top.id) return "";
     if (!e.eligible) return "";
     if (e.monthlyPayment === null) return "Add your income to compare this one.";
+    // An unpriced pick has no figures to compare. It was picked because it
+    // earns forgiveness credit and no priced plan does.
+    if (top.monthlyPayment === null) {
+      return e.pslf === "partial"
+        ? "Not picked because it only earns forgiveness credit on some months."
+        : "Not picked because it earns no forgiveness credit.";
+    }
 
     const parts: string[] = [];
     const dMonthly = (e.monthlyPayment ?? 0) - (top.monthlyPayment ?? 0);
@@ -626,8 +671,9 @@ export function rankPlans(
     .map((e) => ({
       estimate: e,
       isTopPick: e.id === top.id,
-      isLowestPayment: e.id === lowestPayment.id,
-      isLowestInterest: e.id === lowestInterest.id,
+      // No "lowest" or "least" badge while an open plan has no price.
+      isLowestPayment: !unpriced.length && e.id === lowestPayment.id,
+      isLowestInterest: !unpriced.length && e.id === lowestInterest.id,
       whyNot: whyNotFor(e),
     }))
     .sort((a, b) => {

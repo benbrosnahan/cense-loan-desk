@@ -242,7 +242,6 @@ test('MONEY-07 a fixed plan shows one payment, one end date and one interest tot
 });
 
 test('MONEY-08 with income blank, the pick and its badges never claim a minimum over IBR and RAP, which are open but unpriced', async ({ page }) => {
-  knownIssue('MONEY-08');
   const superlatives = /^(Lowest monthly payment|Lowest starting payment|Least interest overall)$/;
   const review = async target => {
     const names = await openPlanNames(target);

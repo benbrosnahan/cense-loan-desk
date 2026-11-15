@@ -75,7 +75,10 @@ export default function HistoryPanel({
               {busy ? "Preparing…" : "Download as a spreadsheet"}
             </Button>
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600">
+          <p
+            key={sorted.length ? "note" : "note-empty"}
+            className="mt-3 text-sm leading-relaxed text-slate-600"
+          >
             A snapshot stores every loan exactly as it stands right now, on this
             device. The spreadsheet is the copy you keep outside the browser.
             {!sorted.length &&

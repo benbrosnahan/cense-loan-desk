@@ -81,7 +81,7 @@ function Measure({
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm text-slate-700">{label}</span>
         <span className="text-base font-bold text-slate-900">
-          {value === null ? "—" : <Money value={value} />}
+          {value === null ? <span>—</span> : <Money value={value} />}
           {note && (
             <>
               {" "}
@@ -248,7 +248,7 @@ function PlanRow({
             )}
           >
             <Chevron open={open} />
-            {open ? "Hide the detail" : "How this plan works"}
+            <span>{open ? "Hide the detail" : "How this plan works"}</span>
           </button>
         </div>
 
@@ -273,8 +273,13 @@ function PlanRow({
               </div>
             </dl>
 
+            {/* Keyed by what it shows, so React replaces the sentence whole: a
+                browser translator swaps the text React would edit in place. */}
             {e.forgivenAmount > 1 && (
-              <p className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800">
+              <p
+                key={`forgiven-${e.forgivenAmount}-${e.forgivenessYears}`}
+                className="rounded-2xl bg-brand-light px-4 py-3 text-sm leading-relaxed text-slate-800"
+              >
                 <strong>
                   <Money value={e.forgivenAmount} />
                 </strong>{" "}
@@ -349,8 +354,15 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
     <div className="space-y-5">
       {(ctx.postCutoff || ctx.parentPlus) && (
         <div className="space-y-3">
+          {/* Keyed by what it shows, so React replaces it whole: a browser
+              translator swaps the text React would edit in place. Undo can
+              change the loans while this tab is open. */}
           {ctx.postCutoff && (
-            <Notice tone="warn" title="One date decided this">
+            <Notice
+              key={`cutoff-${ctx.parentPlus}-${postLoans.map((l) => l.nickname).join(", ")}`}
+              tone="warn"
+              title="One date decided this"
+            >
               {ctx.parentPlus
                 ? POST_CUTOFF_WARNING_PARENT_PLUS
                 : POST_CUTOFF_WARNING}
@@ -379,7 +391,12 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                 {PLAN_META[top.estimate.id].name}
               </h2>
               {top.estimate.monthlyPayment !== null && (
-                <p className="text-base text-white/90">
+                // Keyed so React replaces the amount whole: a browser
+                // translator swaps the text React would edit in place (RES-12).
+                <p
+                  key={`${top.estimate.id}-${top.estimate.monthlyPayment}-${topPeak}`}
+                  className="text-base text-white/90"
+                >
                   <span className="amt figure text-3xl font-bold text-white">
                     <Money value={top.estimate.monthlyPayment} tabular={false} />
                   </span>{" "}
@@ -444,7 +461,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
               : `All ${open.length} plans open to you`}
           </h2>
           <p className="text-sm text-slate-600">
-            {open.length} of 6 federal plans
+            {`${open.length} of 6 federal plans`}
           </p>
         </div>
         {open.length > 1 && (
@@ -474,7 +491,7 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
       {closed.length > 0 && (
         <Card className="border-dashed bg-slate-50/60 p-5 shadow-none sm:p-6">
           <h2 className="font-display text-xl font-bold text-slate-900">
-            {closed.length} plan{closed.length === 1 ? "" : "s"} not open to you
+            {`${closed.length} plan${closed.length === 1 ? "" : "s"} not open to you`}
           </h2>
           <ul className="mt-3 space-y-3">
             {closed.map((p) => (
@@ -483,10 +500,11 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
                   {PLAN_META[p.estimate.id].name}
                 </p>
                 <p className="text-sm leading-relaxed text-slate-700">
-                  {p.estimate.ineligibleReason}
-                  {p.estimate.id === "tiered_standard" &&
-                    rapOpen &&
-                    " RAP, the other plan created in 2026, is open to you and is in the list above."}
+                  {`${p.estimate.ineligibleReason ?? ""}${
+                    p.estimate.id === "tiered_standard" && rapOpen
+                      ? " RAP, the other plan created in 2026, is open to you and is in the list above."
+                      : ""
+                  }`}
                 </p>
               </li>
             ))}
@@ -513,8 +531,13 @@ export default function PlansPanel({ loans, profile, onSelectPlan }: Props) {
             <Notice tone="info" title="One plan covers all of them">
               {SAME_PLAN_RULE}
             </Notice>
+            {/* Keyed by the clause it shows, like the cutoff notice above. */}
             {!ctx.postCutoff && (
-              <Notice tone="good" title="All your loans predate the cutoff">
+              <Notice
+                key={`before-cutoff-${ctx.parentPlus}`}
+                tone="good"
+                title="All your loans predate the cutoff"
+              >
                 Every loan you entered was disbursed before July 1, 2026, so the
                 older {ctx.parentPlus ? "fixed plans are" : "plan menu is"} still
                 open to you. Borrowing again on or after

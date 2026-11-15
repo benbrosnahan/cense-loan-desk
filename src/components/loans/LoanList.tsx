@@ -54,12 +54,11 @@ export default function LoanList({ loans, onEdit, onDelete }: Props) {
                     {l.nickname}
                   </span>
                   <span className="tnum mt-0.5 block truncate text-sm text-slate-600">
-                    {LOAN_KIND_SHORT[l.kind]} · {pct(l.rate)}
+                    <span>{`${LOAN_KIND_SHORT[l.kind]} · ${pct(l.rate)}`}</span>
                     <span className="hidden sm:inline print:inline">
-                      {" · "}
-                      {l.servicer} · paid out {niceDate(l.disbursementDate)}
+                      {` · ${l.servicer} · paid out ${niceDate(l.disbursementDate)}`}
                     </span>
-                    {isPostCutoff(l) && " · after Jul 1, 2026"}
+                    {isPostCutoff(l) && <span> · after Jul 1, 2026</span>}
                   </span>
                 </span>
                 <span className="text-right">

@@ -493,7 +493,12 @@ export default function Page() {
               <p className="figure mt-1 text-[3.5rem] font-bold leading-none text-slate-900 sm:text-7xl">
                 <Money value={balance} tabular={false} />
               </p>
-              <p className="mt-2 text-base text-slate-700">
+              {/* Keyed by what it shows, so React replaces the line whole: a
+                  browser translator swaps the text React would edit. */}
+              <p
+                key={`sum-${loans.length}-${servicerCount}-${selectedEstimate?.id}-${selectedEstimate?.monthlyPayment}`}
+                className="mt-2 text-base text-slate-700"
+              >
                 across {loans.length} loan{loans.length === 1 ? "" : "s"}
                 {servicerCount > 0 &&
                   ` with ${servicerCount} servicer${
@@ -590,8 +595,14 @@ export default function Page() {
               {/* ---------- Loans ---------- */}
               {tab === "loans" && (
                 <div className="space-y-5">
+                  {/* Keyed by the clause it shows, so React replaces it whole: a
+                      browser translator swaps the text React would edit. */}
                   {postCutoff && (
-                    <Notice tone="warn" title="Check this before anything else">
+                    <Notice
+                      key={`cutoff-${parentPlus}`}
+                      tone="warn"
+                      title="Check this before anything else"
+                    >
                       At least one loan was disbursed on or after July 1, 2026.
                       {parentPlus
                         ? " That limits your entire portfolio to RAP and Tiered Standard, and Parent PLUS loans cannot use RAP, so they are limited to Tiered Standard."

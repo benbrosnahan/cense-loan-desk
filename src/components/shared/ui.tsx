@@ -263,8 +263,11 @@ export function Field({
         )}
       </label>
       <div className="mt-1.5">{children}</div>
+      {/* Keyed so React swaps the whole message rather than editing text a
+          browser translator has already replaced, which throws. */}
       {error ? (
         <p
+          key={`error-${error}`}
           id={htmlFor ? `${htmlFor}-msg` : undefined}
           role="alert"
           className="mt-1.5 flex items-start gap-1.5 text-sm font-semibold text-red-800"
@@ -275,6 +278,7 @@ export function Field({
       ) : (
         hint && (
           <p
+            key="hint"
             id={htmlFor ? `${htmlFor}-msg` : undefined}
             className="mt-1.5 text-sm leading-snug text-slate-600"
           >
@@ -486,7 +490,7 @@ export function Disclosure({
         )}
       >
         <Chevron open={open} />
-        {open ? openSummary ?? summary : summary}
+        <span>{open ? openSummary ?? summary : summary}</span>
       </button>
       {open && (
         <div id={id} className="unfold pt-2">

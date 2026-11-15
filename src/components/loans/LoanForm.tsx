@@ -352,13 +352,15 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
             htmlFor="rate"
             error={show("rate")}
             hint={
+              // Keyed by what they show, so React swaps the hint whole: a
+              // browser translator replaces the text React would edit.
               rateIsAuto && suggested !== null ? (
-                <>
+                <span key={`auto-${yearLabel}`}>
                   We filled in the published undergraduate rate for {yearLabel}.
                   Change it if yours is different.
-                </>
+                </span>
               ) : suggested !== null && rate !== suggested ? (
-                <>
+                <span key={`differs-${yearLabel}-${suggested}`}>
                   The published undergraduate rate for {yearLabel} was{" "}
                   {suggested}%.{" "}
                   <button
@@ -371,7 +373,7 @@ export default function LoanForm({ initial, defaults, onSave, onCancel }: Props)
                   >
                     Use {suggested}%
                   </button>
-                </>
+                </span>
               ) : (
                 "Federal rates are fixed, so this never changes."
               )

@@ -196,7 +196,6 @@ test('RES-11 a half-filled loan survives a section switch, a reload and Edit on 
 });
 
 test('RES-12 a translated page shows the same figures as the untranslated one and never crashes', async ({ browser, baseURL }) => {
-  knownIssue('RES-12');
   const noExtra = { ...PROFILE, extraPerMonth: 0 };
   const scenarios = [
     {

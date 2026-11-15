@@ -261,7 +261,11 @@ export default function RankingPanel({
             </>
           ) : (
             <>
-              <Eyebrow>
+              {/* Sentences that show a figure are keyed by what they show. A
+                  browser translator swaps the text React holds for its own
+                  copy, so an edit in place would leave old figures on screen
+                  or throw; a new key makes React replace the block whole. */}
+              <Eyebrow key={`eb-${selected!.id}-${comparison.requiredPayment}`}>
                 On {PLAN_META[selected!.id].name} ·{" "}
                 <Money value={comparison.requiredPayment} /> a month{" "}
                 {graduated ? "to start" : "required"}
@@ -487,7 +491,10 @@ export default function RankingPanel({
                 </dl>
               )}
 
-              <p className="mt-4 text-sm leading-relaxed text-slate-600">
+              <p
+                key={`assume-${selected!.id}-${comparison.requiredPayment}`}
+                className="mt-4 text-sm leading-relaxed text-slate-600"
+              >
                 What this assumes: payments start this month, and your required
                 payment{" "}
                 {graduated ? (
@@ -583,7 +590,11 @@ export default function RankingPanel({
                   other. Pick whichever you will actually stick to.
                 </Notice>
               ) : (
-                <Notice tone="info" title="What the choice actually costs">
+                <Notice
+                  key={`cost-${comparison.snowballCost}-${comparison.monthsDifference}`}
+                  tone="info"
+                  title="What the choice actually costs"
+                >
                   Smallest balance first costs{" "}
                   <strong>
                     <Money value={comparison.snowballCost} />
@@ -640,7 +651,10 @@ export default function RankingPanel({
                         <Money value={loan.balance} className="font-semibold" />
                       </p>
                     </div>
-                    <p className="mt-1 text-sm leading-snug text-slate-700">
+                    <p
+                      key={`why-${rank}-${reason}`}
+                      className="mt-1 text-sm leading-snug text-slate-700"
+                    >
                       {rank === 1 && (
                         <Badge tone="accent" className="mr-1.5">
                           Extra goes here
@@ -650,7 +664,7 @@ export default function RankingPanel({
                     </p>
                     {gone !== undefined && (
                       <p className="tnum mt-1 text-sm text-slate-600">
-                        Gone by {shortMonthYearFromNow(gone)}
+                        {`Gone by ${shortMonthYearFromNow(gone)}`}
                       </p>
                     )}
                   </div>
@@ -661,7 +675,11 @@ export default function RankingPanel({
         </Card>
       </FadeIn>
 
-      <Notice tone="warn" title="One thing that undoes all of this">
+      <Notice
+        key={`warn-${ranked[0]?.loan.id}`}
+        tone="warn"
+        title="One thing that undoes all of this"
+      >
         Sending extra money without instructions usually gets it spread across
         every loan, or treated as paying next month&apos;s bill early. Tell your
         servicer in writing to apply anything above the scheduled amount to the

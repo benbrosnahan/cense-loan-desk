@@ -56,7 +56,6 @@ test('SCOPE-01 a part-time public-service worker is told only full-time months e
 });
 
 test("SCOPE-02 a married couple filing jointly can be priced by the rule: IBR $163 with RAP $217, and the spouse's own loans count", async ({ page }) => {
-  knownIssue('SCOPE-02');
   await openApp(page, RETURNING);
   await goTo(page, 'plans');
   await choose(page, 'Going for forgiveness');
@@ -95,7 +94,6 @@ test("SCOPE-02 a married couple filing jointly can be priced by the rule: IBR $1
 });
 
 test('SCOPE-03 the income question asks for adjusted gross income, the figure IBR and RAP are priced on', async ({ page }) => {
-  knownIssue('SCOPE-03');
   await openApp(page, RETURNING);
   await goTo(page, 'plans');
   await choose(page, 'Private sector');

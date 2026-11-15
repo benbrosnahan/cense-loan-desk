@@ -44,7 +44,13 @@ import {
   snapshotStore,
 } from "@/lib/storage";
 import { exportLoans } from "@/lib/export";
-import { cn, formatWholeDollars, parseNumber, scrollBehavior } from "@/lib/utils";
+import {
+  cn,
+  formatDollarsInput,
+  formatWholeDollars,
+  parseNumber,
+  scrollBehavior,
+} from "@/lib/utils";
 import {
   AffixInput,
   Button,
@@ -115,6 +121,38 @@ function LockIcon() {
       <rect x="3" y="7" width="10" height="7" rx="1.8" />
       <path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" />
     </svg>
+  );
+}
+
+/**
+ * A dollar amount that may have cents. It keeps the text as typed, so
+ * "28,101.37" can be entered a key at a time, and reports the number.
+ */
+function DollarsInput({
+  value,
+  onValue,
+  ...rest
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & {
+  value: number;
+  onValue: (n: number) => void;
+}) {
+  const [text, setText] = useState(() =>
+    value ? formatDollarsInput(String(value)) : ""
+  );
+  return (
+    <AffixInput
+      prefix="$"
+      inputMode="decimal"
+      autoComplete="off"
+      placeholder="0"
+      {...rest}
+      value={text}
+      onChange={(e) => {
+        const next = formatDollarsInput(e.target.value);
+        setText(next);
+        onValue(parseNumber(next));
+      }}
+    />
   );
 }
 
@@ -721,8 +759,16 @@ export default function Page() {
 
                       <div className="grid gap-5 sm:grid-cols-2">
                         <Field
-                          label="Yearly income, before tax"
-                          hint="Leave blank if you are not earning yet. We will skip the plans priced off income."
+                          label={
+                            profile.filesJointly
+                              ? "Combined income on your joint return"
+                              : "Yearly income, before tax"
+                          }
+                          hint={
+                            profile.filesJointly
+                              ? "Yours and your spouse's together: the adjusted gross income on your joint tax return."
+                              : "Use your adjusted gross income (AGI): your pay before tax, minus pre-tax 401(k), 403(b), health and HSA deductions. If your pay has not changed since you last filed, it is on your tax return. Leave blank if you are not earning yet. We will skip the plans priced off income."
+                          }
                           htmlFor="income"
                         >
                           <AffixInput
@@ -750,7 +796,7 @@ export default function Page() {
 
                         <Field
                           label="People in your household"
-                          hint="You, plus anyone you claim as a dependent."
+                          hint="You, plus anyone you claim as a dependent. Not your spouse: tick the box below if you file jointly."
                           htmlFor="household"
                         >
                           <select
@@ -773,6 +819,51 @@ export default function Page() {
                             ))}
                           </select>
                         </Field>
+                      </div>
+
+                      <div>
+                        <label className="flex min-h-[48px] cursor-pointer items-center gap-3 text-sm font-bold text-slate-900">
+                          <input
+                            type="checkbox"
+                            className="h-6 w-6 flex-shrink-0 cursor-pointer accent-navy"
+                            checked={profile.filesJointly}
+                            aria-describedby="joint-msg"
+                            onChange={(e) =>
+                              setProfile((p) => ({
+                                ...p,
+                                filesJointly: e.target.checked,
+                              }))
+                            }
+                          />
+                          I am married and we file taxes jointly
+                        </label>
+                        <p id="joint-msg" className="text-sm leading-snug text-slate-600">
+                          IBR then counts your spouse in your family size, and
+                          both income-driven plans use your combined income.
+                          Filing separately? Leave this unticked.
+                        </p>
+                        {profile.filesJointly && (
+                          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                            <Field
+                              label="What your spouse owes in federal student loans"
+                              hint="Their own Direct and FFEL loans, not Parent PLUS loans taken out for a child. You are charged your share of what the two of you owe."
+                              htmlFor="spouseloans"
+                              optional
+                            >
+                              <DollarsInput
+                                id="spouseloans"
+                                aria-describedby="spouseloans-msg"
+                                value={profile.spouseLoanBalance}
+                                onValue={(n) =>
+                                  setProfile((p) => ({
+                                    ...p,
+                                    spouseLoanBalance: n,
+                                  }))
+                                }
+                              />
+                            </Field>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Card>

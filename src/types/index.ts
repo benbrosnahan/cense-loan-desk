@@ -108,9 +108,23 @@ export interface LoanDiffRow {
 }
 
 export interface Profile {
-  /** Annual gross income. 0 = not supplied, which hides income-driven estimates. */
+  /** Annual adjusted gross income (AGI), the income IBR and RAP are priced on. 0 = not supplied, which hides income-driven estimates. */
   income: number;
+  /** You plus your tax dependents. A spouse is never counted here. */
   householdSize: number;
+  /**
+   * Married and filing a joint federal tax return. Then `income` is the
+   * couple's combined income, and the spouse counts in IBR's family size only
+   * (34 CFR 685.209(b)(9)(i)(B)); RAP counts tax dependents, which a spouse
+   * never is ((b)(3)).
+   */
+  filesJointly: boolean;
+  /**
+   * The spouse's own eligible federal student loans, used only while
+   * filesJointly. 0 = none. IBR and RAP are scaled by this borrower's share of
+   * the couple's balance (685.209(g)(1)(i), (g)(3)(i)).
+   */
+  spouseLoanBalance: number;
   employment: Employment;
   goal: Goal;
   /** Extra dollars per month above the required payment. */
@@ -122,6 +136,8 @@ export interface Profile {
 export const DEFAULT_PROFILE: Profile = {
   income: 0,
   householdSize: 1,
+  filesJointly: false,
+  spouseLoanBalance: 0,
   employment: "unsure",
   goal: "unsure",
   // Starts at zero on purpose. A pre-filled amount anchors what people pay.

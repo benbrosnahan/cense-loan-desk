@@ -145,7 +145,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
     name: "IBR",
     tagline: "Payment tied to your income",
     summary:
-      "Caps your payment at 10% of discretionary income, meaning what you earn above 150% of the poverty line. A low enough income means a $0 payment, and $0 still counts.",
+      "Caps your payment at 10% of discretionary income, meaning your adjusted gross income above 150% of the poverty line. A low enough income means a $0 payment, and $0 still counts.",
     incomeDriven: true,
     forgivenessYears: 20,
     postCutoff: false,
@@ -186,7 +186,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
     name: "RAP",
     tagline: "Income-driven, and the balance always shrinks",
     summary:
-      "The Repayment Assistance Plan. Your payment is a slice of your total income, 1% to 10%, minus $50 per dependent, with a $10 monthly floor. Forgiveness after 30 years.",
+      "The Repayment Assistance Plan. Your payment is a slice of your adjusted gross income (AGI), 1% to 10%, minus $50 per dependent, with a $10 monthly floor. Forgiveness after 30 years.",
     incomeDriven: true,
     forgivenessYears: 30,
     postCutoff: true,
@@ -197,7 +197,7 @@ export const PLAN_META: Record<PlanId, PlanMeta> = {
       "Available even if you borrowed on or after July 1, 2026",
     ],
     cons: [
-      "Charges a percentage of your total income, not just income above the poverty floor",
+      "Charges a percentage of your whole AGI, not just income above the poverty floor",
       "Forgiveness takes 30 years, 10 longer than IBR",
       "Forgiveness at 30 years counts as taxable income",
       "You have to recertify your income every year",

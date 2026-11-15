@@ -192,17 +192,35 @@ function simulateIdr(
 }
 
 function ibrMonthly(profile: Profile): number {
+  // IBR's family size counts the spouse of a borrower filing jointly
+  // (34 CFR 685.209(b)(9)(i)(B)). householdSize is you plus your dependents.
+  const familySize =
+    (profile.householdSize || 1) + (profile.filesJointly ? 1 : 0);
   const discretionary = Math.max(
     0,
-    profile.income - 1.5 * getPovertyLine(profile.householdSize)
+    profile.income - 1.5 * getPovertyLine(familySize)
   );
   return (discretionary * 0.1) / 12;
 }
 
 function rapMonthly(profile: Profile): number {
   const base = rapAnnualBasePayment(profile.income) / 12;
+  // Tax dependents only (685.209(b)(3)). A spouse is never one, so a joint
+  // filer's spouse takes nothing off here.
   const dependents = Math.max(0, (profile.householdSize || 1) - 1);
   return Math.max(RAP_MIN_MONTHLY, base - dependents * RAP_DEPENDENT_CREDIT);
+}
+
+/**
+ * This borrower's share of the couple's eligible loans. On a joint return the
+ * payment is priced on combined income, so 34 CFR 685.209(g)(1)(i) (IBR) and
+ * (g)(3)(i)(A) (RAP) multiply it by this share. 1 when the spouse owes nothing.
+ */
+function jointShare(balance: number, profile: Profile): number {
+  const spouse = profile.filesJointly
+    ? Math.max(0, profile.spouseLoanBalance || 0)
+    : 0;
+  return spouse > 0 && balance > 0 ? balance / (balance + spouse) : 1;
 }
 
 export interface PlanContext {
@@ -434,7 +452,12 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
 
     if (id === "ibr") {
       const cap = amortizedPayment(balance, rate, 10);
-      const pay = Math.min(ibrMonthly(profile), cap);
+      // The share comes before the cap: never lower than the literal
+      // cap-then-share reading, and equal to it whenever the cap does not bind.
+      const pay = Math.min(
+        ibrMonthly(profile) * jointShare(balance, profile),
+        cap
+      );
       const sim = simulateIdr(balance, rate, pay, 20, {
         waiveUnpaidInterest: false,
         matchPrincipal: false,
@@ -453,7 +476,11 @@ export function estimatePlans(ctx: PlanContext): PlanEstimate[] {
       };
     }
 
-    const pay = rapMonthly(profile);
+    // The $10 floor applies after the spouse share (685.209(g)(3)(i)(B)).
+    const pay = Math.max(
+      RAP_MIN_MONTHLY,
+      rapMonthly(profile) * jointShare(balance, profile)
+    );
     const sim = simulateIdr(balance, rate, pay, 30, {
       waiveUnpaidInterest: true,
       matchPrincipal: true,
